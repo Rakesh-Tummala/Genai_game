@@ -157,13 +157,14 @@ async function openStartMenu() {
       Font.draw(ctx, `Clock   ${clockStr()}`, 14, 74, UI.ink);
       Font.draw(ctx, 'AI: ' + (AI_ENDPOINT ? (AI.status === 'fallback' ? 'server unreachable' : 'server') : 'offline mode'), 14, 90, UI.dim);
     };
-    const i = await choose(['PARTY', 'BAG', 'SAVE', 'OPTIONS', 'TITLE', 'CLOSE'], { x: 236, y: 4, w: 80, extra });
-    if (i < 0 || i === 5) return;
+    const i = await choose(['PARTY', 'BESTIARY', 'BAG', 'SAVE', 'OPTIONS', 'TITLE', 'CLOSE'], { x: 228, y: 4, w: 88, extra });
+    if (i < 0 || i === 6) return;
     if (i === 0) await openParty();
-    if (i === 1) await openBag();
-    if (i === 2) { const c = await ask('Save your journey?'); if (c === 0) await say(saveGame() ? 'Your journey was saved.' : 'Saving failed (storage may be blocked).'); }
-    if (i === 3) await openOptions();
-    if (i === 4) { const c = await ask('Return to the title screen? Unsaved progress will be lost.'); if (c === 0) { await fadeOut(); Scenes.replaceAll(new TitleScene()); Sound.play('title'); await fadeIn(); return; } }
+    if (i === 1) await openBestiary();
+    if (i === 2) await openBag();
+    if (i === 3) { const c = await ask('Save your journey?'); if (c === 0) await say(saveGame() ? 'Your journey was saved.' : 'Saving failed (storage may be blocked).'); }
+    if (i === 4) await openOptions();
+    if (i === 5) { const c = await ask('Return to the title screen? Unsaved progress will be lost.'); if (c === 0) { await fadeOut(); Scenes.replaceAll(new TitleScene()); Sound.play('title'); await fadeIn(); return; } }
   }
 }
 async function openParty() {
@@ -208,10 +209,11 @@ async function openBag() {
     const ids = Object.keys(Game.bag).filter(k => Game.bag[k] > 0);
     if (!ids.length) { await say('Your bag is empty.'); return; }
     const extra = (ctx, i) => { drawWin(ctx, 0, 176, W, 64); Font.wrap(ITEMS[ids[i]].desc, 296).forEach((l, k) => Font.draw(ctx, l, 12, 188 + k * 13, UI.ink)); };
-    const i = await choose(ids.map(k => ({ label: ITEMS[k].name, right: 'x' + Game.bag[k] })), { x: 60, y: 4, w: 200, title: 'BAG', extra });
+    const i = await choose(ids.map(k => ({ label: ITEMS[k].name, right: 'x' + Game.bag[k] })), { x: 60, y: 4, w: 200, title: 'BAG', extra, maxRows: 10 });
     if (i < 0) return;
     const id = ids[i], it = ITEMS[id];
     if (it.orb) { await say('Orbs are thrown in battle with TAME.'); continue; }
+    if (it.battleOnly) { await say(`${it.name} can only be used in battle.`); continue; }
     const t = await choose(Game.party.map(c => ({ label: cName(c), right: `${c.hp}/${maxHP(c)}` })), { x: 60, y: 30, w: 200, title: `Use ${it.name} on?` });
     if (t < 0) continue;
     const c = Game.party[t];
@@ -226,10 +228,11 @@ async function openBag() {
 }
 async function openShop() {
   while (true) {
-    const extra = (ctx, i) => { drawWin(ctx, 0, 176, W, 64); Font.wrap(ITEMS[SHOP_STOCK[i]].desc, 296).forEach((l, k) => Font.draw(ctx, l, 12, 186 + k * 12, UI.ink)); Font.draw(ctx, `Coins: ${Game.player.money}${perk() === 'discount' ? '   (15% discount!)' : ''}   You have: ${Game.bag[SHOP_STOCK[i]] || 0}`, 12, 224, UI.gold); };
-    const i = await choose(SHOP_STOCK.map(k => ({ label: ITEMS[k].name, right: priceOf(k) + 'c' })), { x: 70, y: 4, w: 180, title: 'BAZAAR', extra });
+    const stock = SHOP_STOCK.filter(k => !ITEMS[k].unlock || Game.flags[ITEMS[k].unlock]);
+    const extra = (ctx, i) => { drawWin(ctx, 0, 176, W, 64); Font.wrap(ITEMS[stock[i]].desc, 296).forEach((l, k) => Font.draw(ctx, l, 12, 186 + k * 12, UI.ink)); Font.draw(ctx, `Coins: ${Game.player.money}${perk() === 'discount' ? '   (15% discount!)' : ''}   You have: ${Game.bag[stock[i]] || 0}`, 12, 224, UI.gold); };
+    const i = await choose(stock.map(k => ({ label: ITEMS[k].name, right: priceOf(k) + 'c' })), { x: 70, y: 4, w: 180, title: 'BAZAAR', extra, maxRows: 10 });
     if (i < 0) { await say('Come again! May your orbs fly true.'); return; }
-    const id = SHOP_STOCK[i], price = priceOf(id);
+    const id = stock[i], price = priceOf(id);
     const q = await pickQty(id, price);
     if (q <= 0) continue;
     if (q * price > Game.player.money) { Sound.sfx('bump'); await say('You don\'t have enough coins.'); continue; }
@@ -274,10 +277,11 @@ async function openOptions() {
   let i = 0;
   while (true) {
     const sp = ['Slow', 'Normal', 'Fast', 'Instant'][Settings.textSpeed];
-    const items = [{ label: 'Text speed', right: sp }, { label: 'Music', right: Settings.music ? 'On' : 'Off' }, { label: 'Sound FX', right: Settings.sfx ? 'On' : 'Off' }, { label: 'Mute all', right: Settings.muted ? 'Yes' : 'No' }, { label: 'Back' }];
+    const items = [{ label: 'Text speed', right: sp }, { label: 'Music', right: Settings.music ? 'On' : 'Off' }, { label: 'Sound FX', right: Settings.sfx ? 'On' : 'Off' }, { label: 'Mute all', right: Settings.muted ? 'Yes' : 'No' }, { label: 'Bestiary preview', right: Settings.bestiaryPreview ? 'On' : 'Off' }, { label: 'Back' }];
     const extra = ctx => { drawWin(ctx, 0, 176, W, 64); Font.wrap(AI_ENDPOINT ? `AI endpoint: ${AI_ENDPOINT} (status: ${AI.status})` : 'AI: offline mode. Custom attacks, lore and dialogue use built-in fallbacks. See README to enable the optional server.', 296).forEach((l, k) => Font.draw(ctx, l, 12, 186 + k * 12, UI.ink)); Font.draw(ctx, 'Keys: arrows/WASD move, Z/Enter confirm, X back, ESC/C/M menu, Shift run, N mute', 12, 224, UI.dim); };
     i = await choose(items, { x: 70, y: 30, w: 180, title: 'OPTIONS', start: i, extra });
-    if (i < 0 || i === 4) { saveSettings(); return; }
+    if (i < 0 || i === 5) { saveSettings(); return; }
+    if (i === 4) { Settings.bestiaryPreview = !Settings.bestiaryPreview; if (Settings.bestiaryPreview) await say('Bestiary preview reveals every creature, including those from cities that are not playable yet. It does not change your seen/tamed progress.'); }
     if (i === 0) Settings.textSpeed = (Settings.textSpeed + 1) % 4;
     if (i === 1) Settings.music = !Settings.music;
     if (i === 2) Settings.sfx = !Settings.sfx;
@@ -285,3 +289,66 @@ async function openOptions() {
     Sound.applyVolumes(); saveSettings();
   }
 }
+
+// ---------------- BESTIARY ----------------
+class BestiaryScene {
+  constructor() { this.opaque = true; this.ci = 0; this.i = 0; this.top = 0; this.resolve = null; this.busy = false; }
+  list() { return SPECIES_ORDER.filter(id => SPECIES[id].city === CITY_ORDER[this.ci]); }
+  seen(id) { return Settings.bestiaryPreview || !!Game.seen[id]; }
+  async update() {
+    if (this.busy) return;
+    const L = this.list();
+    if (Input.p('left') || Input.p('right')) { this.ci = (this.ci + (Input.p('left') ? 7 : 1)) % 8; this.i = 0; this.top = 0; Sound.sfx('cursor'); return; }
+    if (Input.p('up')) { this.i = (this.i + L.length - 1) % L.length; Sound.sfx('cursor'); }
+    if (Input.p('down')) { this.i = (this.i + 1) % L.length; Sound.sfx('cursor'); }
+    if (this.i < this.top) this.top = this.i; if (this.i >= this.top + 12) this.top = this.i - 11;
+    if (Input.p('b') || Input.p('start')) { Sound.sfx('cancel'); Scenes.remove(this); this.resolve(); return; }
+    if (Input.p('a')) {
+      const id = L[this.i];
+      if (!this.seen(id)) { Sound.sfx('bump'); return; }
+      this.busy = true; Sound.sfx('magic');
+      const lore = await expandedLore(id);
+      await say(lore, { speaker: SPECIES[id].name });
+      this.busy = false;
+    }
+  }
+  draw(ctx) {
+    const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#24123e'); g.addColorStop(1, '#120a20'); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    const total = SPECIES_ORDER.length, nSeen = SPECIES_ORDER.filter(id => Game.seen[id]).length, nTamed = SPECIES_ORDER.filter(id => Game.tamed[id]).length;
+    Font.draw(ctx, 'BESTIARY', 6, 4, UI.gold, '#0b0714');
+    Font.drawR(ctx, `Seen ${nSeen}/${total}   Tamed ${nTamed}/${total}`, 314, 4, UI.ink, '#0b0714');
+    if (Settings.bestiaryPreview) { ctx.fillStyle = '#c8402a'; ctx.fillRect(70, 3, 50, 10); Font.draw(ctx, 'PREVIEW', 75, 4, '#ffffff'); }
+    const city = CITIES[CITY_ORDER[this.ci]], L = this.list();
+    drawWin(ctx, 2, 15, 316, 17, { border: city.color });
+    const cs = SPECIES_ORDER.filter(id => SPECIES[id].city === CITY_ORDER[this.ci]), cSeen = cs.filter(id => Game.seen[id]).length;
+    Font.drawC(ctx, `<  ${city.name} (${city.culture})  ${cSeen}/${cs.length}  >`, 160, 20, city.color);
+    // list
+    drawWin(ctx, 2, 33, 132, 205);
+    L.slice(this.top, this.top + 12).forEach((id, k) => {
+      const idx = SPECIES_ORDER.indexOf(id) + 1, y = 42 + k * 16, sel = this.top + k === this.i, sn = this.seen(id);
+      if (sel) { ctx.fillStyle = 'rgba(232,184,74,.18)'; ctx.fillRect(6, y - 3, 124, 14); }
+      Font.draw(ctx, String(idx).padStart(3, '0'), 18, y, UI.dim);
+      Font.draw(ctx, sn ? SPECIES[id].name : '??????', 40, y, sn ? UI.ink : UI.dim);
+      if (Game.tamed[id]) Font.draw(ctx, '★', 120, y, UI.gold); else if (Game.seen[id]) Font.draw(ctx, '·', 122, y, UI.ink);
+      if (sel) drawCursor(ctx, 7, y);
+    });
+    // detail
+    const id = L[this.i], sp = SPECIES[id], sn = this.seen(id);
+    drawWin(ctx, 136, 33, 182, 205);
+    ctx.fillStyle = 'rgba(0,0,0,.25)'; ctx.beginPath(); ctx.ellipse(227, 100, 40, 7, 0, 0, 7); ctx.fill();
+    drawCreature(ctx, id, 227, 102, sn ? {} : { dark: true, frame: 0 });
+    Font.draw(ctx, sn ? sp.name : '??????', 144, 108, '#ffffff');
+    if (sn) {
+      let x = 144; for (const t of sp.types) x += typeBadge(ctx, t, x, 119) + 1;
+      Font.drawR(ctx, sp.rarity.toUpperCase() + (sp.bossOnly ? ' - TRIAL ONLY' : ''), 312, 108, UI.dim);
+      Font.wrap(sp.lore, 166).slice(0, 4).forEach((l, k) => Font.draw(ctx, l, 144, 133 + k * 10, '#e8dcc0'));
+      const evoFrom = SPECIES_ORDER.find(o => SPECIES[o].evo && SPECIES[o].evo[0] === id);
+      const evoTxt = sp.evo ? `Evolves into ${this.seen(sp.evo[0]) ? SPECIES[sp.evo[0]].name : '???'} at Lv ${sp.evo[1]}` : evoFrom ? `Evolves from ${this.seen(evoFrom) ? SPECIES[evoFrom].name : '???'}` : 'Does not evolve';
+      Font.draw(ctx, evoTxt, 144, 175, UI.green);
+      if (Game.tamed[id] || Settings.bestiaryPreview) ['HP', 'ATK', 'DEF', 'SPD'].forEach((k, j) => { const y = 187 + j * 9; Font.draw(ctx, k, 144, y, UI.gold); drawBar(ctx, 170, y + 2, 100, 3, sp.base[j] / 100, '#6ac8ff'); Font.drawR(ctx, String(sp.base[j]), 304, y, UI.ink); });
+      else Font.draw(ctx, 'Tame it to record its stats.', 144, 192, UI.dim);
+    } else Font.wrap('Not yet encountered.' + (sp.city !== 'india' ? ` Lives in ${CITIES[sp.city].name}, whose road is still sealed.` : ''), 166).forEach((l, k) => Font.draw(ctx, l, 144, 124 + k * 11, UI.dim));
+    Font.draw(ctx, sn ? 'Z lore   X back' : 'X back', 144, 227, UI.dim);
+  }
+}
+function openBestiary() { return new Promise(r => { const s = new BestiaryScene(); s.resolve = r; Scenes.push(s); }); }

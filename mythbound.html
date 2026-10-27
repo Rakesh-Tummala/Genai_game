@@ -162,7 +162,7 @@ const Font = (() => {
     // special symbols: star, heart, arrow, note
     '★': '..#..|..#..|#####|.###.|.###.|##.##|#...#', '♥': '.....|##.##|#####|#####|.###.|..#..|.....',
     '▶': '#...|##..|###.|####|###.|##..|#...', '♪': '..##|..#.|..#.|..#.|.##.|###.|.#..',
-    '▼': '.....|.....|#####|.###.|..#..|.....|.....', '·': '.|.|.|#|.|.|.'
+    '▼': '.....|.....|#####|.###.|..#..|.....|.....', '▲': '.....|.....|..#..|.###.|#####|.....|.....', '·': '.|.|.|#|.|.|.'
   };
   const map = {}; let x = 0;
   for (const ch in G) { const rows = G[ch].split('|'); const w = rows[0].length; map[ch] = { x, w, rows }; x += w + 1; }
@@ -583,6 +583,201 @@ const TRAINERS = {
   },
 };
 
+// ---- 05_data_world.js ----
+// =====================================================================
+//  STAGE 2 DATA: the other seven cities' creatures, more moves, new orbs & items
+//  All designs and names are original, inspired only by traditional folklore.
+// =====================================================================
+const CITIES = {
+  india: { name: 'Indrapuri', culture: 'India', color: '#ff9f1a' },
+  greece: { name: 'Olympos', culture: 'Greece', color: '#7fb0ff' },
+  norse: { name: 'Asgard', culture: 'Norse', color: '#9fd0e8' },
+  egypt: { name: 'Heliopolis', culture: 'Egypt', color: '#ffd040' },
+  japan: { name: 'Takama', culture: 'Japan', color: '#ff7a9a' },
+  celtic: { name: 'Tir na nOg', culture: 'Celtic', color: '#5ad08a' },
+  meso: { name: 'Babylon', culture: 'Mesopotamia', color: '#5a8ae8' },
+  slavic: { name: 'Kitezh', culture: 'Slavic', color: '#e85a5a' },
+};
+const CITY_ORDER = ['india', 'greece', 'norse', 'egypt', 'japan', 'celtic', 'meso', 'slavic'];
+
+Object.assign(MOVES, {
+  tailwind: { name: 'Tailwind', type: 'Sky', cat: 'status', acc: 100, pp: 15, fx: { self: { spd: 2 } } },
+  cyclone: { name: 'Cyclone', type: 'Sky', pow: 75, acc: 95, pp: 10, fx: { foe: { spd: -1 }, foeCh: .3 } },
+  frostfang: { name: 'Frost Fang', type: 'Tide', pow: 60, acc: 100, pp: 15, fx: { stun: .15 } },
+  healingtide: { name: 'Healing Tide', type: 'Tide', cat: 'status', acc: 100, pp: 10, fx: { heal: .35 } },
+  firewing: { name: 'Fire Wing', type: 'Ember', pow: 60, acc: 100, pp: 20, fx: { status: { kind: 'burn', ch: .1 } } },
+  sunpyre: { name: 'Sun Pyre', type: 'Ember', pow: 100, acc: 85, pp: 5, fx: { status: { kind: 'burn', ch: .1 } } },
+  cinderdance: { name: 'Cinder Dance', type: 'Ember', cat: 'status', acc: 100, pp: 15, fx: { self: { atk: 1, spd: 1 } } },
+  leafblade: { name: 'Leaf Blade', type: 'Grove', pow: 70, acc: 100, pp: 15, crit: 2 },
+  spore: { name: 'Sleep Spore', type: 'Grove', cat: 'status', acc: 75, pp: 10, fx: { status: { kind: 'sleep', ch: 1 } } },
+  barkskin: { name: 'Barkskin', type: 'Grove', cat: 'status', acc: 100, pp: 15, fx: { self: { def: 2 } } },
+  quake: { name: 'Quake Stomp', type: 'Stone', pow: 90, acc: 90, pp: 10 },
+  boulderslam: { name: 'Boulder Slam', type: 'Stone', pow: 80, acc: 90, pp: 10, fx: { stun: .1 } },
+  petrigaze: { name: 'Stone Gaze', type: 'Stone', cat: 'status', acc: 70, pp: 10, fx: { stun: 1 } },
+  hexbolt: { name: 'Hex Bolt', type: 'Shade', pow: 80, acc: 100, pp: 10, fx: { foe: { def: -1 }, foeCh: .2 } },
+  nightmare: { name: 'Night Terror', type: 'Shade', cat: 'status', acc: 90, pp: 10, fx: { foe: { atk: -2 } } },
+  soulsiphon: { name: 'Soul Siphon', type: 'Shade', pow: 60, acc: 100, pp: 15, fx: { drain: .5 } },
+  solarflare: { name: 'Solar Flare', type: 'Light', pow: 100, acc: 85, pp: 5 },
+  blessing: { name: 'Blessing', type: 'Light', cat: 'status', acc: 100, pp: 10, fx: { self: { atk: 1, def: 1 } } },
+  dawnlance: { name: 'Dawn Lance', type: 'Light', pow: 70, acc: 100, pp: 15, crit: 2 },
+  staticrush: { name: 'Static Rush', type: 'Storm', pow: 40, acc: 100, pp: 30, pri: 1 },
+  tempest: { name: 'Tempest', type: 'Storm', pow: 95, acc: 80, pp: 10, fx: { stun: .3 } },
+  chargeup: { name: 'Charge Up', type: 'Storm', cat: 'status', acc: 100, pp: 15, fx: { self: { atk: 2 } } },
+  bash: { name: 'Heavy Bash', type: 'Neutral', pow: 70, acc: 100, pp: 15 },
+  howl: { name: 'Battle Howl', type: 'Neutral', cat: 'status', acc: 100, pp: 15, fx: { self: { atk: 1 }, foe: { atk: -1 } } },
+});
+
+// compact species definition: pal = [base, accent, belly, eye, glow, horn]
+function defSp(id, city, name, types, base, rarity, xp, art, lore, learn, extra = {}) {
+  const [tpl, size, pal, pattern, acc] = art;
+  SPECIES[id] = Object.assign({ name, types, base, xp, rarity, city, lore, learn,
+    art: { tpl, size, pal: { base: pal[0], accent: pal[1], belly: pal[2], eye: pal[3], glow: pal[4], horn: pal[5] }, pattern, acc } }, extra);
+  SPECIES_ORDER.push(id);
+}
+// ---------------- GREECE (Olympos) ----------------
+defSp('pegafoal', 'greece', 'Pegafoal', ['Sky'], [48, 52, 46, 64], 'uncommon', 64, ['quadruped', .8, ['#f4f0ff', '#9fd4ff', '#ffffff', '#1a1a3a', '#ffe36a', '#e8d8a0'], 'none', ['wingsBig', 'longSnout', 'maneFlow', 'ears', 'noMuzzle', 'tall']],
+  'A winged foal born from sea-foam and storm cloud. It practises flying by leaping off temple steps.', [[1, 'gust'], [1, 'tackle'], [5, 'quickdart'], [10, 'wingslash'], [14, 'tailwind'], [18, 'cyclone']], { evo: ['pegasorn', 18] });
+defSp('pegasorn', 'greece', 'Pegasorn', ['Sky', 'Light'], [72, 80, 66, 92], 'rare', 160, ['quadruped', 1.02, ['#f8f6ff', '#ffd86a', '#ffffff', '#1a1a3a', '#ffe36a', '#e8d8a0'], 'none', ['wingsBig', 'longSnout', 'maneFlow', 'ears', 'noMuzzle', 'gem', 'tall']],
+  'A grown sky-steed that carries thunder for the clouds. Only riders with honest hearts may touch its golden mane.', [[1, 'wingslash'], [1, 'tailwind'], [18, 'dawnlance'], [22, 'cyclone'], [28, 'garudadive'], [34, 'solarflare']]);
+defSp('hydrelle', 'greece', 'Hydrelle', ['Tide', 'Shade'], [56, 58, 54, 52], 'rare', 150, ['serpentine', .9, ['#3f8a5a', '#9fd060', '#e0e8a0', '#200a0a', '#ff5050', '#e0d8b0'], 'scales', ['heads3', 'frills', 'tongue']],
+  'A three-headed marsh serpent. When one head naps, the other two argue about where to swim.', [[1, 'splashjet'], [1, 'nighthiss'], [7, 'venomfang'], [11, 'whirlbind'], [17, 'hexbolt'], [24, 'monsooncrash']]);
+defSp('gorgling', 'greece', 'Gorgling', ['Stone', 'Shade'], [50, 56, 58, 46], 'uncommon', 66, ['humanoid', .85, ['#7a9a6a', '#4a8a3a', '#c8d8a8', '#3a2a08', '#ffe060', '#d0c090'], 'none', ['snakeHair', 'cloak']],
+  'Its gaze can stiffen joints like stone for a moment. Its hair-snakes are shy and hide behind its ears.', [[1, 'tackle'], [1, 'pebbleshot'], [5, 'nighthiss'], [10, 'petrigaze'], [15, 'rockcrush'], [21, 'hexbolt']]);
+defSp('minotot', 'greece', 'Minotot', ['Stone'], [62, 68, 60, 36], 'uncommon', 66, ['humanoid', .9, ['#8a5a3a', '#c8402a', '#d8b090', '#1a0a04', '#ffb040', '#f0e0c0'], 'none', ['bullHead', 'bullHorns', 'sash', 'hammer']],
+  'A bull-headed calf raised in a maze of hedges. It never gets lost - it simply walks through the walls.', [[1, 'tackle'], [1, 'roar'], [8, 'bash'], [12, 'rockcrush'], [18, 'boulderslam'], [26, 'quake']]);
+defSp('cerbepup', 'greece', 'Cerbepup', ['Ember', 'Shade'], [54, 62, 48, 58], 'rare', 140, ['quadruped', .86, ['#4a3434', '#ff5a1f', '#8a5a4a', '#ff3a1a', '#ff7a1a', '#e0d0c0'], 'none', ['heads3', 'ears', 'fangs', 'snakeTail']],
+  'A three-headed guard pup from the gates of the underworld. Each head barks at a different kind of stranger.', [[1, 'emberspit'], [1, 'nighthiss'], [8, 'flamefang'], [12, 'howl'], [16, 'shadowbite'], [24, 'kilnblast']]);
+defSp('chimerant', 'greece', 'Chimerant', ['Ember', 'Stone'], [60, 64, 56, 50], 'rare', 145, ['quadruped', .85, ['#d0902a', '#8a4a1a', '#f0d090', '#2a1408', '#ff4a1a', '#f0e0c0'], 'none', ['mane', 'hornsSmall', 'snakeTail', 'ears']],
+  'Lion in front, goat in the middle, serpent at the tail - and all three disagree about lunch.', [[1, 'emberspit'], [1, 'tackle'], [6, 'roar'], [10, 'flamefang'], [15, 'rockcrush'], [28, 'sunpyre']]);
+defSp('cyclite', 'greece', 'Cyclite', ['Stone', 'Storm'], [78, 84, 76, 40], 'rare', 170, ['humanoid', 1.05, ['#a8b0c8', '#6a4a2a', '#d0d8e8', '#20203a', '#ffe060', '#c0c8d8'], 'none', ['cyclops', 'noEye', 'hammer', 'sash']],
+  'A one-eyed smith of the mountain forges. Its hammer blows ring out like thunder across the valleys.', [[1, 'pebbleshot'], [1, 'spark'], [12, 'rockcrush'], [20, 'thunderclap'], [26, 'boulderslam'], [32, 'tempest']]);
+// ---------------- NORSE (Asgard) ----------------
+defSp('fenrisk', 'norse', 'Fenrisk', ['Shade'], [52, 60, 46, 62], 'uncommon', 64, ['quadruped', .82, ['#5a5a6a', '#2a2a3a', '#b8b8c8', '#ffd040', '#9fe4ff', '#e8e8f0'], 'none', ['ears', 'fangs', 'maneFlow', 'noMuzzle', 'longSnout']],
+  'A wolf pup with a growl far bigger than itself. Tie it with a silk ribbon and it will sulk, not struggle.', [[1, 'tackle'], [1, 'nighthiss'], [5, 'quickdart'], [10, 'shadowbite'], [14, 'howl'], [18, 'frostfang']], { evo: ['fenrimaw', 20] });
+defSp('fenrimaw', 'norse', 'Fenrimaw', ['Shade', 'Stone'], [80, 92, 70, 82], 'rare', 170, ['quadruped', 1.06, ['#3a3a4a', '#1a1a2a', '#9a9aaa', '#ffd040', '#9fe4ff', '#e8e8f0'], 'none', ['ears', 'fangs', 'maneFlow', 'spikes', 'noMuzzle', 'longSnout']],
+  'A giant wolf whose jaws could swallow the moon\'s reflection. It honours only oaths sworn sincerely.', [[1, 'shadowbite'], [1, 'frostfang'], [20, 'hexbolt'], [25, 'boulderslam'], [30, 'nightmare']]);
+defSp('jormlet', 'norse', 'Jormlet', ['Tide', 'Stone'], [60, 54, 62, 44], 'uncommon', 66, ['serpentine', .9, ['#2a6a7a', '#7ad0c0', '#d0e8d0', '#0a1a20', '#7affd0', '#e0e0d0'], 'scales', ['finsBack', 'frills']],
+  'A young world-serpent that coils around fishing boats to keep them steady. It will grow until it can bite its own tail.', [[1, 'splashjet'], [1, 'whirlbind'], [7, 'pebbleshot'], [12, 'frostfang'], [20, 'monsooncrash'], [28, 'quake']]);
+defSp('sleipra', 'norse', 'Sleipra', ['Sky', 'Storm'], [58, 60, 52, 78], 'rare', 150, ['quadruped', .95, ['#8a8a9a', '#d8e0f0', '#c8c8d8', '#1a1a2a', '#9fe4ff', '#e0e0e8'], 'none', ['legs8', 'longSnout', 'maneFlow', 'ears', 'noMuzzle', 'tall']],
+  'An eight-legged grey steed that gallops between worlds. Its hoofbeats sound like rain on a roof.', [[1, 'tackle'], [1, 'gust'], [6, 'staticrush'], [12, 'wingslash'], [16, 'tailwind'], [26, 'tempest']]);
+defSp('huginix', 'norse', 'Huginix', ['Sky', 'Shade'], [46, 56, 42, 72], 'common', 58, ['avian', .85, ['#2a2a3a', '#3a3a5a', '#4a4a6a', '#9fe4ff', '#9fe4ff', '#c8c8d0'], 'none', ['crest']],
+  'A thought-raven that flies over the world each day and returns at dusk to whisper what it saw.', [[1, 'gust'], [1, 'nighthiss'], [5, 'quickdart'], [9, 'wingslash'], [15, 'hexbolt'], [21, 'cyclone']]);
+defSp('draugrim', 'norse', 'Draugrim', ['Shade', 'Stone'], [62, 58, 64, 34], 'uncommon', 64, ['humanoid', .92, ['#6a7a6a', '#3a3a4a', '#8a9a8a', '#7affd0', '#7affd0', '#a8a8b0'], 'none', ['helmet', 'cloak', 'spear']],
+  'A barrow guardian that keeps watch over old treasure mounds. Grumpy, but loyal to anyone who honours the dead.', [[1, 'tackle'], [1, 'nighthiss'], [6, 'guard'], [10, 'shadowbite'], [16, 'boulderslam'], [22, 'soulsiphon']]);
+defSp('ratatusk', 'norse', 'Ratatusk', ['Grove', 'Sky'], [42, 44, 40, 74], 'common', 56, ['quadruped', .7, ['#c8702a', '#f0a050', '#f8e0c0', '#1a0a04', '#9fe060', '#e8d8c0'], 'none', ['bushyTail', 'ears', 'noMuzzle']],
+  'A chattering squirrel that runs up and down the world tree, carrying insults between the eagle and the dragon.', [[1, 'tackle'], [1, 'vinelash'], [4, 'quickdart'], [8, 'gust'], [14, 'leafblade'], [18, 'tailwind']]);
+defSp('tanngrit', 'norse', 'Tanngrit', ['Storm', 'Stone'], [64, 62, 58, 52], 'uncommon', 68, ['quadruped', .9, ['#d8d0c0', '#8a6a4a', '#f0e8d8', '#2a1a0a', '#ffe060', '#c8b890'], 'none', ['horns', 'beard', 'ears']],
+  'A sturdy goat that pulls thunder-chariots. It is whole again every morning - though it never forgets a slight.', [[1, 'tackle'], [1, 'spark'], [6, 'roar'], [10, 'bash'], [15, 'thunderclap'], [20, 'chargeup']]);
+// ---------------- EGYPT (Heliopolis) ----------------
+defSp('scarabix', 'egypt', 'Scarabix', ['Stone', 'Light'], [52, 46, 62, 40], 'common', 58, ['quadruped', .72, ['#2a4a6a', '#3a8ab8', '#5a7a8a', '#0a1a2a', '#ffd040', '#e0d0a0'], 'none', ['shell', 'noMuzzle', 'hornsSmall', 'noTail', 'legs8']],
+  'A sacred beetle that rolls a little ball of sunlight across the sand each dawn.', [[1, 'tackle'], [1, 'pebbleshot'], [5, 'glimmer'], [9, 'guard'], [14, 'rockcrush'], [26, 'solarflare']]);
+defSp('bennuling', 'egypt', 'Bennuling', ['Ember', 'Light'], [48, 54, 44, 60], 'uncommon', 64, ['avian', .82, ['#a8a8b0', '#ff8a3a', '#e8e0d0', '#1a1a1a', '#ffd040', '#e0d0a0'], 'none', ['longNeck', 'crestTall']],
+  'A heron chick that hatched from embers on a sacred stone. It cries at sunrise to call the day.', [[1, 'emberspit'], [1, 'gust'], [5, 'glimmer'], [10, 'firewing'], [16, 'sunhymn'], [20, 'cinderdance']], { evo: ['bennurah', 22] });
+defSp('bennurah', 'egypt', 'Bennurah', ['Ember', 'Light'], [74, 82, 66, 86], 'rare', 170, ['avian', 1.0, ['#c87a2a', '#ffd040', '#fff0c0', '#1a0a04', '#ff6a1a', '#e0d0a0'], 'none', ['longNeck', 'crestTall', 'flameTail', 'sunDisk']],
+  'Reborn from its own ashes every five hundred years, it carries the morning sun on its crest.', [[1, 'firewing'], [1, 'sunhymn'], [22, 'solarflare'], [28, 'sunpyre'], [32, 'blessing']]);
+defSp('sobeken', 'egypt', 'Sobeken', ['Tide', 'Stone'], [66, 66, 64, 38], 'uncommon', 68, ['aquatic', .95, ['#4a7a4a', '#2a5a8a', '#d8d8a0', '#1a1a0a', '#ffd040', '#e0d8b0'], 'scales', ['snout', 'legs', 'nemesA', 'dorsal']],
+  'A river crocodile in a striped headdress. Farmers pray it keeps the floods gentle and the fields green.', [[1, 'tackle'], [1, 'splashjet'], [6, 'whirlbind'], [10, 'rockcrush'], [15, 'lotuscurrent'], [22, 'monsooncrash']]);
+defSp('ammitar', 'egypt', 'Ammitar', ['Shade', 'Stone'], [70, 72, 66, 36], 'rare', 150, ['quadruped', .95, ['#8a6a3a', '#c89a4a', '#c8b080', '#1a0a04', '#ff4a3a', '#f0e0c0'], 'none', ['crocSnout', 'maneLion', 'noMuzzle']],
+  'It waits beside the scales of judgement and only bites hearts heavier than a feather - so be kind.', [[1, 'tackle'], [1, 'nighthiss'], [8, 'shadowbite'], [14, 'rockcrush'], [20, 'soulsiphon'], [26, 'hexbolt']]);
+defSp('sphinxel', 'egypt', 'Sphinxel', ['Light', 'Stone'], [62, 60, 64, 52], 'rare', 150, ['quadruped', .95, ['#d8b070', '#3a6ab8', '#e8c890', '#1a0a04', '#ffd040', '#e0d0a0'], 'none', ['humanFace', 'nemes', 'wingsSmall', 'noMuzzle']],
+  'A lion with a calm face who guards desert roads. It asks riddles, but always gives hints to tired travellers.', [[1, 'tackle'], [1, 'glimmer'], [6, 'roar'], [12, 'rockcrush'], [18, 'dawnlance'], [24, 'blessing']]);
+defSp('uraeling', 'egypt', 'Uraeling', ['Ember', 'Light'], [48, 58, 44, 58], 'common', 58, ['serpentine', .85, ['#d8902a', '#c8402a', '#f0d080', '#1a0a04', '#ffe060', '#ffd84a'], 'none', ['hood', 'sunDisk', 'tongue']],
+  'A golden cobra that rears up to spit sparks at anyone who threatens the sun-boat.', [[1, 'emberspit'], [1, 'nighthiss'], [5, 'glimmer'], [9, 'venomfang'], [14, 'firewing'], [20, 'sunhymn']]);
+defSp('apepling', 'egypt', 'Apepling', ['Shade', 'Tide'], [72, 78, 64, 62], 'rare', 170, ['serpentine', 1.0, ['#3a2a4a', '#6a3a8a', '#8a7aa0', '#ff3a3a', '#c060ff', '#d0c0e0'], 'rings', ['finsBack', 'frills', 'tongue']],
+  'A coil of the chaos serpent that tries to swallow the setting sun each night. Each morning it fails, and sulks in the reeds.', [[1, 'nighthiss'], [1, 'whirlbind'], [12, 'hexbolt'], [18, 'nightmare'], [24, 'monsooncrash'], [30, 'soulsiphon']]);
+// ---------------- JAPAN (Takama) ----------------
+defSp('kitsunko', 'japan', 'Kitsunko', ['Ember', 'Light'], [46, 50, 44, 64], 'uncommon', 64, ['quadruped', .8, ['#e88a3a', '#ffffff', '#fff0e0', '#1a0a04', '#7ad0ff', '#f0e0c0'], 'none', ['earsTall', 'noMuzzle', 'longSnout']],
+  'A fox kit that lights tiny blue foxfires to find its way home. Each century it lives, it grows another tail.', [[1, 'emberspit'], [1, 'quickdart'], [5, 'glimmer'], [10, 'firewing'], [14, 'cinderdance'], [20, 'dawnlance']], { evo: ['kyubirei', 24] });
+defSp('kyubirei', 'japan', 'Kyubirei', ['Ember', 'Light'], [76, 80, 70, 92], 'rare', 170, ['quadruped', 1.0, ['#f4e8d0', '#ffd040', '#ffffff', '#1a0a04', '#7ad0ff', '#f0e0c0'], 'none', ['earsTall', 'longSnout', 'noMuzzle', 'tailsMany', 'gem']],
+  'A nine-tailed fox who has lived a thousand years. Its tails glow like lanterns at a summer festival.', [[1, 'firewing'], [1, 'dawnlance'], [24, 'sunpyre'], [30, 'solarflare'], [34, 'blessing']]);
+defSp('kappling', 'japan', 'Kappling', ['Tide', 'Grove'], [54, 54, 58, 46], 'common', 58, ['humanoid', .78, ['#5aa05a', '#4a6a3a', '#c8e0a0', '#0a1a0a', '#9fe4ff', '#e0d8b0'], 'none', ['shellBack', 'dish', 'beakH']],
+  'A river imp with a water-filled dish on its head. Bow to it politely - it will bow back and spill its strength.', [[1, 'splashjet'], [1, 'vinelash'], [5, 'guard'], [9, 'whirlbind'], [14, 'leafblade'], [18, 'healingtide']]);
+defSp('tanukin', 'japan', 'Tanukin', ['Grove', 'Shade'], [58, 48, 52, 50], 'common', 58, ['quadruped', .8, ['#8a6a4a', '#4a3a2a', '#e8d0b0', '#1a0a04', '#9fe060', '#e0d0b0'], 'none', ['leafHead', 'ears', 'bushyTail']],
+  'A round raccoon-dog that puts a leaf on its head to change shape. It mostly turns into teapots.', [[1, 'tackle'], [1, 'vinelash'], [6, 'spore'], [10, 'nighthiss'], [15, 'leafblade'], [20, 'nightmare']]);
+defSp('tengumi', 'japan', 'Tengumi', ['Sky', 'Storm'], [56, 64, 50, 68], 'uncommon', 66, ['humanoid', .9, ['#d84a3a', '#3a3a5a', '#e8c8a0', '#1a0a04', '#ffe060', '#e0d0b0'], 'none', ['wings', 'longNose', 'cloak', 'staff']],
+  'A mountain goblin with a long red nose and crow wings. It teaches staff drills to anyone who sweeps its shrine.', [[1, 'gust'], [1, 'quickdart'], [6, 'staticrush'], [10, 'wingslash'], [16, 'cyclone'], [24, 'tempest']]);
+defSp('raikitt', 'japan', 'Raikitt', ['Storm'], [50, 60, 44, 72], 'uncommon', 64, ['quadruped', .8, ['#3a5ab8', '#ffe040', '#a8c8ff', '#0a0a2a', '#ffff80', '#f0f0c0'], 'bolts', ['earsTall', 'spikes', 'noMuzzle']],
+  'A thunder kitten that falls from the sky with the lightning. It loves to nap in warm places during storms.', [[1, 'spark'], [1, 'quickdart'], [5, 'staticrush'], [11, 'thunderclap'], [15, 'chargeup'], [24, 'tempest']]);
+defSp('ryugo', 'japan', 'Ryugo', ['Tide', 'Storm'], [66, 70, 62, 66], 'rare', 160, ['serpentine', .98, ['#2a8a9a', '#ffd040', '#f0f0c0', '#0a1a20', '#9fe4ff', '#f0e8c0'], 'scales', ['hornsS', 'whiskers', 'maneS', 'finsBack']],
+  'A young sea-dragon from the palace beneath the waves. It keeps a pearl that controls the tides - mostly for splashing.', [[1, 'splashjet'], [1, 'spark'], [8, 'whirlbind'], [14, 'thunderclap'], [20, 'monsooncrash'], [28, 'tempest']]);
+defSp('chochibi', 'japan', 'Chochibi', ['Ember', 'Shade'], [44, 56, 40, 62], 'common', 58, ['spirit', .85, ['#f0d8a0', '#d84a3a', '#fff0c8', '#1a0a04', '#ff6a2a', '#e8c050'], 'none', ['lantern']],
+  'An old paper lantern that came alive after a hundred festivals. It sticks out its tongue at people who forget to light it.', [[1, 'emberspit'], [1, 'nighthiss'], [6, 'emberveil'], [11, 'firewing'], [17, 'hexbolt'], [22, 'nightmare']]);
+// ---------------- CELTIC (Tir na nOg) ----------------
+defSp('selkin', 'celtic', 'Selkin', ['Tide'], [56, 46, 54, 52], 'common', 60, ['aquatic', .82, ['#6a7a8a', '#4a5a6a', '#c8d0d8', '#0a0a1a', '#9fe4ff', '#e8e8e8'], 'spots', ['sealFace']],
+  'A seal pup that sheds its skin on moonlit beaches to dance. Hide its skin and it will follow you for days.', [[1, 'tackle'], [1, 'splashjet'], [5, 'guard'], [10, 'frostfang'], [15, 'healingtide'], [19, 'lotuscurrent']], { evo: ['selkara', 22] });
+defSp('selkara', 'celtic', 'Selkara', ['Tide', 'Light'], [80, 70, 76, 72], 'rare', 165, ['aquatic', 1.02, ['#4a5a7a', '#9fd0c0', '#d8e0f0', '#0a0a1a', '#ffe36a', '#e8e8e8'], 'spots', ['sealFace', 'weedMane', 'crown']],
+  'A grown seal-folk who sings ships safely past the rocks. Its song can be heard in seashells.', [[1, 'frostfang'], [1, 'healingtide'], [22, 'dawnlance'], [26, 'monsooncrash'], [30, 'blessing']]);
+defSp('kelpling', 'celtic', 'Kelpling', ['Tide', 'Shade'], [60, 62, 52, 62], 'uncommon', 66, ['quadruped', .9, ['#3a6a6a', '#4a8a3a', '#8ab0a0', '#0a1a1a', '#7affd0', '#d0e0d0'], 'none', ['longSnout', 'maneFlow', 'ears', 'noMuzzle', 'tall']],
+  'A water horse that offers rides beside dark lochs. Never climb on - its back grows sticky and it heads for deep water.', [[1, 'splashjet'], [1, 'tackle'], [6, 'whirlbind'], [10, 'nighthiss'], [15, 'lotuscurrent'], [22, 'soulsiphon']]);
+defSp('pookin', 'celtic', 'Pookin', ['Shade', 'Grove'], [50, 56, 46, 66], 'uncommon', 64, ['quadruped', .8, ['#2a2a3a', '#4a4a6a', '#5a5a7a', '#ffd040', '#ffe060', '#e0d8c0'], 'none', ['earsTall', 'hornsSmall', 'noMuzzle']],
+  'A shape-shifting trickster that appears as a black goat or hare. Leave it the last of the harvest and it leaves you in peace.', [[1, 'tackle'], [1, 'nighthiss'], [5, 'quickdart'], [9, 'spore'], [15, 'hexbolt'], [21, 'nightmare']]);
+defSp('keenwail', 'celtic', 'Keenwail', ['Shade', 'Sky'], [48, 62, 40, 66], 'uncommon', 64, ['spirit', .9, ['#c8d0e8', '#eeeefa', '#ffffff', '#9fe4ff', '#9fe4ff', '#e0e0f0'], 'none', ['hairFlow', 'glowEyes']],
+  'A keening spirit whose song warns families of coming storms. Its wail is sad, but it means to help.', [[1, 'nighthiss'], [1, 'gust'], [7, 'nightmare'], [12, 'hexbolt'], [18, 'cyclone'], [23, 'soulsiphon']]);
+defSp('cusith', 'celtic', 'Cusith', ['Grove', 'Shade'], [66, 70, 58, 64], 'rare', 150, ['quadruped', .86, ['#3a7a4a', '#2a5a3a', '#8ac08a', '#0a1a0a', '#9fff9a', '#e0e8d0'], 'none', ['ears', 'fangs', 'bushyTail', 'longSnout', 'noMuzzle']],
+  'A great green fairy hound that roams the moors. It barks three times - only the first is a warning.', [[1, 'tackle'], [1, 'vinelash'], [6, 'howl'], [11, 'shadowbite'], [16, 'leafblade'], [24, 'quake']]);
+defSp('sidhel', 'celtic', 'Sidhel', ['Light', 'Grove'], [40, 48, 44, 78], 'common', 56, ['spirit', .66, ['#c8f0c8', '#ff9fd0', '#ffffff', '#1a1020', '#ffe36a', '#f0e0c0'], 'none', ['wingsFairy', 'arms']],
+  'A tiny fae from the hollow hills. It trades glittering gifts that turn into leaves by morning.', [[1, 'glimmer'], [1, 'vinelash'], [5, 'quickdart'], [9, 'spore'], [14, 'dawnlance'], [20, 'blessing']]);
+defSp('hartwyn', 'celtic', 'Hartwyn', ['Grove', 'Light'], [74, 72, 70, 74], 'rare', 165, ['quadruped', 1.0, ['#f0ece0', '#c8e0a0', '#ffffff', '#1a1a0a', '#ffe36a', '#e8d0a0'], 'none', ['antlers', 'longSnout', 'noMuzzle', 'ears', 'tall']],
+  'A white stag of the deep forest. Hunters who chase it get lost, then find their way home years wiser.', [[1, 'tackle'], [1, 'vinelash'], [10, 'bash'], [16, 'leafblade'], [22, 'dawnlance'], [28, 'blessing']]);
+// ---------------- MESOPOTAMIA (Babylon) ----------------
+defSp('lamassel', 'meso', 'Lamassel', ['Stone', 'Light'], [60, 52, 62, 40], 'uncommon', 66, ['quadruped', .84, ['#c8a878', '#4a6ab8', '#e8d0a8', '#1a0a04', '#ffd040', '#5a3a2a'], 'none', ['humanFace', 'beard', 'wingsSmall', 'noMuzzle']],
+  'A winged guardian calf with a wise face. It practises standing perfectly still beside doorways.', [[1, 'tackle'], [1, 'pebbleshot'], [5, 'guard'], [9, 'glimmer'], [14, 'rockcrush'], [20, 'blessing']], { evo: ['lamassar', 24] });
+defSp('lamassar', 'meso', 'Lamassar', ['Stone', 'Light'], [86, 78, 90, 48], 'rare', 175, ['quadruped', 1.04, ['#d8b888', '#3a5ab8', '#f0dcb8', '#1a0a04', '#ffd040', '#3a2414'], 'none', ['humanFace', 'beard', 'wingsBig', 'noMuzzle', 'crown']],
+  'A great winged bull with a crowned human head. It guards city gates and lets in only honest guests.', [[1, 'rockcrush'], [1, 'blessing'], [24, 'dawnlance'], [30, 'quake'], [36, 'solarflare']]);
+defSp('anzoo', 'meso', 'Anzoo', ['Storm', 'Sky'], [56, 66, 50, 70], 'rare', 150, ['avian', .92, ['#8a6a3a', '#3a5a8a', '#e8d0a0', '#1a0a04', '#ffe060', '#e0d0a0'], 'none', ['maneLion', 'earsLion', 'lionMuzzle', 'tailFan']],
+  'A lion-headed thunderbird. Long ago it stole the tablet of destinies - now it guards tablets for scribes.', [[1, 'gust'], [1, 'spark'], [6, 'roar'], [10, 'wingslash'], [15, 'thunderclap'], [26, 'tempest']]);
+defSp('mushush', 'meso', 'Mushush', ['Ember', 'Shade'], [64, 70, 58, 60], 'rare', 155, ['quadruped', .95, ['#3a5a9a', '#e8c050', '#8aa0d0', '#1a0a04', '#ff6a2a', '#e8c050'], 'scales', ['stingerTail', 'hornSingle', 'longSnout', 'noMuzzle', 'spikes']],
+  'A horned serpent-dragon glazed in blue and gold on the city gates. It patrols the walls at night.', [[1, 'emberspit'], [1, 'nighthiss'], [8, 'venomfang'], [12, 'flamefang'], [18, 'hexbolt'], [26, 'sunpyre']]);
+defSp('humbabo', 'meso', 'Humbabo', ['Grove', 'Stone'], [72, 62, 70, 36], 'uncommon', 68, ['humanoid', .95, ['#5a6a3a', '#2f7a3a', '#a8b080', '#1a1a0a', '#9fe060', '#3a4a2a'], 'none', ['leafHair', 'beard']],
+  'Guardian of the cedar forest, its face is a tangle of roots. It lets in travellers who promise not to cut a single tree.', [[1, 'tackle'], [1, 'vinelash'], [5, 'roar'], [10, 'barkskin'], [15, 'leafblade'], [24, 'quake']]);
+defSp('girtab', 'meso', 'Girtab', ['Stone', 'Shade'], [60, 66, 62, 44], 'uncommon', 66, ['humanoid', .92, ['#8a6a3a', '#3a2a1a', '#c8a878', '#1a0a04', '#ff4a3a', '#c8c0a0'], 'none', ['stingerTail', 'helmet', 'spear']],
+  'A scorpion-tailed guard who opens the mountain gates for the rising sun. It has never once been late.', [[1, 'tackle'], [1, 'pebbleshot'], [7, 'venomfang'], [12, 'rockcrush'], [18, 'boulderslam'], [24, 'hexbolt']]);
+defSp('apkalu', 'meso', 'Apkalu', ['Tide', 'Light'], [56, 46, 60, 52], 'common', 58, ['humanoid', .88, ['#e8e0c8', '#3a8ab8', '#e0b080', '#1a0a04', '#ffe36a', '#e0d0b0'], 'none', ['fishHat', 'fishCloak', 'lanternHand']],
+  'A fish-cloaked sage who rose from the sea to teach people writing. It still corrects everyone\'s spelling.', [[1, 'splashjet'], [1, 'glimmer'], [5, 'guard'], [10, 'healingtide'], [16, 'dawnlance'], [22, 'blessing']]);
+defSp('gugalan', 'meso', 'Gugalan', ['Storm', 'Stone'], [90, 94, 84, 52], 'mythic', 240, ['quadruped', 1.08, ['#5a4a8a', '#ffe060', '#8a7ab8', '#ffff80', '#ffff80', '#f0e8d0'], 'bolts', ['bullHorns', 'spikes', 'noMuzzle']],
+  'The great Bull of Heaven whose stamping shakes the earth. Its breath is the hot wind before a storm.', [[1, 'bash'], [1, 'thunderclap'], [1, 'quake'], [1, 'tempest']], { bossOnly: true });
+// ---------------- SLAVIC (Kitezh) ----------------
+defSp('zharling', 'slavic', 'Zharling', ['Ember', 'Light'], [48, 56, 44, 62], 'uncommon', 64, ['avian', .82, ['#ff8a2a', '#ffd040', '#fff0a0', '#1a0a04', '#ff4a1a', '#ffd84a'], 'none', ['crestTall', 'tailLong']],
+  'A firebird chick whose feathers glow even in daylight. A single dropped feather can light a whole cottage.', [[1, 'emberspit'], [1, 'gust'], [5, 'glimmer'], [10, 'firewing'], [15, 'cinderdance'], [20, 'sunhymn']], { evo: ['zharplume', 24] });
+defSp('zharplume', 'slavic', 'Zharplume', ['Ember', 'Light'], [74, 84, 66, 88], 'rare', 170, ['avian', 1.04, ['#ff6a1a', '#ffe060', '#fff0c0', '#1a0a04', '#ff3a1a', '#ffd84a'], 'none', ['crestTall', 'flameTail', 'crown']],
+  'The firebird of the far kingdom. Heroes chase it for years; it lets them, because it enjoys the company.', [[1, 'firewing'], [1, 'sunhymn'], [24, 'sunpyre'], [30, 'solarflare'], [34, 'tailwind']]);
+defSp('leshko', 'slavic', 'Leshko', ['Grove', 'Shade'], [66, 58, 62, 50], 'uncommon', 66, ['humanoid', .95, ['#6a5a3a', '#3a8a3a', '#a89a70', '#1a1a0a', '#9fe060', '#5a8a4a'], 'none', ['antlers', 'leafHair', 'beard', 'cloak']],
+  'The forest\'s keeper, tall as a tree or small as a mushroom. It leads rude travellers in circles until they say sorry.', [[1, 'vinelash'], [1, 'tackle'], [6, 'spore'], [11, 'barkskin'], [16, 'leafblade'], [22, 'nightmare']]);
+defSp('rusalin', 'slavic', 'Rusalin', ['Tide', 'Shade'], [54, 56, 50, 60], 'uncommon', 64, ['humanoid', .9, ['#a8c8d0', '#3a8a8a', '#e0f0f0', '#0a1a1a', '#9fe4ff', '#e0e8e8'], 'none', ['fishTail', 'hairBack']],
+  'A river spirit who combs her green hair on willow branches. She tickles swimmers who splash too loudly.', [[1, 'splashjet'], [1, 'nighthiss'], [6, 'whirlbind'], [11, 'frostfang'], [15, 'healingtide'], [21, 'soulsiphon']]);
+defSp('domovik', 'slavic', 'Domovik', ['Light', 'Stone'], [56, 48, 60, 44], 'common', 58, ['humanoid', .72, ['#8a5a3a', '#c83a2a', '#e8c8a0', '#1a0a04', '#ffd040', '#eeeae0'], 'none', ['beard', 'sash']],
+  'A little bearded house spirit who lives behind the stove. Leave it porridge and your house stays warm and lucky.', [[1, 'tackle'], [1, 'glimmer'], [5, 'guard'], [10, 'blessing'], [14, 'pebbleshot'], [20, 'dawnlance']]);
+defSp('zmeyok', 'slavic', 'Zmeyok', ['Ember', 'Sky'], [66, 74, 60, 62], 'rare', 160, ['quadruped', .95, ['#4a8a3a', '#d8b040', '#c8d890', '#1a0a04', '#ff5a1f', '#f0e8c0'], 'scales', ['heads3', 'wingsBig', 'spikes', 'longSnout', 'noMuzzle']],
+  'A three-headed dragon hatchling. Its heads take turns breathing fire so none of them gets a sore throat.', [[1, 'emberspit'], [1, 'gust'], [8, 'flamefang'], [13, 'wingslash'], [18, 'firewing'], [28, 'sunpyre']]);
+defSp('vodyan', 'slavic', 'Vodyan', ['Tide', 'Grove'], [68, 56, 62, 38], 'common', 60, ['humanoid', .9, ['#5a8a5a', '#3a5a3a', '#c8d8a0', '#0a1a0a', '#9fe4ff', '#8aa060'], 'spots', ['frogHead', 'noEye', 'beard']],
+  'An old frog-faced water grandfather who lives in mill-ponds. Fishermen leave him gifts; he leaves them fish.', [[1, 'splashjet'], [1, 'vinelash'], [5, 'guard'], [9, 'whirlbind'], [14, 'healingtide'], [22, 'monsooncrash']]);
+defSp('kikimor', 'slavic', 'Kikimor', ['Shade'], [44, 56, 42, 68], 'common', 58, ['spirit', .8, ['#6a6a4a', '#3a5a2a', '#9a9a7a', '#ff6a2a', '#ffb040', '#d0c8a0'], 'none', ['mossy', 'hornsSp', 'arms']],
+  'A tiny night spirit that tangles yarn and rattles pots. Brew it fern tea and it will spin your thread instead.', [[1, 'nighthiss'], [1, 'tackle'], [5, 'spore'], [10, 'nightmare'], [15, 'hexbolt'], [20, 'soulsiphon']]);
+
+// ---------------- remaining orbs and items (Stage 2) ----------------
+Object.assign(ITEMS, {
+  vayavyastra: { name: 'Vayavyastra Orb', price: 500, desc: 'Wind-bound orb. Very strong against Sky creatures.', orb: true, mult: 1, vsType: 'Sky', vsMult: 3 },
+  gandiva: { name: 'Gandiva Orb', price: 1200, desc: 'A masterwork orb with a very high taming rate.', orb: true, mult: 2.4, unlock: 'beatAgni' },
+  brahmastra: { name: 'Brahmastra Orb', price: 0, desc: 'Tames any wild creature without fail. Only one exists.', orb: true, mult: 1, guaranteed: true, unique: true },
+  gangajal: { name: 'Ganga Jal', price: 600, desc: 'Holy water. Cures every status of every companion. Battle only.', use: 'cureAll', battleOnly: true, noTarget: true },
+  kavach: { name: 'Kavach Charm', price: 350, desc: 'Sharply raises the active companion\'s Defense. Battle only.', use: 'defUp', battleOnly: true, noTarget: true },
+});
+ITEMS.tulsi.desc = 'Cures one status condition (burn, poison or sleep first).';
+SHOP_STOCK.splice(0, SHOP_STOCK.length, 'bana', 'agneyastra', 'varunastra', 'vayavyastra', 'nagastra', 'gandiva', 'soma', 'tulsi', 'gangajal', 'kavach', 'akshaya', 'sanjivani', 'amrita');
+
+// sanity check (developer console only)
+(function validateData() {
+  const errs = [];
+  for (const id of SPECIES_ORDER) {
+    const sp = SPECIES[id]; if (!sp) { errs.push('missing species ' + id); continue; }
+    for (const [, m] of sp.learn) if (!MOVES[m]) errs.push(id + ' learns unknown move ' + m);
+    if (sp.evo && !SPECIES[sp.evo[0]]) errs.push(id + ' evolves into unknown ' + sp.evo[0]);
+    if (!CITIES[sp.city]) errs.push(id + ' has unknown city');
+    for (const t of sp.types) if (!TYPES.includes(t)) errs.push(id + ' has unknown type ' + t);
+  }
+  if (errs.length) console.warn('MYTHBOUND data problems:', errs);
+})();
+
 // ---- 06_sprites.js ----
 // =====================================================================
 //  PROCEDURAL PIXEL ART
@@ -663,18 +858,22 @@ class Pix {
 const TEMPLATES = {
   quadruped(g, P, f) {
     const s = P.size, A = P.acc, bob = f ? 1 : 0, ground = 61, ele = A.has('elephant');
-    const legH = (ele ? 12 : 10) * s, bRX = (ele ? 19 : 16) * s, bRY = (ele ? 12 : 9.5) * s;
+    const legH = (ele ? 12 : 10) * s + (A.has('tall') ? 5 * s : 0), bRX = (ele ? 19 : 16) * s, bRY = (ele ? 12 : 9.5) * s;
     const cx = 35, bcy = ground - legH - bRY * .45 + bob;
+    const hr = (ele ? 9.5 : 8) * s, hx = cx - bRX * .82, hy = bcy - bRY * .75;
+    const tx = cx + bRX - 1, ty = bcy - bRY * .3, tip = [tx + 9 * s, ty - 13 * s + (f ? 1 : -1)];
+    const K = { s, cx, bcy, bRX, bRY, hx, hy, hr, ground, tx, ty, tip, f };
+    const customTail = ['tailsMany', 'bushyTail', 'stingerTail', 'noTail', 'snakeTail'].some(k => A.has(k));
     // tail
-    const tx = cx + bRX - 1, ty = bcy - bRY * .3;
-    if (ele) g.tube([[tx, ty], [tx + 5 * s, ty + 4 * s], [tx + 6 * s, ty + 11 * s]], 1.3, .8, IX.BASE);
+    if (customTail) { }
+    else if (ele) g.tube([[tx, ty], [tx + 5 * s, ty + 4 * s], [tx + 6 * s, ty + 11 * s]], 1.3, .8, IX.BASE);
     else {
-      const tip = [tx + 9 * s, ty - 13 * s + (f ? 1 : -1)];
       g.tube([[tx, ty], [tx + 8 * s, ty - 3 * s], tip], 1.8 * s, 1.1, IX.BASE);
       if (A.has('tailFlame')) g.flame(tip[0], tip[1] + 2, 7 * s, f);
       else g.ell(tip[0], tip[1], 2.2 * s, 2.2 * s, IX.ACC);
     }
     if (A.has('wingsBig')) drawWing(g, [cx - 2, bcy - bRY + 2], [cx + 10 * s, bcy - bRY - (f ? 14 : 24) * s], [cx + 14 * s, bcy - 2], IX.ACCFAR, false);
+    EXTRA(g, P, f, 'back', K);
     // far legs
     for (const lx of [cx - bRX * .55 + 3, cx + bRX * .5 + 3]) g.rect(lx - 2.4 * s, bcy, 4.8 * s, ground - bcy, IX.FAR);
     // body + belly
@@ -690,8 +889,8 @@ const TEMPLATES = {
     }
     if (A.has('cloud')) for (let i = 0; i < 5; i++) g.ell(cx - bRX + i * bRX * .5, ground - 1, 5 * s, 2.5, IX.BELLY, 'under');
     if (A.has('wingsBig')) drawWing(g, [cx - 6, bcy - 3], [cx + 4 * s, bcy - bRY - (f ? 12 : 25) * s], [cx + 10 * s, bcy + 2], IX.ACC, true);
+    EXTRA(g, P, f, 'front', K);
     // head
-    const hr = (ele ? 9.5 : 8) * s, hx = cx - bRX * .82, hy = bcy - bRY * .75;
     if (A.has('mane') || A.has('maneBig')) {
       const R = hr * (A.has('maneBig') ? 1.65 : 1.35);
       for (let a = 0; a < 12; a++) { const an = a / 12 * Math.PI * 2; g.ell(hx + 2 + Math.cos(an) * R * .75, hy + Math.sin(an) * R * .75, R * .42, R * .42, IX.ACC); }
@@ -699,9 +898,10 @@ const TEMPLATES = {
     }
     if (A.has('earsBig')) g.ell(hx + hr * .9, hy - 1, hr * .55, hr * .9, IX.FAR);
     if (A.has('ears')) { g.poly([[hx + 1, hy - hr * .5], [hx + 4 * s, hy - hr * 1.45], [hx + 6 * s, hy - hr * .3]], IX.FAR); }
+    EXTRA(g, P, f, 'preHead', K);
     g.oell(hx, hy, hr, hr * .92, IX.BASE);
     if (A.has('ears')) { g.opoly([[hx - 3 * s, hy - hr * .55], [hx - 1 * s, hy - hr * 1.5], [hx + 2.5 * s, hy - hr * .6]], IX.BASE); g.poly([[hx - 2 * s, hy - hr * .6], [hx - 1 * s, hy - hr * 1.2], [hx + 1.4 * s, hy - hr * .6]], IX.BELLY); }
-    if (!ele) g.ell(hx - hr * .55, hy + hr * .3, hr * .55, hr * .42, IX.BELLY);
+    if (!ele && !A.has('noMuzzle')) g.ell(hx - hr * .55, hy + hr * .3, hr * .55, hr * .42, IX.BELLY);
     if (A.has('trunk')) g.tube([[hx - hr * .7, hy + hr * .15], [hx - hr * 1.25, hy + hr * .8], [hx - hr * 1.15, hy + hr * 1.6], [hx - hr * 1.55 + (f ? 1 : 0), hy + hr * 2.0]], 2.6 * s, 1.3, IX.BASE, null, true);
     if (A.has('trunkSmall')) g.tube([[hx - hr * .8, hy + hr * .25], [hx - hr * 1.2, hy + hr * .75], [hx - hr * 1.05 + (f ? 1 : 0), hy + hr * 1.15]], 1.8 * s, 1, IX.BASE, null, true);
     if (A.has('tusks')) { g.line(hx - hr * .55, hy + hr * .55, hx - hr * 1.35, hy + hr * .95, IX.HORN, .9); }
@@ -710,16 +910,20 @@ const TEMPLATES = {
     if (A.has('horns')) { g.tube([[hx + 1, hy - hr * .7], [hx + 3 * s, hy - hr * 1.5], [hx + 7 * s, hy - hr * 1.75]], 1.6 * s, .7, IX.HORN, null, true); }
     if (A.has('crown')) crown(g, hx + 1, hy - hr * .85, 5 * s);
     if (A.has('gem')) g.rect(hx - hr * .2, hy - hr * .55, 2, 2, IX.GLOW);
-    g.eye(hx - hr * .35, hy - hr * .25);
+    EXTRA(g, P, f, 'head', K);
+    if (!A.has('noEye')) g.eye(hx - hr * .35, hy - hr * .25);
   },
   winged(g, P, f) { P.acc.add('wingsBig'); TEMPLATES.quadruped(g, P, f); },
   avian(g, P, f) {
     const s = P.size, A = P.acc, bob = f ? 1 : 0, ground = 61;
     const bx = 36, by = ground - 18 * s + bob;
+    const hx = bx - 9 * s, hy = by - (A.has('longNeck') ? 21 : 12) * s;
+    const K = { s, bx, by, hx, hy, hr: 7 * s, ground, f };
     // far wing
     if (f) drawWing(g, [bx, by - 7], [bx + 20 * s, by - 8 * s], [bx + 8, by + 3], IX.ACCFAR, false);
     else drawWing(g, [bx, by - 7], [bx + 14 * s, by - 27 * s], [bx + 12, by], IX.ACCFAR, false);
     // tail fan
+    EXTRA(g, P, f, 'back', K);
     if (A.has('tailFan')) g.poly([[bx + 8 * s, by + 1], [bx + 22 * s, by - 4 * s], [bx + 26 * s, by + 4 * s], [bx + 22 * s, by + 12 * s], [bx + 8 * s, by + 7 * s]], IX.ACC);
     // legs
     for (const lx of [bx - 4 * s, bx + 3 * s]) { g.line(lx, by + 6 * s, lx - 1, ground - 1, IX.GOLD, .9); g.rect(lx - 3, ground - 1, 4, 1, IX.GOLD); }
@@ -727,7 +931,8 @@ const TEMPLATES = {
     g.ell(bx + 8 * s, by + 2 * s, 8 * s, 5 * s, IX.BASE);
     g.ell(bx - 5 * s, by + 3 * s, 7 * s, 6 * s, IX.BELLY, 'on');
     applyPattern(g, P);
-    const hx = bx - 9 * s, hy = by - 12 * s;
+    if (A.has('longNeck')) g.tube([[bx - 6 * s, by - 5 * s], [hx + 3 * s, hy + 10 * s], [hx + 1, hy + 2]], 3.4 * s, 2.6 * s, IX.BASE);
+    EXTRA(g, P, f, 'preHead', K);
     if (A.has('crest')) for (let i = 0; i < 3; i++) g.tube([[hx + 1 + i * 2, hy - 4 * s], [hx + 5 + i * 3, hy - 10 * s - i], [hx + 10 + i * 3, hy - 12 * s + i * 2]], 1.4, .6, IX.ACC);
     g.oell(hx, hy, 7 * s, 6.5 * s, IX.BASE);
     g.ell(hx - 2 * s, hy + 3 * s, 4 * s, 3 * s, IX.BELLY, 'on');
@@ -736,6 +941,7 @@ const TEMPLATES = {
     // near wing
     if (f) drawWing(g, [bx - 4, by - 3], [bx + 22 * s, by + 4 * s], [bx + 2, by + 7], IX.ACC, true);
     else drawWing(g, [bx - 4, by - 3], [bx + 6 * s, by - 29 * s], [bx + 8, by + 3], IX.ACC, true);
+    EXTRA(g, P, f, 'head', K);
     g.eye(hx - 2 * s, hy - 1.5 * s);
   },
   serpentine(g, P, f) {
@@ -744,10 +950,13 @@ const TEMPLATES = {
     const sway = f ? -1 : 1;
     const pts = [[52, 57], [44, 60], [28, 60], [18, 53], [24, 45], [38, 44], [44, 36], [40, 26], [31 + sway, 19]].map(p => T(p[0], p[1]));
     const head = pts[pts.length - 1];
+    const K = { s, pts, hx: head[0] - 3 * s, hy: head[1] - 2, f };
+    EXTRA(g, P, f, 'back', K);
     g.tube(pts, 1.5, 6 * s, IX.BASE);
     g.tube(pts.slice(3).map(p => [p[0] - 2 * s, p[1] + 1]), 1, 3 * s, IX.BELLY, 'on');
     applyPattern(g, P);
     const hx = head[0] - 3 * s, hy = head[1] - 2;
+    EXTRA(g, P, f, 'preHead', K);
     if (A.has('multihood')) {
       g.oell(hx + 3 * s, hy + 6 * s, 15 * s, 12 * s, IX.ACC);
       g.ell(hx + 3 * s, hy + 7 * s, 9 * s, 7 * s, IX.BELLY);
@@ -767,11 +976,15 @@ const TEMPLATES = {
     if (A.has('tongue') && f) { const tx = hx - 8 * s, ty = hy + 2 * s; g.line(tx, ty, tx - 4, ty, IX.GLOW); g.put(Math.round(tx - 5), Math.round(ty - 1), IX.GLOW); g.put(Math.round(tx - 5), Math.round(ty + 1), IX.GLOW); }
     if (A.has('crown')) crown(g, hx + 1, hy - 4 * s, 4 * s);
     if (A.has('gem')) g.rect(hx, hy - 4 * s, 2, 2, IX.GLOW);
+    EXTRA(g, P, f, 'head', K);
     g.eye(hx - 2.5 * s, hy - 1.5 * s);
   },
   humanoid(g, P, f) {
     const s = P.size, A = P.acc, ground = 61, cx = 32, bird = A.has('birdLegs');
     const hipY = ground - 14 * s, top = hipY - 16 * s;
+    const fish = A.has('fishTail');
+    const K = { s, cx, hipY, top, ground, hx: cx - 1 * s, hy: top - 6.5 * s, hr: 6.5 * s, f };
+    EXTRA(g, P, f, 'back', K);
     if (A.has('wings')) {
       if (f) drawWing(g, [cx + 3, top + 3], [cx + 24 * s, top + 2 * s], [cx + 6, hipY], IX.ACC, true);
       else drawWing(g, [cx + 3, top + 3], [cx + 18 * s, top - 18 * s], [cx + 8, hipY - 2], IX.ACC, true);
@@ -779,7 +992,8 @@ const TEMPLATES = {
     if (A.has('tail')) g.tube([[cx + 4 * s, hipY - 2], [cx + 14 * s, hipY - 3 * s], [cx + 17 * s, hipY - 15 * s], [cx + 11 * s + (f ? 1 : 0), hipY - 20 * s]], 1.7 * s, 1, IX.BASE);
     // far arm & leg
     g.tube([[cx + 4 * s, top + 3], [cx + 8 * s, top + 9 * s], [cx + 6 * s, top + 15 * s]], 2.1 * s, 1.7 * s, IX.FAR);
-    if (bird) { g.line(cx + 3 * s, hipY, cx + 4 * s, ground - 1, IX.GOLD, .9); g.rect(cx + 2 * s, ground - 1, 4, 1, IX.GOLD); }
+    if (fish) { }
+    else if (bird) { g.line(cx + 3 * s, hipY, cx + 4 * s, ground - 1, IX.GOLD, .9); g.rect(cx + 2 * s, ground - 1, 4, 1, IX.GOLD); }
     else g.tube([[cx + 2.5 * s, hipY], [cx + 3 * s, ground - 2]], 2.6 * s, 2.4 * s, IX.FAR);
     // torso
     const skinTorso = bird;
@@ -787,32 +1001,38 @@ const TEMPLATES = {
     if (!skinTorso) g.ell(cx - 1.5 * s, top + 8 * s, 3.8 * s, 6 * s, IX.BELLY, 'on');
     if (bird) g.ell(cx, hipY + 2 * s, 7 * s, 5 * s, IX.BASE);
     // near leg
-    if (bird) { g.line(cx - 3 * s, hipY + 4 * s, cx - 4 * s, ground - 1, IX.GOLD, .9); g.rect(cx - 7 * s, ground - 1, 5, 1, IX.GOLD); }
+    if (fish) { const w = f ? 2 : -2; g.tube([[cx, hipY], [cx - 2 * s, hipY + 7 * s], [cx + 4 * s, ground - 3], [cx + 12 * s + w, ground - 5]], 5.5 * s, 2, IX.ACC, null, true); g.opoly([[cx + 11 * s + w, ground - 5], [cx + 19 * s + w, ground - 12 * s], [cx + 17 * s + w, ground - 3], [cx + 20 * s + w, ground]], IX.ACC); }
+    else if (bird) { g.line(cx - 3 * s, hipY + 4 * s, cx - 4 * s, ground - 1, IX.GOLD, .9); g.rect(cx - 7 * s, ground - 1, 5, 1, IX.GOLD); }
     else { g.tube([[cx - 2.5 * s, hipY], [cx - 3.5 * s, ground - 2]], 2.8 * s, 2.5 * s, IX.BASE, null, true); g.rect(cx - 6 * s, ground - 2, 5 * s, 2, IX.BELLY); }
     if (A.has('sash') || A.has('garland')) g.poly([[cx - 6 * s, hipY - 3 * s], [cx + 6 * s, hipY - 3 * s], [cx + 6.5 * s, hipY + 4 * s], [cx - 7 * s, hipY + 4 * s]], IX.ACC);
     if (A.has('garland')) for (let i = 0; i < 6; i++) g.ell(cx - 5 * s + i * 2 * s, top + 3 * s + Math.sin(i / 5 * Math.PI) * 5 * s, 1.3, 1.3, i % 2 ? IX.GLOW : IX.ACC);
     if (A.has('veena')) { g.line(cx + 7 * s, top + 1, cx - 9 * s, hipY + 1, IX.GOLD, 1); g.ell(cx + 7 * s, top, 2.6 * s, 2.6 * s, IX.ACC); g.ell(cx - 9 * s, hipY + 2, 3.4 * s, 3.4 * s, IX.ACC); }
     // head
     const hx = cx - 1 * s, hy = top - 6.5 * s, hr = 6.5 * s;
+    EXTRA(g, P, f, 'preHead', K);
     if (A.has('earsSide')) g.oell(hx + 5 * s, hy + 1, 2.2 * s, 2.8 * s, IX.BELLY);
     if (A.has('headdress')) for (let i = 0; i < 3; i++) g.tube([[hx + i * 2, hy - hr * .7], [hx + 3 + i * 3, hy - hr * 1.5], [hx + 8 + i * 3, hy - hr * 1.6 + i * 2]], 1.4, .6, IX.ACC);
     g.oell(hx, hy, hr, hr, IX.BASE);
     if (A.has('muzzle')) { g.ell(hx - 2.5 * s, hy + 1.5 * s, 4 * s, 3.4 * s, IX.BELLY); g.ell(hx - 1 * s, hy - 1.5 * s, 4.5 * s, 2.4 * s, IX.BELLY); }
     else { g.ell(hx - 2 * s, hy + 1 * s, 4.6 * s, 4.8 * s, IX.BELLY); }
     if (A.has('crown')) crown(g, hx, hy - hr * .9, 4.5 * s);
+    EXTRA(g, P, f, 'head', K);
     // near arm
     const arm = f ? [[cx - 4 * s, top + 2], [cx - 9 * s, top + 5 * s], [cx - 12 * s, top + 9 * s]] : [[cx - 4 * s, top + 2], [cx - 8 * s, top + 8 * s], [cx - 9 * s, top + 14 * s]];
     g.tube(arm, 2.2 * s, 1.8 * s, IX.BASE, null, true);
     const hand = arm[2];
     if (A.has('armband')) g.ell(arm[1][0], arm[1][1], 2.2 * s, 1.2, IX.GOLD);
     if (A.has('mace')) { g.line(hand[0], hand[1] + 2, hand[0] - 3, hand[1] - 13 * s, IX.GOLD, 1.1); g.oell(hand[0] - 3.5, hand[1] - 15 * s, 3.6 * s, 4 * s, IX.GOLD); }
+    K.hand = hand; EXTRA(g, P, f, 'hand', K);
     g.ell(hand[0], hand[1], 1.8 * s + .3, 1.8 * s + .3, IX.BELLY);
-    g.eye(hx - 3 * s, hy - 1.2 * s);
+    if (!A.has('noEye')) g.eye(hx - 3 * s, hy - 1.2 * s);
   },
   aquatic(g, P, f) {
     const s = P.size, A = P.acc, bob = f ? 1 : 0, ground = 61;
     const rx = 17 * s, ry = 8 * s, cx = 38, cy = ground - (A.has('legs') ? 10 : 6) * s - ry + bob;
     const t = f ? 3 : -2;
+    const K = { s, cx, cy, rx, ry, ground, hx: cx - rx + 3, hy: cy - 2 * s, f };
+    EXTRA(g, P, f, 'back', K);
     g.poly([[cx + rx * .8, cy - 1], [cx + rx + 11 * s, cy - 10 * s + t], [cx + rx + 6 * s, cy + 1], [cx + rx + 11 * s, cy + 9 * s + t]], IX.ACC);
     if (A.has('legs')) g.tube([[cx - 6 * s + 3, cy + 3], [cx - 8 * s + 3, ground - 1]], 2.6 * s, 2.2 * s, IX.FAR);
     g.ell(cx, cy, rx, ry, IX.BASE);
@@ -834,10 +1054,13 @@ const TEMPLATES = {
     if (A.has('trunkSmall')) g.tube([[hx - 14 * s, hy - 1 * s], [hx - 16 * s, hy - 6 * s], [hx - 13 * s + (f ? 1 : 0), hy - 8 * s]], 1.8 * s, 1, IX.BASE, null, true);
     if (A.has('horns')) g.tube([[hx + 1, hy - 5 * s], [hx + 4 * s, hy - 10 * s], [hx + 8 * s, hy - 11 * s]], 1.5 * s, .7, IX.HORN, null, true);
     if (A.has('crown')) crown(g, hx - 1, hy - 6 * s, 4 * s);
+    EXTRA(g, P, f, 'head', K);
     g.eye(hx - 3 * s, hy - 3.5 * s);
   },
   spirit(g, P, f) {
     const s = P.size, A = P.acc, hx = 32, hy = 26;
+    const K = { s, hx, hy, f };
+    EXTRA(g, P, f, 'back', K);
     if (A.has('batWings')) {
       const u = f ? 5 : 0;
       g.poly([[hx + 4, hy - 2], [hx + 24 * s, hy - 14 * s + u], [hx + 27 * s, hy + 4 * s + u], [hx + 21 * s, hy + 1 * s + u], [hx + 17 * s, hy + 9 * s + u], [hx + 12 * s, hy + 5 * s], [hx + 6, hy + 10]], IX.ACCFAR);
@@ -859,6 +1082,7 @@ const TEMPLATES = {
       if (A.has('flute')) g.line(arm[2][0] - 6 * s, arm[2][1] - 4 * s, arm[2][0] + 6 * s, arm[2][1] + 3 * s, IX.GOLD, .9);
       g.tube(arm, 2.2 * s, 1.6, IX.BASE, null, true);
     }
+    EXTRA(g, P, f, 'head', K);
     if (A.has('glowEyes')) { g.rect(hx - 6 * s, hy - 2, 3, 3, IX.GLOW); g.rect(hx - 1 * s, hy - 2, 3, 3, IX.GLOW); g.put(Math.round(hx - 6 * s), Math.round(hy - 2), IX.WHITE); }
     else { g.eye(hx - 5 * s, hy - 2, true); g.eye(hx + 1 * s, hy - 2, true); }
     if (A.has('fangs')) { g.line(hx - 6 * s, hy + 4 * s, hx + 1 * s, hy + 4 * s, IX.OUT); g.put(Math.round(hx - 5 * s), Math.round(hy + 4 * s + 1), IX.WHITE); g.put(Math.round(hx), Math.round(hy + 4 * s + 1), IX.WHITE); }
@@ -938,14 +1162,16 @@ function creatureFrames(spId) {
   const sp = SPECIES[spId], a = sp.art, frames = [];
   for (let f = 0; f < 2; f++) {
     const g = new Pix();
-    const P = { size: a.size, acc: new Set(a.acc), pattern: a.pattern, rng: mulberry32(hashStr(spId)) };
+    const P = { tpl: a.tpl, size: a.size, acc: new Set(a.acc), pattern: a.pattern, rng: mulberry32(hashStr(spId)) };
     TEMPLATES[a.tpl](g, P, f);
     frames.push(renderGrid(g, a.pal));
   }
   // white silhouette for evolution / taming flashes
   const sil = mkCanvas(SPR, SPR), sx = sil.getContext('2d');
   sx.drawImage(frames[0], 0, 0); sx.globalCompositeOperation = 'source-in'; sx.fillStyle = '#fff'; sx.fillRect(0, 0, SPR, SPR);
-  return SpriteCache[spId] = { frames, sil };
+  const dark = mkCanvas(SPR, SPR), dx = dark.getContext('2d');
+  dx.drawImage(frames[0], 0, 0); dx.globalCompositeOperation = 'source-in'; dx.fillStyle = '#4e3d70'; dx.fillRect(0, 0, SPR, SPR);
+  return SpriteCache[spId] = { frames, sil, dark };
 }
 
 // =====================================================================
@@ -1106,6 +1332,170 @@ function renderBuilding(b) {
     Font.draw(x, st.sign, sx + 3, sy + 1, '#ffd040');
   }
   return { canvas: c, top };
+}
+
+// ---- 06_sprites_parts.js ----
+// =====================================================================
+//  EXTRA BODY PARTS for the procedural creature generator.
+//  Templates call EXTRA(g, P, f, phase, K) at fixed points:
+//    'back'    - before the body (things the body covers)
+//    'front'   - after the body/legs, before the head (quadruped)
+//    'preHead' - right before the head is drawn (behind the head)
+//    'head'    - after the head (in front of it), before the eye
+//    'hand'    - after the near arm (humanoid), K.hand = [x, y]
+//  K holds the template's anchor points (head position hx/hy/hr, body cx/bcy ...).
+// =====================================================================
+function EXTRA(g, P, f, ph, K) {
+  const A = P.acc, has = k => A.has(k), s = K.s, T = P.tpl;
+  const hx = K.hx, hy = K.hy, hr = K.hr || 6 * s;
+  // ---------------- generic parts (any template) ----------------
+  if (ph === 'preHead') {
+    if (has('sunDisk')) { g.oell(hx + 3 * s, hy - hr * 1.5, 5 * s, 5 * s, IX.GOLD); g.ell(hx + 3 * s, hy - hr * 1.5, 3 * s, 3 * s, IX.GLOW); }
+    if (has('nemes')) {
+      g.opoly([[hx - 1, hy - hr * 1.05], [hx + hr * 1.35, hy - hr * .55], [hx + hr * 1.45, hy + hr * 1.5], [hx + hr * .1, hy + hr * 1.25]], IX.GOLD);
+      stripe(g, IX.GOLD, IX.ACC, hx - 2, hy - hr * 1.2, hr * 1.7, hr * 2.9, 3);
+    }
+    if (has('hairLong')) { const w = f ? 1 : -1; for (const d of [0, 3]) g.tube([[hx + 2, hy - hr * .6 + d], [hx + hr * 1.4, hy + hr * .5 + d], [hx + hr * 1.2 + w, hy + hr * 2.4 + d], [hx + hr * 1.8 + w * 2, hy + hr * 3.4]], 3.2 * s, 1.4, IX.ACC); }
+    if (has('maneLion')) { for (let a = 0; a < 10; a++) { const an = a / 10 * Math.PI * 2; g.ell(hx + 1 + Math.cos(an) * hr * 1.05, hy + Math.sin(an) * hr * 1.05, hr * .5, hr * .5, IX.ACC); } }
+  }
+  if (ph === 'head') {
+    if (has('antlers')) for (const o of [4 * s, 0]) {
+      const c = o ? IX.FAR : IX.HORN, x0 = hx + o * .5, y0 = hy - hr * .75;
+      g.tube([[x0, y0], [x0 + 2 * s, y0 - hr * 1.0], [x0 + 6 * s + o, y0 - hr * 1.8]], 1.3 * s, .7, c);
+      g.tube([[x0 + 1.5 * s, y0 - hr * .7], [x0 - 2 * s, y0 - hr * 1.3]], 1, .6, c);
+      g.tube([[x0 + 3.5 * s, y0 - hr * 1.3], [x0 + 2 * s, y0 - hr * 2.0]], 1, .6, c);
+    }
+    if (has('hornSingle')) g.tube([[hx - hr * .25, hy - hr * .65], [hx - hr * .85, hy - hr * 1.5], [hx - hr * 1.3, hy - hr * 2.3]], 1.8 * s, .6, IX.HORN, null, true);
+    if (has('bullHorns')) { g.tube([[hx + hr * .2, hy - hr * .6], [hx + hr * .9, hy - hr * 1.3], [hx + hr * .5, hy - hr * 1.9]], 1.6 * s, .7, IX.FAR); g.tube([[hx - hr * .3, hy - hr * .6], [hx - hr * 1.1, hy - hr * 1.1], [hx - hr * 1.3, hy - hr * 1.8]], 1.7 * s, .7, IX.HORN, null, true); }
+    if (has('hornsSmall')) { g.tube([[hx - hr * .2, hy - hr * .8], [hx - hr * .3, hy - hr * 1.4]], 1.3 * s, .6, IX.HORN, null, true); g.tube([[hx + hr * .4, hy - hr * .8], [hx + hr * .5, hy - hr * 1.4]], 1.2 * s, .6, IX.FAR); }
+    if (has('leafHead')) { g.opoly([[hx - 1, hy - hr * .8], [hx + 3 * s, hy - hr * 2.0], [hx + 6 * s, hy - hr * .7]], IX.ACC); g.line(hx + 1, hy - hr * .9, hx + 3 * s, hy - hr * 1.8, IX.ACCFAR); }
+    if (has('beard')) { g.opoly([[hx - hr * .75, hy + hr * .55], [hx + hr * .15, hy + hr * .65], [hx - hr * .05, hy + hr * 1.75], [hx - hr * .6, hy + hr * 1.65]], IX.HORN); stripe(g, IX.HORN, IX.FAR, hx - hr, hy + hr * .5, hr * 1.3, hr * 1.4, 3); }
+    if (has('helmet')) { g.opoly([[hx - hr * 1.0, hy - hr * .1], [hx - hr * .7, hy - hr * .95], [hx + hr * .5, hy - hr * 1.05], [hx + hr * 1.0, hy - hr * .1]], IX.HORN); g.tube([[hx, hy - hr * 1.0], [hx + hr * .9, hy - hr * 1.7], [hx + hr * 1.6, hy - hr * 1.5]], 1.4 * s, .8, IX.ACC); }
+    if (has('sunDisk') && T === 'spirit') g.ell(hx, hy, 1, 1, IX.GLOW);
+  }
+  // ---------------- per template ----------------
+  if (T === 'quadruped' || T === 'winged') {
+    const { cx, bcy, bRX, bRY, tx, ty, ground } = K;
+    if (ph === 'back') {
+      if (has('snakeTail')) { const w = f ? 1 : 0; g.tube([[tx, ty], [tx + 7 * s, ty - 2 * s], [tx + 10 * s, ty - 10 * s], [tx + 6 * s + w, ty - 16 * s]], 2.2 * s, 1.6 * s, IX.ACC, null, true); g.oell(tx + 4 * s + w, ty - 17 * s, 3.2 * s, 2.4 * s, IX.ACC); g.eye(tx + 2.5 * s + w, ty - 18 * s); }
+      if (has('tailsMany')) for (let i = 0; i < 5; i++) { const a = -1.45 + i * .36 + (f ? .06 : 0), L = 15 * s; const t2 = [tx + Math.cos(a) * L, ty + Math.sin(a) * L]; g.tube([[tx, ty], [lerp(tx, t2[0], .5) - 1, lerp(ty, t2[1], .5) - 2], t2], 2.6 * s, 1.8 * s, IX.BASE, null, true); g.ell(t2[0], t2[1], 1.9 * s, 1.9 * s, IX.BELLY); }
+      if (has('bushyTail')) { const w = f ? 1 : 0; g.oell(tx + 6 * s + w, ty - 9 * s, 6 * s, 9.5 * s, IX.BASE); g.ell(tx + 7 * s + w, ty - 9 * s, 3 * s, 6 * s, IX.ACC); }
+      if (has('stingerTail')) { const w = f ? 1 : 0; const end = [tx - 3 * s + w, ty - 22 * s]; g.tube([[tx, ty], [tx + 9 * s, ty - 7 * s], [tx + 7 * s, ty - 18 * s], end], 2.8 * s, 1.8 * s, IX.BASE, null, true); stripe(g, IX.BASE, IX.PAT, tx - 6 * s, ty - 26 * s, 18 * s, 28 * s, 4); g.opoly([[end[0], end[1] - 1], [end[0] - 6 * s, end[1] + 3], [end[0] - 1, end[1] + 3]], IX.GLOW); }
+      if (has('maneFlow')) { const w = f ? 1 : 0; g.tube([[K.hx + 3, K.hy - K.hr * .8], [K.hx + K.hr * 1.4, K.hy - K.hr * .3], [cx - bRX * .1, bcy - bRY * .9]], 3.2 * s, 2.2 * s, IX.ACC); for (let i = 0; i < 4; i++) g.tube([[K.hx + K.hr * (.6 + i * .45), K.hy - K.hr * .3 + i * 2], [K.hx + K.hr * (.9 + i * .45) + w, K.hy + K.hr * .6 + i * 2]], 1.6, .8, IX.ACC); }
+      if (has('spikes')) for (let i = 0; i < 5; i++) { const x = cx - bRX * .55 + i * bRX * .27; g.opoly([[x - 2.4 * s, bcy - bRY + 3], [x + 1, bcy - bRY - 5 * s], [x + 3 * s, bcy - bRY + 3]], IX.ACC); }
+      if (has('legs8')) for (const lx of [cx - bRX * .2 + 3, cx + bRX * .18 + 3]) g.rect(lx - 2.2 * s, bcy, 4.4 * s, ground - bcy, IX.FAR);
+      if (has('wingsSmall')) drawWing(g, [cx - 2, bcy - bRY + 3], [cx + 8 * s, bcy - bRY - (f ? 8 : 14) * s], [cx + 10 * s, bcy - 3], IX.ACCFAR, false, 3);
+    }
+    if (ph === 'front') {
+      if (has('legs8')) for (const lx of [cx - bRX * .22, cx + bRX * .12]) { g.rect(lx - 3 * s, bcy + 3, 6 * s + 2, ground - bcy - 2, IX.OUT); g.rect(lx - 2.3 * s, bcy + 3, 4.6 * s, ground - bcy - 3, IX.BASE); g.rect(lx - 2.3 * s, ground - 2, 4.6 * s, 2, IX.ACC); }
+      if (has('shell')) {
+        const pts = []; for (let i = 0; i <= 16; i++) { const a = Math.PI * i / 16; pts.push([cx + Math.cos(a) * (bRX + 1.5), bcy + 2 - Math.sin(a) * (bRY + 2.5)]); }
+        g.opoly(pts, IX.ACC); g.line(cx + bRX * .1, bcy - bRY - 2, cx - bRX * .15, bcy + 2, IX.OUT);
+        g.ell(cx - bRX * .45, bcy - bRY * .6, 2.4 * s, 1.5 * s, IX.GLOW);
+      }
+      if (has('wingsSmall')) drawWing(g, [cx - 5, bcy - 3], [cx + 3 * s, bcy - bRY - (f ? 8 : 16) * s], [cx + 8 * s, bcy + 1], IX.ACC, true, 3);
+    }
+    if (ph === 'preHead') {
+      if (has('heads3')) for (const [ox, oy] of [[.75, -1.05], [1.35, -.25]]) { const x = hx + hr * ox, y = hy + hr * oy; g.oell(x, y, hr * .78, hr * .7, IX.FAR); g.ell(x - hr * .45, y + hr * .25, hr * .4, hr * .3, IX.BELLY); g.eye(x - hr * .35, y - hr * .25); }
+    }
+    if (ph === 'head') {
+      if (has('humanFace')) { g.ell(hx - hr * .3, hy + hr * .1, hr * .62, hr * .72, IX.BELLY); g.line(hx - hr * .6, hy + hr * .45, hx - hr * .25, hy + hr * .45, IX.OUT); }
+      if (has('longSnout')) { const sx = hx - hr * 1.15, sy = hy + hr * .35; g.ell(sx, sy, hr * 1.0, hr * .55, IX.BASE, 'under'); g.ell(sx, sy, hr * 1.0 + 1, hr * .55 + 1, IX.OUT, 'under'); g.ell(sx - hr * .55, sy + hr * .1, hr * .42, hr * .38, IX.BELLY, 'on'); g.put(Math.round(sx - hr * .8), Math.round(sy - hr * .05), IX.OUT); }
+      if (has('crocSnout')) { g.opoly([[hx - hr * .4, hy - hr * .05], [hx - hr * 2.0, hy + hr * .25], [hx - hr * 2.0, hy + hr * .75], [hx - hr * .4, hy + hr * .85]], IX.BASE); g.line(hx - hr * 1.95, hy + hr * .5, hx - hr * .5, hy + hr * .5, IX.OUT); for (let i = 0; i < 4; i++) g.put(Math.round(hx - hr * (1.8 - i * .35)), Math.round(hy + hr * .5 - 1), IX.WHITE); }
+      if (has('earsTall')) { g.poly([[hx + 2 * s, hy - hr * .5], [hx + 4 * s, hy - hr * 2.0], [hx + 7 * s, hy - hr * .4]], IX.FAR); g.opoly([[hx - 2 * s, hy - hr * .6], [hx, hy - hr * 2.1], [hx + 3 * s, hy - hr * .5]], IX.BASE); g.poly([[hx - 1 * s, hy - hr * .7], [hx, hy - hr * 1.7], [hx + 1.8 * s, hy - hr * .7]], IX.BELLY); }
+      if (has('fangs')) { g.put(Math.round(hx - hr * .8), Math.round(hy + hr * .65), IX.WHITE); g.put(Math.round(hx - hr * .4), Math.round(hy + hr * .7), IX.WHITE); }
+      if (has('whiskers')) for (const d of [0, 2]) g.line(hx - hr * .9, hy + hr * .3 + d, hx - hr * 1.7, hy + hr * .1 + d * 1.5, IX.HORN);
+    }
+  }
+  if (T === 'avian') {
+    const { bx, by } = K;
+    if (ph === 'back') {
+      if (has('flameTail')) { for (let i = 0; i < 3; i++) { const end = [bx + 26 * s, by - 6 * s + i * 7 * s + (f ? 2 : 0)]; g.tube([[bx + 8 * s, by + 2], [bx + 17 * s, by + i * 3 * s], end], 2.2 * s, 1, IX.ACC); g.flame(end[0] + 1, end[1] + 3, 7 * s, (f + i) % 2); } }
+      if (has('tailLong')) for (let i = 0; i < 3; i++) g.tube([[bx + 8 * s, by + 2], [bx + 20 * s, by + 4 * s + i * 2], [bx + 28 * s, by + 12 * s + i * 4 * s + (f ? 1 : 0)]], 2, 1.2, i === 1 ? IX.GLOW : IX.ACC);
+    }
+    if (ph === 'head') {
+      if (has('crestTall')) for (let i = 0; i < 4; i++) g.tube([[hx + i * 1.5, hy - 5 * s], [hx + 2 + i * 2, hy - 13 * s - i * 2], [hx + 7 + i * 3, hy - 17 * s]], 1.3, .6, i % 2 ? IX.GLOW : IX.ACC);
+      if (has('earsLion')) { g.opoly([[hx + 1, hy - 5 * s], [hx + 3 * s, hy - 9 * s], [hx + 5 * s, hy - 4 * s]], IX.BASE); }
+      if (has('lionMuzzle')) { g.ell(hx - 3 * s, hy + 2.5 * s, 3.4 * s, 2.6 * s, IX.BELLY); }
+    }
+  }
+  if (T === 'serpentine') {
+    const pts = K.pts;
+    if (ph === 'back') {
+      if (has('finsBack')) for (let i = 2; i < pts.length - 1; i++) { const [x, y] = pts[i]; g.opoly([[x - 2 * s, y - 4 * s], [x + 1, y - 10 * s], [x + 3 * s, y - 4 * s]], IX.ACC); }
+    }
+    if (ph === 'preHead') {
+      if (has('maneS')) g.tube(pts.slice(-4).map(p => [p[0] + 4 * s, p[1] - 1]), 2 * s, 3 * s, IX.ACC);
+      if (has('heads3')) { const n = pts[pts.length - 3]; for (const [ex, ey] of [[hx + 10 * s, hy - 2 * s], [hx + 12 * s, hy + 7 * s]]) { g.tube([n, [lerp(n[0], ex, .5) + 2, lerp(n[1], ey, .5) - 2], [ex, ey]], 3.4 * s, 2.6 * s, IX.FAR); g.oell(ex, ey, 4.2 * s, 3.2 * s, IX.FAR); g.ell(ex - 3.5 * s, ey + 1, 2.5 * s, 2 * s, IX.FAR); g.eye(ex - 2 * s, ey - 1.5 * s); } }
+    }
+    if (ph === 'head') {
+      if (has('whiskers')) for (const d of [0, 3]) g.tube([[hx - 7 * s, hy + 1.5 * s + d * .3], [hx - 12 * s, hy + 4 * s + d], [hx - 10 * s, hy + 10 * s + d + (f ? 1 : 0)]], 1, .7, IX.GOLD);
+      if (has('hornsS')) { g.tube([[hx + 1, hy - 3 * s], [hx + 5 * s, hy - 8 * s], [hx + 10 * s, hy - 9 * s]], 1.4 * s, .6, IX.HORN, null, true); g.tube([[hx + 3 * s, hy - 2 * s], [hx + 8 * s, hy - 5 * s]], 1, .6, IX.FAR); }
+      if (has('frills')) g.opoly([[hx + 2 * s, hy - 1], [hx + 8 * s, hy - 5 * s], [hx + 7 * s, hy + 3 * s]], IX.ACC);
+    }
+  }
+  if (T === 'humanoid') {
+    const { cx, top, hipY, ground } = K;
+    if (ph === 'back') {
+      if (has('cloak')) g.poly([[cx - 4 * s, top - 1], [cx + 7 * s, top - 1], [cx + 11 * s, ground - 1], [cx - 1 * s, ground - 1]], IX.ACCFAR);
+      if (has('shellBack')) { g.oell(cx + 6 * s, top + 9 * s, 6.5 * s, 9.5 * s, IX.ACC); for (let i = 0; i < 3; i++) g.line(cx + 1 * s, top + (3 + i * 5) * s, cx + 11 * s, top + (3 + i * 5) * s, IX.ACCFAR); }
+      if (has('stingerTail')) { const w = f ? 1 : 0, end = [cx + 4 * s + w, top - 9 * s]; g.tube([[cx + 4 * s, hipY], [cx + 14 * s, hipY - 5 * s], [cx + 13 * s, top - 5 * s], end], 2.6 * s, 1.6 * s, IX.BASE, null, true); stripe(g, IX.BASE, IX.PAT, cx + 2 * s, top - 14 * s, 16 * s, 36 * s, 4); g.opoly([[end[0], end[1] - 1], [end[0] - 6 * s, end[1] + 3], [end[0] - 1, end[1] + 3]], IX.GLOW); }
+      if (has('fishCloak')) g.poly([[cx - 3 * s, top - 2], [cx + 8 * s, top - 2], [cx + 10 * s, hipY + 6 * s], [cx + 2 * s, hipY + 4 * s]], IX.ACC);
+    }
+    if (ph === 'preHead') {
+      if (has('snakeHair')) for (let i = 0; i < 6; i++) { const a = Math.PI * (1.05 + i * .2), w = ((f + i) % 2) ? 1 : -1; const x0 = hx + Math.cos(a) * hr * .7, y0 = hy + Math.sin(a) * hr * .7, x1 = hx + Math.cos(a) * hr * 1.6, y1 = hy + Math.sin(a) * hr * 1.6; g.tube([[x0, y0], [lerp(x0, x1, .5) + w, lerp(y0, y1, .5)], [x1, y1]], 1.5, 1.2, IX.ACC); g.oell(x1, y1, 1.8 * s, 1.5 * s, IX.ACC); g.put(Math.round(x1 - 1), Math.round(y1 - 1), IX.GLOW); }
+      if (has('leafHair')) for (let i = 0; i < 8; i++) { const a = Math.PI * (.9 + i * .17); g.ell(hx + 1 + Math.cos(a) * hr * .95, hy + Math.sin(a) * hr * .95, 2.8 * s, 2 * s, i % 3 ? IX.ACC : IX.ACCFAR); }
+      if (has('hairBack')) g.tube([[hx + 2 * s, hy - 2], [hx + 7 * s, hy + 6 * s], [hx + 6 * s + (f ? 1 : 0), top + 15 * s]], 4.2 * s, 2.4 * s, IX.ACC);
+    }
+    if (ph === 'head') {
+      if (has('bullHead')) { g.oell(hx - hr * .55, hy + hr * .35, hr * .6, hr * .5, IX.BELLY); g.put(Math.round(hx - hr * .9), Math.round(hy + hr * .4), IX.OUT); g.put(Math.round(hx - hr * .6), Math.round(hy + hr * .45), IX.OUT); }
+      if (has('cyclops')) { const x = Math.round(hx - 4 * s), y = Math.round(hy - 2.5 * s); g.rect(x - 1, y - 1, 6, 5, IX.OUT); g.rect(x, y, 4, 3, IX.WHITE); g.rect(x, y + 1, 2, 2, IX.EYE); }
+      if (has('longNose')) g.tube([[hx - 4 * s, hy], [hx - 9 * s, hy + 1], [hx - 12 * s, hy + 2]], 1.8 * s, 1.2, IX.BASE, null, true);
+      if (has('dish')) { g.oell(hx + 1, hy - hr * .85, hr * .7, hr * .28, IX.BELLY); g.ell(hx + 1, hy - hr * .9, hr * .4, hr * .12, IX.GLOW); }
+      if (has('beakH')) g.opoly([[hx - 4 * s, hy + 1 * s], [hx - 9 * s, hy + 2.5 * s], [hx - 4 * s, hy + 4 * s]], IX.GOLD);
+      if (has('frogHead')) { g.ell(hx - 1 * s, hy + 1.5 * s, hr * 1.05, hr * .7, IX.BELLY); g.line(hx - hr * .95, hy + 2.5 * s, hx + hr * .5, hy + 3 * s, IX.OUT); for (const ex of [hx - 3.5 * s, hx + 1.5 * s]) { g.oell(ex, hy - hr * .75, 2.4 * s, 2.4 * s, IX.BASE); g.eye(ex - 1, hy - hr * .8); } }
+      if (has('fishHat')) { g.opoly([[hx - 5 * s, hy - hr * .55], [hx - 1 * s, hy - hr * 2.2], [hx + 6 * s, hy - hr * .45]], IX.ACC); g.put(Math.round(hx - 1.5 * s), Math.round(hy - hr * 1.6), IX.WHITE); stripe(g, IX.ACC, IX.ACCFAR, hx - 6 * s, hy - hr * 2.3, 13 * s, hr * 1.8, 3); }
+      if (has('mask')) { g.ell(hx - 2 * s, hy - .5 * s, 4.6 * s, 2.4 * s, IX.ACC); }
+    }
+    if (ph === 'hand') {
+      const [x, y] = K.hand;
+      if (has('spear')) { g.line(x + 2, y + 8 * s, x - 3 * s, y - 24 * s, IX.GOLD, .8); g.opoly([[x - 4.5 * s, y - 24 * s], [x - 3 * s, y - 31 * s], [x - 1 * s, y - 24 * s]], IX.HORN); }
+      if (has('hammer')) { g.line(x + 1, y + 3, x - 2, y - 12 * s, IX.GOLD, 1); g.rect(x - 8 * s - 1, y - 17 * s - 1, 12 * s + 2, 6 * s + 2, IX.OUT); g.rect(x - 8 * s, y - 17 * s, 12 * s, 6 * s, IX.HORN); }
+      if (has('staff')) { g.line(x + 1, y + 10 * s, x - 2, y - 18 * s, IX.GOLD, .8); g.oell(x - 2, y - 20 * s, 2.4 * s, 2.4 * s, IX.GLOW); }
+      if (has('lanternHand')) { g.line(x, y, x - 1, y + 5 * s, IX.OUT); g.oell(x - 1, y + 8 * s, 2.6 * s, 3.2 * s, IX.GLOW); }
+    }
+  }
+  if (T === 'spirit') {
+    if (ph === 'back') {
+      if (has('hairFlow')) { const w = f ? 3 : 0; for (const d of [-3, 2, 7]) g.tube([[hx + 2, hy - 7 * s + d], [hx + 15 * s, hy + 1 * s + d + w], [hx + 26 * s, hy + 12 * s + d - w]], 3 * s, 1, IX.ACC); }
+      if (has('wingsFairy')) { const u = f ? 3 : 0; g.opoly([[hx + 3, hy - 2], [hx + 18 * s, hy - 16 * s + u], [hx + 22 * s, hy - 6 * s + u], [hx + 6, hy + 4]], IX.BELLY); g.opoly([[hx + 3, hy + 2], [hx + 16 * s, hy + 6 * s - u], [hx + 12 * s, hy + 12 * s - u], [hx + 4, hy + 6]], IX.BELLY); }
+    }
+    if (ph === 'head') {
+      if (has('lantern')) {
+        for (let k = -2; k <= 2; k++) g.line(hx - 10 * s, hy + k * 3.6 * s, hx + 10 * s, hy + k * 3.6 * s, IX.ACCFAR, 0, 'onAny');
+        g.rect(hx - 4 * s, hy - 11.5 * s, 8 * s, 2, IX.GOLD); g.rect(hx - 4 * s, hy + 10 * s, 8 * s, 2, IX.GOLD);
+        g.line(hx - 5 * s, hy + 5 * s, hx + 1 * s, hy + 5 * s, IX.OUT);
+        g.tube([[hx - 3 * s, hy + 5.5 * s], [hx - 4 * s, hy + 9 * s], [hx - 2 * s + (f ? 1 : -1), hy + 12 * s]], 1.6 * s, 1, IX.GLOW);
+      }
+      if (has('mossy')) for (let i = 0; i < 10; i++) { const r = P.rng; g.ell(hx + (r() - .5) * 18 * s, hy + (r() - .2) * 22 * s, 1.4, 1.2, IX.ACC, 'on'); }
+      if (has('hornsSp')) { g.tube([[hx - 4 * s, hy - 8 * s], [hx - 6 * s, hy - 13 * s]], 1.4, .6, IX.HORN, null, true); g.tube([[hx + 4 * s, hy - 8 * s], [hx + 6 * s, hy - 13 * s]], 1.4, .6, IX.HORN, null, true); }
+    }
+  }
+  if (T === 'aquatic') {
+    const { cx, cy, rx, ry } = K;
+    if (ph === 'back') {
+      if (has('tentacles')) for (let i = 0; i < 4; i++) { const x = cx - rx * .4 + i * rx * .35, w = ((f + i) % 2) ? 2 : -2; g.tube([[x, cy + 3], [x + w, cy + ry + 5 * s], [x - 2 + w, cy + ry + 10 * s]], 2 * s, 1, IX.ACCFAR); }
+      if (has('weedMane')) g.tube([[K.hx + 4 * s, K.hy - 5 * s], [cx, cy - ry - 2], [cx + rx * .5, cy - ry + 1]], 2.6 * s, 1.6 * s, IX.ACC);
+    }
+    if (ph === 'head') {
+      if (has('sealFace')) { g.ell(K.hx - 5 * s, K.hy + 2 * s, 4 * s, 3 * s, IX.BELLY); g.rect(Math.round(K.hx - 8.5 * s), Math.round(K.hy + .5 * s), 2, 2, IX.EYE); for (const d of [0, 2]) g.line(K.hx - 7 * s, K.hy + 3 * s + d, K.hx - 12 * s, K.hy + 2 * s + d * 1.6, IX.HORN); }
+      if (has('nemesA')) { g.opoly([[K.hx - 2, K.hy - 6 * s], [K.hx + 8 * s, K.hy - 4 * s], [K.hx + 10 * s, K.hy + 7 * s], [K.hx + 2 * s, K.hy + 5 * s]], IX.GOLD); stripe(g, IX.GOLD, IX.ACC, K.hx - 3, K.hy - 7 * s, 14 * s, 15 * s, 3); }
+    }
+  }
+}
+// recolour every 'n'-th row of pixels of colour 'from' inside a box
+function stripe(g, from, to, x0, y0, w, h, n) {
+  for (let y = Math.floor(y0); y < y0 + h; y++) { if (((y % n) + n) % n) continue; for (let x = Math.floor(x0); x < x0 + w; x++) if (g.get(x, y) === from) g.put(x, y, to); }
 }
 
 // ---- 07_ai.js ----
@@ -1328,7 +1718,7 @@ const loreCache = {};
 async function expandedLore(spId) {
   const sp = SPECIES[spId];
   if (loreCache[spId]) return loreCache[spId];
-  const raw = coerceJSON(await askAI('lore', { species: sp.name, types: sp.types, lore: sp.lore, city: 'India' }));
+  const raw = coerceJSON(await askAI('lore', { species: sp.name, types: sp.types, lore: sp.lore, city: CITIES[sp.city] ? CITIES[sp.city].name + ' (' + CITIES[sp.city].culture + ')' : 'India' }));
   const t = raw && Font.sanitize(raw.lore, 300);
   if (t && t.length > 10) return loreCache[spId] = t;
   const extra = { Tide: 'Fishermen leave a marigold on the water to thank it for safe passage.', Ember: 'Temple lamps are said to burn brighter when one sleeps nearby.', Grove: 'Villagers tie threads to banyan roots where it was last seen.', Stone: 'Masons carve its likeness above doorways for protection.', Sky: 'Kite-flyers claim it steals their strings for its nest.', Shade: 'Children are told to answer its riddles politely, just in case.', Light: 'Its hum is said to keep the beat of evening prayers.', Storm: 'Its footsteps are the thunder that comes before the first rain.' };
@@ -1473,7 +1863,7 @@ function typeBadge(ctx, t, x, y) {
 }
 function drawCreature(ctx, spId, x, y, opt = {}) { // x,y = bottom centre
   const fr = creatureFrames(spId);
-  const img = opt.sil ? fr.sil : fr.frames[opt.frame !== undefined ? opt.frame : (Math.floor(Game.frames / 30) % 2)];
+  const img = opt.dark ? fr.dark : opt.sil ? fr.sil : fr.frames[opt.frame !== undefined ? opt.frame : (Math.floor(Game.frames / 30) % 2)];
   const sc = opt.scale || 1, w = SPR * sc;
   ctx.save();
   if (opt.alpha !== undefined) ctx.globalAlpha = opt.alpha;
@@ -1541,15 +1931,18 @@ class MenuScene {
     this.i = this.opt.start || 0; this.resolve = null;
     if (!this.opt.w) this.opt.w = Math.max(60, ...this.items.map(i => Font.measure(i.label) + (i.right ? Font.measure(i.right) + 12 : 0))) + 26;
     this.rows = Math.ceil(this.items.length / this.opt.cols);
-    this.opt.h = this.opt.h || this.rows * this.opt.lineH + 12 + (this.opt.title ? 14 : 0);
+    this.maxRows = this.opt.cols === 1 && this.opt.maxRows ? Math.min(this.opt.maxRows, this.rows) : this.rows;
+    this.top = 0; this.scrollTo();
+    this.opt.h = this.opt.h || this.maxRows * this.opt.lineH + 12 + (this.opt.title ? 14 : 0);
   }
+  scrollTo() { if (this.i < this.top) this.top = this.i; if (this.i >= this.top + this.maxRows) this.top = this.i - this.maxRows + 1; }
   update() {
     const n = this.items.length, c = this.opt.cols; let moved = false;
     if (Input.p('up')) { this.i = (this.i - c + n) % n; moved = true; }
     if (Input.p('down')) { this.i = (this.i + c) % n; moved = true; }
     if (c > 1 && Input.p('left')) { this.i = (this.i - 1 + n) % n; moved = true; }
     if (c > 1 && Input.p('right')) { this.i = (this.i + 1) % n; moved = true; }
-    if (moved) { Sound.sfx('cursor'); this.opt.onMove && this.opt.onMove(this.i); }
+    if (moved) { Sound.sfx('cursor'); this.scrollTo(); this.opt.onMove && this.opt.onMove(this.i); }
     if (Input.p('a')) { if (this.items[this.i].disabled) Sound.sfx('bump'); else { Sound.sfx('confirm'); this.close(this.i); } }
     else if ((Input.p('b') || Input.p('start')) && this.opt.cancel) { Sound.sfx('cancel'); this.close(-1); }
   }
@@ -1559,8 +1952,13 @@ class MenuScene {
     let y0 = o.y + 7;
     if (o.title) { Font.draw(ctx, o.title, o.x + 10, y0, UI.gold); y0 += 14; }
     const colW = (o.w - 12) / o.cols;
+    if (this.maxRows < this.rows) {
+      if (this.top > 0) Font.drawR(ctx, '▲', o.x + o.w - 4, o.y + 3, UI.gold);
+      if (this.top + this.maxRows < this.rows) Font.drawR(ctx, '▼', o.x + o.w - 4, o.y + o.h - 10, UI.gold);
+    }
     this.items.forEach((it, k) => {
-      const cx = o.x + 16 + (k % o.cols) * colW, cy = y0 + Math.floor(k / o.cols) * o.lineH;
+      if (this.maxRows < this.rows && (k < this.top || k >= this.top + this.maxRows)) return;
+      const cx = o.x + 16 + (k % o.cols) * colW, cy = y0 + Math.floor((k - (this.maxRows < this.rows ? this.top : 0)) / o.cols) * o.lineH;
       Font.draw(ctx, it.label, cx, cy, it.disabled ? UI.dim : (it.color || UI.ink));
       if (it.right) Font.drawR(ctx, it.right, o.x + o.w - 10, cy, UI.dim);
       if (k === this.i) drawCursor(ctx, cx - 10, cy);
@@ -1803,6 +2201,7 @@ class Overworld {
   async talk(n) {
     if (n.trainer) {
       const tr = TRAINERS[n.trainer];
+      if (Game.flags[tr.flag] && n.trainer === 'indra' && !Game.flags.gotBrahmastra) { Game.flags.gotBrahmastra = true; addItem('brahmastra', 1); Sound.sfx('pickup'); await say(['INDRA: Before you go - take the Brahmastra Orb. It tames any wild creature without fail, but only once.', 'You received the BRAHMASTRA ORB!'], { speaker: 'Indra' }); return; }
       if (Game.flags[tr.flag]) { await say(n.boss ? (n.trainer === 'indra' ? ['INDRA: The rains will follow you, Tamer.', 'Other gods watch from distant cities. Their roads are still sealed by mist - for now.'] : ['AGNI: Carry the flame with you. Vaijayanta awaits.']) : n.lines, { speaker: n.name }); return; }
       if (n.boss) {
         const c = await ask(n.trainer === 'indra' ? 'The air hums with thunder. Begin the Trial of the Heavens?' : 'The sacred fire roars. Challenge Agni, Lieutenant of Indra?');
@@ -2175,9 +2574,10 @@ class BattleScene {
   async bagMenu() {
     const ids = Object.keys(Game.bag).filter(k => !ITEMS[k].orb && Game.bag[k] > 0);
     if (!ids.length) { await this.msg('No usable items in your bag.'); return null; }
-    const i = await choose(ids.map(k => ({ label: ITEMS[k].name, right: 'x' + Game.bag[k] })), { x: 120, y: 20, w: 196, title: 'BAG', extra: (ctx, i) => { drawWin(ctx, 0, 176, W, 64); Font.wrap(ITEMS[ids[i]].desc, 296).forEach((l, k) => Font.draw(ctx, l, 12, 188 + k * 13, UI.ink)); } });
+    const i = await choose(ids.map(k => ({ label: ITEMS[k].name, right: 'x' + Game.bag[k] })), { x: 120, y: 4, w: 196, title: 'BAG', maxRows: 9, extra: (ctx, i) => { drawWin(ctx, 0, 176, W, 64); Font.wrap(ITEMS[ids[i]].desc, 296).forEach((l, k) => Font.draw(ctx, l, 12, 188 + k * 13, UI.ink)); } });
     if (i < 0) return null;
     const id = ids[i];
+    if (ITEMS[id].noTarget) return { t: 'item', id, target: this.pi };
     const t = await this.partyPick(true, `Use ${ITEMS[id].name} on?`);
     if (t < 0) return null;
     const c = Game.party[t], it = ITEMS[id];
@@ -2187,7 +2587,7 @@ class BattleScene {
   async tameMenu() {
     const ids = Object.keys(Game.bag).filter(k => ITEMS[k].orb && Game.bag[k] > 0);
     if (!ids.length) { await this.msg('You have no orbs! Buy some at the Bazaar.'); return null; }
-    const i = await choose(ids.map(k => ({ label: ITEMS[k].name, right: 'x' + Game.bag[k] })), { x: 120, y: 20, w: 196, title: 'ORBS', extra: (ctx, i) => { drawWin(ctx, 0, 176, W, 64); Font.wrap(ITEMS[ids[i]].desc, 296).forEach((l, k) => Font.draw(ctx, l, 12, 188 + k * 13, UI.ink)); } });
+    const i = await choose(ids.map(k => ({ label: ITEMS[k].name, right: 'x' + Game.bag[k] })), { x: 120, y: 4, w: 196, title: 'ORBS', maxRows: 9, extra: (ctx, i) => { drawWin(ctx, 0, 176, W, 64); Font.wrap(ITEMS[ids[i]].desc, 296).forEach((l, k) => Font.draw(ctx, l, 12, 188 + k * 13, UI.ink)); } });
     if (i < 0) return null;
     return { t: 'tame', id: ids[i] };
   }
@@ -2271,7 +2671,7 @@ class BattleScene {
     await this.msg(`${un} used ${mv.name}!`, 30);
     if (mv.custom) return this.execCustom(u, uSide, t, tSide, mv);
     const fx = mv.fx || {};
-    const selfOnly = mv.cat === 'status' && !fx.foe && !fx.status;
+    const selfOnly = mv.cat === 'status' && !fx.foe && !fx.status && !fx.stun && !fx.bind;
     if (!selfOnly && Math.random() * 100 >= mv.acc) { await this.msg('But it missed!', 35); return; }
     if (mv.pow) {
       if (mv.sig) { shake(20); flash('#ffffff', 20); }
@@ -2281,9 +2681,11 @@ class BattleScene {
       let dmg = this.absorb(t, r.dmg, mv);
       if (dmg.absorbed) await this.msg(`${tn}'s shield absorbed ${dmg.absorbed} damage!`, 35);
       if (dmg.broke) await this.msg(`${tn}'s shield shattered!`, 35);
+      const before = t.hp;
       if (dmg.left > 0) await this.hit(t, tSide, dmg.left, r.eff, r.crit);
       if (r.crit) await this.msg('A critical hit!', 30);
       if (r.eff > 1) await this.msg('It\'s super effective!', 30); else if (r.eff < 1) await this.msg('It\'s not very effective...', 30);
+      if (fx.drain && before > t.hp && u.hp > 0) await this.heal(u, uSide, Math.max(1, Math.floor((before - t.hp) * fx.drain)));
       if (t.hp <= 0) return;
     } else {
       this.emit(fx.self || fx.heal ? uSide : tSide, mv.type, 18, fx.self || fx.heal ? 'up' : 'down');
@@ -2394,7 +2796,17 @@ class BattleScene {
     if (it.use === 'heal') { if (side) await this.heal(c, 'p', it.amt * healMul); else { c.hp = Math.min(maxHP(c), c.hp + it.amt); await this.msg(`${cName(c)} recovered HP.`, 30); } }
     if (it.use === 'full') { c.hp = maxHP(c); Object.assign(c.b, { burn: 0, poison: 0, sleep: 0, bind: 0, stun: false }); Sound.sfx('heal'); if (side) this.emit('p', 'Grove', 20, 'up'); await this.msg(`${cName(c)} is fully restored!`, 35); }
     if (it.use === 'revive') { c.hp = Math.floor(maxHP(c) / 2); Sound.sfx('heal'); await this.msg(`${cName(c)} was revived!`, 35); }
-    if (it.use === 'cure') { const b = c.b; const had = b.burn || b.poison || b.sleep || b.bind || b.stun; Object.assign(b, { burn: 0, poison: 0, sleep: 0, bind: 0, stun: false }); await this.msg(had ? `${cName(c)} was cured!` : 'It had no effect.', 35); }
+    if (it.use === 'cure') {   // Tulsi: one status, worst first
+      const b = c.b, order = [['burn', 'burn'], ['poison', 'poison'], ['sleep', 'sleep'], ['bind', 'bind'], ['stun', 'stun']];
+      const k = order.find(([key]) => b[key]);
+      if (k) { b[k[0]] = k[0] === 'stun' ? false : 0; Sound.sfx('heal'); await this.msg(`${cName(c)} is free of its ${k[1]}!`, 35); } else await this.msg('It had no effect.', 35);
+    }
+    if (it.use === 'cureAll') {
+      let n = 0; for (const m of Game.party) if (m.b && (m.b.burn || m.b.poison || m.b.sleep || m.b.bind || m.b.stun)) { Object.assign(m.b, { burn: 0, poison: 0, sleep: 0, bind: 0, stun: false }); n++; }
+      Sound.sfx('heal'); this.emit('p', 'Tide', 20, 'up');
+      await this.msg(n ? 'The holy water washed away every ailment!' : 'Your companions are already well.', 40);
+    }
+    if (it.use === 'defUp') { Sound.sfx('shield'); await this.stage(this.P, 'p', 'def', 2); }
     if (it.use === 'pp') { c.moves.forEach(m => m.pp = MOVES[m.id].pp); c.en = maxEN(c); Sound.sfx('heal'); await this.msg(`${cName(c)}'s PP and energy were restored!`, 35); }
   }
   async throwOrb(id) {
@@ -2418,6 +2830,7 @@ class BattleScene {
     if (perk() === 'capture') a *= 1.1;
     const p = Math.min(1, a / 255), q = Math.pow(p, 1 / 4);
     let shakes = 0; while (shakes < 4 && chance(q)) shakes++;
+    if (it.guaranteed) { shakes = 4; Game.flags.brahmastraUsed = true; }
     for (let s = 0; s < Math.min(3, shakes); s++) {
       await wait(18); Sound.sfx('shake');
       for (let f = 0; f < 16; f++) { this.orb.rot = Math.sin(f / 16 * Math.PI * 2) * .5; this.orb.x = POS.e.x + Math.sin(f / 16 * Math.PI * 2) * 3; await wait(1); }
@@ -2522,7 +2935,7 @@ async function learnMove(c, mid, msg) {
   await msg(`${name} forgot ${old} and learned ${mv.name}!`);
 }
 function drawOrb(ctx, x, y, id, rot) {
-  const col = { bana: '#c8a060', agneyastra: '#ff6a2a', varunastra: '#3a7bff', nagastra: '#3fae5a' }[id] || '#e8b030';
+  const col = { bana: '#c8a060', agneyastra: '#ff6a2a', varunastra: '#3a7bff', nagastra: '#3fae5a', vayavyastra: '#bfe8ff', gandiva: '#c040e0', brahmastra: '#ffffff' }[id] || '#e8b030';
   ctx.save(); ctx.translate(Math.round(x), Math.round(y)); ctx.rotate(rot);
   ctx.fillStyle = '#1a1020'; ctx.beginPath(); ctx.arc(0, 0, 6, 0, 7); ctx.fill();
   ctx.fillStyle = col; ctx.beginPath(); ctx.arc(0, 0, 5, Math.PI, 0); ctx.fill();
@@ -2616,6 +3029,10 @@ class EvolutionScene {
 async function indraEnding() {
   Sound.play('title');
   await say(['The thunder softens into gentle rain. Across Indrapuri, lamps are lit in celebration.', 'INDRA: You have stood steady in the storm. Take the Vajra Seal - proof that the heavens of Indrapuri recognise you.', 'You received the VAJRA SEAL!'], { speaker: 'Indra' });
+  if (!Game.flags.gotBrahmastra) {
+    Game.flags.gotBrahmastra = true; addItem('brahmastra', 1); Sound.sfx('pickup');
+    await say(['INDRA: Take this as well - the Brahmastra Orb. It tames any wild creature without fail, but it can never be made again.', 'You received the BRAHMASTRA ORB! (Only one exists.)'], { speaker: 'Indra' });
+  }
   await say(['TRIAL OF INDRAPURI COMPLETE.', 'This build (Stage 1) contains only the first city. The roads to Hellas, Asgard and the other mythic cities are still sealed by mist and arrive in later stages.', 'You can keep exploring, taming and levelling your companions. Remember to SAVE from the menu!']);
   Sound.play(World.map.music);
 }
@@ -2780,13 +3197,14 @@ async function openStartMenu() {
       Font.draw(ctx, `Clock   ${clockStr()}`, 14, 74, UI.ink);
       Font.draw(ctx, 'AI: ' + (AI_ENDPOINT ? (AI.status === 'fallback' ? 'server unreachable' : 'server') : 'offline mode'), 14, 90, UI.dim);
     };
-    const i = await choose(['PARTY', 'BAG', 'SAVE', 'OPTIONS', 'TITLE', 'CLOSE'], { x: 236, y: 4, w: 80, extra });
-    if (i < 0 || i === 5) return;
+    const i = await choose(['PARTY', 'BESTIARY', 'BAG', 'SAVE', 'OPTIONS', 'TITLE', 'CLOSE'], { x: 228, y: 4, w: 88, extra });
+    if (i < 0 || i === 6) return;
     if (i === 0) await openParty();
-    if (i === 1) await openBag();
-    if (i === 2) { const c = await ask('Save your journey?'); if (c === 0) await say(saveGame() ? 'Your journey was saved.' : 'Saving failed (storage may be blocked).'); }
-    if (i === 3) await openOptions();
-    if (i === 4) { const c = await ask('Return to the title screen? Unsaved progress will be lost.'); if (c === 0) { await fadeOut(); Scenes.replaceAll(new TitleScene()); Sound.play('title'); await fadeIn(); return; } }
+    if (i === 1) await openBestiary();
+    if (i === 2) await openBag();
+    if (i === 3) { const c = await ask('Save your journey?'); if (c === 0) await say(saveGame() ? 'Your journey was saved.' : 'Saving failed (storage may be blocked).'); }
+    if (i === 4) await openOptions();
+    if (i === 5) { const c = await ask('Return to the title screen? Unsaved progress will be lost.'); if (c === 0) { await fadeOut(); Scenes.replaceAll(new TitleScene()); Sound.play('title'); await fadeIn(); return; } }
   }
 }
 async function openParty() {
@@ -2831,10 +3249,11 @@ async function openBag() {
     const ids = Object.keys(Game.bag).filter(k => Game.bag[k] > 0);
     if (!ids.length) { await say('Your bag is empty.'); return; }
     const extra = (ctx, i) => { drawWin(ctx, 0, 176, W, 64); Font.wrap(ITEMS[ids[i]].desc, 296).forEach((l, k) => Font.draw(ctx, l, 12, 188 + k * 13, UI.ink)); };
-    const i = await choose(ids.map(k => ({ label: ITEMS[k].name, right: 'x' + Game.bag[k] })), { x: 60, y: 4, w: 200, title: 'BAG', extra });
+    const i = await choose(ids.map(k => ({ label: ITEMS[k].name, right: 'x' + Game.bag[k] })), { x: 60, y: 4, w: 200, title: 'BAG', extra, maxRows: 10 });
     if (i < 0) return;
     const id = ids[i], it = ITEMS[id];
     if (it.orb) { await say('Orbs are thrown in battle with TAME.'); continue; }
+    if (it.battleOnly) { await say(`${it.name} can only be used in battle.`); continue; }
     const t = await choose(Game.party.map(c => ({ label: cName(c), right: `${c.hp}/${maxHP(c)}` })), { x: 60, y: 30, w: 200, title: `Use ${it.name} on?` });
     if (t < 0) continue;
     const c = Game.party[t];
@@ -2849,10 +3268,11 @@ async function openBag() {
 }
 async function openShop() {
   while (true) {
-    const extra = (ctx, i) => { drawWin(ctx, 0, 176, W, 64); Font.wrap(ITEMS[SHOP_STOCK[i]].desc, 296).forEach((l, k) => Font.draw(ctx, l, 12, 186 + k * 12, UI.ink)); Font.draw(ctx, `Coins: ${Game.player.money}${perk() === 'discount' ? '   (15% discount!)' : ''}   You have: ${Game.bag[SHOP_STOCK[i]] || 0}`, 12, 224, UI.gold); };
-    const i = await choose(SHOP_STOCK.map(k => ({ label: ITEMS[k].name, right: priceOf(k) + 'c' })), { x: 70, y: 4, w: 180, title: 'BAZAAR', extra });
+    const stock = SHOP_STOCK.filter(k => !ITEMS[k].unlock || Game.flags[ITEMS[k].unlock]);
+    const extra = (ctx, i) => { drawWin(ctx, 0, 176, W, 64); Font.wrap(ITEMS[stock[i]].desc, 296).forEach((l, k) => Font.draw(ctx, l, 12, 186 + k * 12, UI.ink)); Font.draw(ctx, `Coins: ${Game.player.money}${perk() === 'discount' ? '   (15% discount!)' : ''}   You have: ${Game.bag[stock[i]] || 0}`, 12, 224, UI.gold); };
+    const i = await choose(stock.map(k => ({ label: ITEMS[k].name, right: priceOf(k) + 'c' })), { x: 70, y: 4, w: 180, title: 'BAZAAR', extra, maxRows: 10 });
     if (i < 0) { await say('Come again! May your orbs fly true.'); return; }
-    const id = SHOP_STOCK[i], price = priceOf(id);
+    const id = stock[i], price = priceOf(id);
     const q = await pickQty(id, price);
     if (q <= 0) continue;
     if (q * price > Game.player.money) { Sound.sfx('bump'); await say('You don\'t have enough coins.'); continue; }
@@ -2897,10 +3317,11 @@ async function openOptions() {
   let i = 0;
   while (true) {
     const sp = ['Slow', 'Normal', 'Fast', 'Instant'][Settings.textSpeed];
-    const items = [{ label: 'Text speed', right: sp }, { label: 'Music', right: Settings.music ? 'On' : 'Off' }, { label: 'Sound FX', right: Settings.sfx ? 'On' : 'Off' }, { label: 'Mute all', right: Settings.muted ? 'Yes' : 'No' }, { label: 'Back' }];
+    const items = [{ label: 'Text speed', right: sp }, { label: 'Music', right: Settings.music ? 'On' : 'Off' }, { label: 'Sound FX', right: Settings.sfx ? 'On' : 'Off' }, { label: 'Mute all', right: Settings.muted ? 'Yes' : 'No' }, { label: 'Bestiary preview', right: Settings.bestiaryPreview ? 'On' : 'Off' }, { label: 'Back' }];
     const extra = ctx => { drawWin(ctx, 0, 176, W, 64); Font.wrap(AI_ENDPOINT ? `AI endpoint: ${AI_ENDPOINT} (status: ${AI.status})` : 'AI: offline mode. Custom attacks, lore and dialogue use built-in fallbacks. See README to enable the optional server.', 296).forEach((l, k) => Font.draw(ctx, l, 12, 186 + k * 12, UI.ink)); Font.draw(ctx, 'Keys: arrows/WASD move, Z/Enter confirm, X back, ESC/C/M menu, Shift run, N mute', 12, 224, UI.dim); };
     i = await choose(items, { x: 70, y: 30, w: 180, title: 'OPTIONS', start: i, extra });
-    if (i < 0 || i === 4) { saveSettings(); return; }
+    if (i < 0 || i === 5) { saveSettings(); return; }
+    if (i === 4) { Settings.bestiaryPreview = !Settings.bestiaryPreview; if (Settings.bestiaryPreview) await say('Bestiary preview reveals every creature, including those from cities that are not playable yet. It does not change your seen/tamed progress.'); }
     if (i === 0) Settings.textSpeed = (Settings.textSpeed + 1) % 4;
     if (i === 1) Settings.music = !Settings.music;
     if (i === 2) Settings.sfx = !Settings.sfx;
@@ -2908,6 +3329,69 @@ async function openOptions() {
     Sound.applyVolumes(); saveSettings();
   }
 }
+
+// ---------------- BESTIARY ----------------
+class BestiaryScene {
+  constructor() { this.opaque = true; this.ci = 0; this.i = 0; this.top = 0; this.resolve = null; this.busy = false; }
+  list() { return SPECIES_ORDER.filter(id => SPECIES[id].city === CITY_ORDER[this.ci]); }
+  seen(id) { return Settings.bestiaryPreview || !!Game.seen[id]; }
+  async update() {
+    if (this.busy) return;
+    const L = this.list();
+    if (Input.p('left') || Input.p('right')) { this.ci = (this.ci + (Input.p('left') ? 7 : 1)) % 8; this.i = 0; this.top = 0; Sound.sfx('cursor'); return; }
+    if (Input.p('up')) { this.i = (this.i + L.length - 1) % L.length; Sound.sfx('cursor'); }
+    if (Input.p('down')) { this.i = (this.i + 1) % L.length; Sound.sfx('cursor'); }
+    if (this.i < this.top) this.top = this.i; if (this.i >= this.top + 12) this.top = this.i - 11;
+    if (Input.p('b') || Input.p('start')) { Sound.sfx('cancel'); Scenes.remove(this); this.resolve(); return; }
+    if (Input.p('a')) {
+      const id = L[this.i];
+      if (!this.seen(id)) { Sound.sfx('bump'); return; }
+      this.busy = true; Sound.sfx('magic');
+      const lore = await expandedLore(id);
+      await say(lore, { speaker: SPECIES[id].name });
+      this.busy = false;
+    }
+  }
+  draw(ctx) {
+    const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#24123e'); g.addColorStop(1, '#120a20'); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    const total = SPECIES_ORDER.length, nSeen = SPECIES_ORDER.filter(id => Game.seen[id]).length, nTamed = SPECIES_ORDER.filter(id => Game.tamed[id]).length;
+    Font.draw(ctx, 'BESTIARY', 6, 4, UI.gold, '#0b0714');
+    Font.drawR(ctx, `Seen ${nSeen}/${total}   Tamed ${nTamed}/${total}`, 314, 4, UI.ink, '#0b0714');
+    if (Settings.bestiaryPreview) { ctx.fillStyle = '#c8402a'; ctx.fillRect(70, 3, 50, 10); Font.draw(ctx, 'PREVIEW', 75, 4, '#ffffff'); }
+    const city = CITIES[CITY_ORDER[this.ci]], L = this.list();
+    drawWin(ctx, 2, 15, 316, 17, { border: city.color });
+    const cs = SPECIES_ORDER.filter(id => SPECIES[id].city === CITY_ORDER[this.ci]), cSeen = cs.filter(id => Game.seen[id]).length;
+    Font.drawC(ctx, `<  ${city.name} (${city.culture})  ${cSeen}/${cs.length}  >`, 160, 20, city.color);
+    // list
+    drawWin(ctx, 2, 33, 132, 205);
+    L.slice(this.top, this.top + 12).forEach((id, k) => {
+      const idx = SPECIES_ORDER.indexOf(id) + 1, y = 42 + k * 16, sel = this.top + k === this.i, sn = this.seen(id);
+      if (sel) { ctx.fillStyle = 'rgba(232,184,74,.18)'; ctx.fillRect(6, y - 3, 124, 14); }
+      Font.draw(ctx, String(idx).padStart(3, '0'), 18, y, UI.dim);
+      Font.draw(ctx, sn ? SPECIES[id].name : '??????', 40, y, sn ? UI.ink : UI.dim);
+      if (Game.tamed[id]) Font.draw(ctx, '★', 120, y, UI.gold); else if (Game.seen[id]) Font.draw(ctx, '·', 122, y, UI.ink);
+      if (sel) drawCursor(ctx, 7, y);
+    });
+    // detail
+    const id = L[this.i], sp = SPECIES[id], sn = this.seen(id);
+    drawWin(ctx, 136, 33, 182, 205);
+    ctx.fillStyle = 'rgba(0,0,0,.25)'; ctx.beginPath(); ctx.ellipse(227, 100, 40, 7, 0, 0, 7); ctx.fill();
+    drawCreature(ctx, id, 227, 102, sn ? {} : { dark: true, frame: 0 });
+    Font.draw(ctx, sn ? sp.name : '??????', 144, 108, '#ffffff');
+    if (sn) {
+      let x = 144; for (const t of sp.types) x += typeBadge(ctx, t, x, 119) + 1;
+      Font.drawR(ctx, sp.rarity.toUpperCase() + (sp.bossOnly ? ' - TRIAL ONLY' : ''), 312, 108, UI.dim);
+      Font.wrap(sp.lore, 166).slice(0, 4).forEach((l, k) => Font.draw(ctx, l, 144, 133 + k * 10, '#e8dcc0'));
+      const evoFrom = SPECIES_ORDER.find(o => SPECIES[o].evo && SPECIES[o].evo[0] === id);
+      const evoTxt = sp.evo ? `Evolves into ${this.seen(sp.evo[0]) ? SPECIES[sp.evo[0]].name : '???'} at Lv ${sp.evo[1]}` : evoFrom ? `Evolves from ${this.seen(evoFrom) ? SPECIES[evoFrom].name : '???'}` : 'Does not evolve';
+      Font.draw(ctx, evoTxt, 144, 175, UI.green);
+      if (Game.tamed[id] || Settings.bestiaryPreview) ['HP', 'ATK', 'DEF', 'SPD'].forEach((k, j) => { const y = 187 + j * 9; Font.draw(ctx, k, 144, y, UI.gold); drawBar(ctx, 170, y + 2, 100, 3, sp.base[j] / 100, '#6ac8ff'); Font.drawR(ctx, String(sp.base[j]), 304, y, UI.ink); });
+      else Font.draw(ctx, 'Tame it to record its stats.', 144, 192, UI.dim);
+    } else Font.wrap('Not yet encountered.' + (sp.city !== 'india' ? ` Lives in ${CITIES[sp.city].name}, whose road is still sealed.` : ''), 166).forEach((l, k) => Font.draw(ctx, l, 144, 124 + k * 11, UI.dim));
+    Font.draw(ctx, sn ? 'Z lore   X back' : 'X back', 144, 227, UI.dim);
+  }
+}
+function openBestiary() { return new Promise(r => { const s = new BestiaryScene(); s.resolve = r; Scenes.push(s); }); }
 
 // ---- 13_main.js ----
 // =====================================================================

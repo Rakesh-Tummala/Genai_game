@@ -77,18 +77,22 @@ class Pix {
 const TEMPLATES = {
   quadruped(g, P, f) {
     const s = P.size, A = P.acc, bob = f ? 1 : 0, ground = 61, ele = A.has('elephant');
-    const legH = (ele ? 12 : 10) * s, bRX = (ele ? 19 : 16) * s, bRY = (ele ? 12 : 9.5) * s;
+    const legH = (ele ? 12 : 10) * s + (A.has('tall') ? 5 * s : 0), bRX = (ele ? 19 : 16) * s, bRY = (ele ? 12 : 9.5) * s;
     const cx = 35, bcy = ground - legH - bRY * .45 + bob;
+    const hr = (ele ? 9.5 : 8) * s, hx = cx - bRX * .82, hy = bcy - bRY * .75;
+    const tx = cx + bRX - 1, ty = bcy - bRY * .3, tip = [tx + 9 * s, ty - 13 * s + (f ? 1 : -1)];
+    const K = { s, cx, bcy, bRX, bRY, hx, hy, hr, ground, tx, ty, tip, f };
+    const customTail = ['tailsMany', 'bushyTail', 'stingerTail', 'noTail', 'snakeTail'].some(k => A.has(k));
     // tail
-    const tx = cx + bRX - 1, ty = bcy - bRY * .3;
-    if (ele) g.tube([[tx, ty], [tx + 5 * s, ty + 4 * s], [tx + 6 * s, ty + 11 * s]], 1.3, .8, IX.BASE);
+    if (customTail) { }
+    else if (ele) g.tube([[tx, ty], [tx + 5 * s, ty + 4 * s], [tx + 6 * s, ty + 11 * s]], 1.3, .8, IX.BASE);
     else {
-      const tip = [tx + 9 * s, ty - 13 * s + (f ? 1 : -1)];
       g.tube([[tx, ty], [tx + 8 * s, ty - 3 * s], tip], 1.8 * s, 1.1, IX.BASE);
       if (A.has('tailFlame')) g.flame(tip[0], tip[1] + 2, 7 * s, f);
       else g.ell(tip[0], tip[1], 2.2 * s, 2.2 * s, IX.ACC);
     }
     if (A.has('wingsBig')) drawWing(g, [cx - 2, bcy - bRY + 2], [cx + 10 * s, bcy - bRY - (f ? 14 : 24) * s], [cx + 14 * s, bcy - 2], IX.ACCFAR, false);
+    EXTRA(g, P, f, 'back', K);
     // far legs
     for (const lx of [cx - bRX * .55 + 3, cx + bRX * .5 + 3]) g.rect(lx - 2.4 * s, bcy, 4.8 * s, ground - bcy, IX.FAR);
     // body + belly
@@ -104,8 +108,8 @@ const TEMPLATES = {
     }
     if (A.has('cloud')) for (let i = 0; i < 5; i++) g.ell(cx - bRX + i * bRX * .5, ground - 1, 5 * s, 2.5, IX.BELLY, 'under');
     if (A.has('wingsBig')) drawWing(g, [cx - 6, bcy - 3], [cx + 4 * s, bcy - bRY - (f ? 12 : 25) * s], [cx + 10 * s, bcy + 2], IX.ACC, true);
+    EXTRA(g, P, f, 'front', K);
     // head
-    const hr = (ele ? 9.5 : 8) * s, hx = cx - bRX * .82, hy = bcy - bRY * .75;
     if (A.has('mane') || A.has('maneBig')) {
       const R = hr * (A.has('maneBig') ? 1.65 : 1.35);
       for (let a = 0; a < 12; a++) { const an = a / 12 * Math.PI * 2; g.ell(hx + 2 + Math.cos(an) * R * .75, hy + Math.sin(an) * R * .75, R * .42, R * .42, IX.ACC); }
@@ -113,9 +117,10 @@ const TEMPLATES = {
     }
     if (A.has('earsBig')) g.ell(hx + hr * .9, hy - 1, hr * .55, hr * .9, IX.FAR);
     if (A.has('ears')) { g.poly([[hx + 1, hy - hr * .5], [hx + 4 * s, hy - hr * 1.45], [hx + 6 * s, hy - hr * .3]], IX.FAR); }
+    EXTRA(g, P, f, 'preHead', K);
     g.oell(hx, hy, hr, hr * .92, IX.BASE);
     if (A.has('ears')) { g.opoly([[hx - 3 * s, hy - hr * .55], [hx - 1 * s, hy - hr * 1.5], [hx + 2.5 * s, hy - hr * .6]], IX.BASE); g.poly([[hx - 2 * s, hy - hr * .6], [hx - 1 * s, hy - hr * 1.2], [hx + 1.4 * s, hy - hr * .6]], IX.BELLY); }
-    if (!ele) g.ell(hx - hr * .55, hy + hr * .3, hr * .55, hr * .42, IX.BELLY);
+    if (!ele && !A.has('noMuzzle')) g.ell(hx - hr * .55, hy + hr * .3, hr * .55, hr * .42, IX.BELLY);
     if (A.has('trunk')) g.tube([[hx - hr * .7, hy + hr * .15], [hx - hr * 1.25, hy + hr * .8], [hx - hr * 1.15, hy + hr * 1.6], [hx - hr * 1.55 + (f ? 1 : 0), hy + hr * 2.0]], 2.6 * s, 1.3, IX.BASE, null, true);
     if (A.has('trunkSmall')) g.tube([[hx - hr * .8, hy + hr * .25], [hx - hr * 1.2, hy + hr * .75], [hx - hr * 1.05 + (f ? 1 : 0), hy + hr * 1.15]], 1.8 * s, 1, IX.BASE, null, true);
     if (A.has('tusks')) { g.line(hx - hr * .55, hy + hr * .55, hx - hr * 1.35, hy + hr * .95, IX.HORN, .9); }
@@ -124,16 +129,20 @@ const TEMPLATES = {
     if (A.has('horns')) { g.tube([[hx + 1, hy - hr * .7], [hx + 3 * s, hy - hr * 1.5], [hx + 7 * s, hy - hr * 1.75]], 1.6 * s, .7, IX.HORN, null, true); }
     if (A.has('crown')) crown(g, hx + 1, hy - hr * .85, 5 * s);
     if (A.has('gem')) g.rect(hx - hr * .2, hy - hr * .55, 2, 2, IX.GLOW);
-    g.eye(hx - hr * .35, hy - hr * .25);
+    EXTRA(g, P, f, 'head', K);
+    if (!A.has('noEye')) g.eye(hx - hr * .35, hy - hr * .25);
   },
   winged(g, P, f) { P.acc.add('wingsBig'); TEMPLATES.quadruped(g, P, f); },
   avian(g, P, f) {
     const s = P.size, A = P.acc, bob = f ? 1 : 0, ground = 61;
     const bx = 36, by = ground - 18 * s + bob;
+    const hx = bx - 9 * s, hy = by - (A.has('longNeck') ? 21 : 12) * s;
+    const K = { s, bx, by, hx, hy, hr: 7 * s, ground, f };
     // far wing
     if (f) drawWing(g, [bx, by - 7], [bx + 20 * s, by - 8 * s], [bx + 8, by + 3], IX.ACCFAR, false);
     else drawWing(g, [bx, by - 7], [bx + 14 * s, by - 27 * s], [bx + 12, by], IX.ACCFAR, false);
     // tail fan
+    EXTRA(g, P, f, 'back', K);
     if (A.has('tailFan')) g.poly([[bx + 8 * s, by + 1], [bx + 22 * s, by - 4 * s], [bx + 26 * s, by + 4 * s], [bx + 22 * s, by + 12 * s], [bx + 8 * s, by + 7 * s]], IX.ACC);
     // legs
     for (const lx of [bx - 4 * s, bx + 3 * s]) { g.line(lx, by + 6 * s, lx - 1, ground - 1, IX.GOLD, .9); g.rect(lx - 3, ground - 1, 4, 1, IX.GOLD); }
@@ -141,7 +150,8 @@ const TEMPLATES = {
     g.ell(bx + 8 * s, by + 2 * s, 8 * s, 5 * s, IX.BASE);
     g.ell(bx - 5 * s, by + 3 * s, 7 * s, 6 * s, IX.BELLY, 'on');
     applyPattern(g, P);
-    const hx = bx - 9 * s, hy = by - 12 * s;
+    if (A.has('longNeck')) g.tube([[bx - 6 * s, by - 5 * s], [hx + 3 * s, hy + 10 * s], [hx + 1, hy + 2]], 3.4 * s, 2.6 * s, IX.BASE);
+    EXTRA(g, P, f, 'preHead', K);
     if (A.has('crest')) for (let i = 0; i < 3; i++) g.tube([[hx + 1 + i * 2, hy - 4 * s], [hx + 5 + i * 3, hy - 10 * s - i], [hx + 10 + i * 3, hy - 12 * s + i * 2]], 1.4, .6, IX.ACC);
     g.oell(hx, hy, 7 * s, 6.5 * s, IX.BASE);
     g.ell(hx - 2 * s, hy + 3 * s, 4 * s, 3 * s, IX.BELLY, 'on');
@@ -150,6 +160,7 @@ const TEMPLATES = {
     // near wing
     if (f) drawWing(g, [bx - 4, by - 3], [bx + 22 * s, by + 4 * s], [bx + 2, by + 7], IX.ACC, true);
     else drawWing(g, [bx - 4, by - 3], [bx + 6 * s, by - 29 * s], [bx + 8, by + 3], IX.ACC, true);
+    EXTRA(g, P, f, 'head', K);
     g.eye(hx - 2 * s, hy - 1.5 * s);
   },
   serpentine(g, P, f) {
@@ -158,10 +169,13 @@ const TEMPLATES = {
     const sway = f ? -1 : 1;
     const pts = [[52, 57], [44, 60], [28, 60], [18, 53], [24, 45], [38, 44], [44, 36], [40, 26], [31 + sway, 19]].map(p => T(p[0], p[1]));
     const head = pts[pts.length - 1];
+    const K = { s, pts, hx: head[0] - 3 * s, hy: head[1] - 2, f };
+    EXTRA(g, P, f, 'back', K);
     g.tube(pts, 1.5, 6 * s, IX.BASE);
     g.tube(pts.slice(3).map(p => [p[0] - 2 * s, p[1] + 1]), 1, 3 * s, IX.BELLY, 'on');
     applyPattern(g, P);
     const hx = head[0] - 3 * s, hy = head[1] - 2;
+    EXTRA(g, P, f, 'preHead', K);
     if (A.has('multihood')) {
       g.oell(hx + 3 * s, hy + 6 * s, 15 * s, 12 * s, IX.ACC);
       g.ell(hx + 3 * s, hy + 7 * s, 9 * s, 7 * s, IX.BELLY);
@@ -181,11 +195,15 @@ const TEMPLATES = {
     if (A.has('tongue') && f) { const tx = hx - 8 * s, ty = hy + 2 * s; g.line(tx, ty, tx - 4, ty, IX.GLOW); g.put(Math.round(tx - 5), Math.round(ty - 1), IX.GLOW); g.put(Math.round(tx - 5), Math.round(ty + 1), IX.GLOW); }
     if (A.has('crown')) crown(g, hx + 1, hy - 4 * s, 4 * s);
     if (A.has('gem')) g.rect(hx, hy - 4 * s, 2, 2, IX.GLOW);
+    EXTRA(g, P, f, 'head', K);
     g.eye(hx - 2.5 * s, hy - 1.5 * s);
   },
   humanoid(g, P, f) {
     const s = P.size, A = P.acc, ground = 61, cx = 32, bird = A.has('birdLegs');
     const hipY = ground - 14 * s, top = hipY - 16 * s;
+    const fish = A.has('fishTail');
+    const K = { s, cx, hipY, top, ground, hx: cx - 1 * s, hy: top - 6.5 * s, hr: 6.5 * s, f };
+    EXTRA(g, P, f, 'back', K);
     if (A.has('wings')) {
       if (f) drawWing(g, [cx + 3, top + 3], [cx + 24 * s, top + 2 * s], [cx + 6, hipY], IX.ACC, true);
       else drawWing(g, [cx + 3, top + 3], [cx + 18 * s, top - 18 * s], [cx + 8, hipY - 2], IX.ACC, true);
@@ -193,7 +211,8 @@ const TEMPLATES = {
     if (A.has('tail')) g.tube([[cx + 4 * s, hipY - 2], [cx + 14 * s, hipY - 3 * s], [cx + 17 * s, hipY - 15 * s], [cx + 11 * s + (f ? 1 : 0), hipY - 20 * s]], 1.7 * s, 1, IX.BASE);
     // far arm & leg
     g.tube([[cx + 4 * s, top + 3], [cx + 8 * s, top + 9 * s], [cx + 6 * s, top + 15 * s]], 2.1 * s, 1.7 * s, IX.FAR);
-    if (bird) { g.line(cx + 3 * s, hipY, cx + 4 * s, ground - 1, IX.GOLD, .9); g.rect(cx + 2 * s, ground - 1, 4, 1, IX.GOLD); }
+    if (fish) { }
+    else if (bird) { g.line(cx + 3 * s, hipY, cx + 4 * s, ground - 1, IX.GOLD, .9); g.rect(cx + 2 * s, ground - 1, 4, 1, IX.GOLD); }
     else g.tube([[cx + 2.5 * s, hipY], [cx + 3 * s, ground - 2]], 2.6 * s, 2.4 * s, IX.FAR);
     // torso
     const skinTorso = bird;
@@ -201,32 +220,38 @@ const TEMPLATES = {
     if (!skinTorso) g.ell(cx - 1.5 * s, top + 8 * s, 3.8 * s, 6 * s, IX.BELLY, 'on');
     if (bird) g.ell(cx, hipY + 2 * s, 7 * s, 5 * s, IX.BASE);
     // near leg
-    if (bird) { g.line(cx - 3 * s, hipY + 4 * s, cx - 4 * s, ground - 1, IX.GOLD, .9); g.rect(cx - 7 * s, ground - 1, 5, 1, IX.GOLD); }
+    if (fish) { const w = f ? 2 : -2; g.tube([[cx, hipY], [cx - 2 * s, hipY + 7 * s], [cx + 4 * s, ground - 3], [cx + 12 * s + w, ground - 5]], 5.5 * s, 2, IX.ACC, null, true); g.opoly([[cx + 11 * s + w, ground - 5], [cx + 19 * s + w, ground - 12 * s], [cx + 17 * s + w, ground - 3], [cx + 20 * s + w, ground]], IX.ACC); }
+    else if (bird) { g.line(cx - 3 * s, hipY + 4 * s, cx - 4 * s, ground - 1, IX.GOLD, .9); g.rect(cx - 7 * s, ground - 1, 5, 1, IX.GOLD); }
     else { g.tube([[cx - 2.5 * s, hipY], [cx - 3.5 * s, ground - 2]], 2.8 * s, 2.5 * s, IX.BASE, null, true); g.rect(cx - 6 * s, ground - 2, 5 * s, 2, IX.BELLY); }
     if (A.has('sash') || A.has('garland')) g.poly([[cx - 6 * s, hipY - 3 * s], [cx + 6 * s, hipY - 3 * s], [cx + 6.5 * s, hipY + 4 * s], [cx - 7 * s, hipY + 4 * s]], IX.ACC);
     if (A.has('garland')) for (let i = 0; i < 6; i++) g.ell(cx - 5 * s + i * 2 * s, top + 3 * s + Math.sin(i / 5 * Math.PI) * 5 * s, 1.3, 1.3, i % 2 ? IX.GLOW : IX.ACC);
     if (A.has('veena')) { g.line(cx + 7 * s, top + 1, cx - 9 * s, hipY + 1, IX.GOLD, 1); g.ell(cx + 7 * s, top, 2.6 * s, 2.6 * s, IX.ACC); g.ell(cx - 9 * s, hipY + 2, 3.4 * s, 3.4 * s, IX.ACC); }
     // head
     const hx = cx - 1 * s, hy = top - 6.5 * s, hr = 6.5 * s;
+    EXTRA(g, P, f, 'preHead', K);
     if (A.has('earsSide')) g.oell(hx + 5 * s, hy + 1, 2.2 * s, 2.8 * s, IX.BELLY);
     if (A.has('headdress')) for (let i = 0; i < 3; i++) g.tube([[hx + i * 2, hy - hr * .7], [hx + 3 + i * 3, hy - hr * 1.5], [hx + 8 + i * 3, hy - hr * 1.6 + i * 2]], 1.4, .6, IX.ACC);
     g.oell(hx, hy, hr, hr, IX.BASE);
     if (A.has('muzzle')) { g.ell(hx - 2.5 * s, hy + 1.5 * s, 4 * s, 3.4 * s, IX.BELLY); g.ell(hx - 1 * s, hy - 1.5 * s, 4.5 * s, 2.4 * s, IX.BELLY); }
     else { g.ell(hx - 2 * s, hy + 1 * s, 4.6 * s, 4.8 * s, IX.BELLY); }
     if (A.has('crown')) crown(g, hx, hy - hr * .9, 4.5 * s);
+    EXTRA(g, P, f, 'head', K);
     // near arm
     const arm = f ? [[cx - 4 * s, top + 2], [cx - 9 * s, top + 5 * s], [cx - 12 * s, top + 9 * s]] : [[cx - 4 * s, top + 2], [cx - 8 * s, top + 8 * s], [cx - 9 * s, top + 14 * s]];
     g.tube(arm, 2.2 * s, 1.8 * s, IX.BASE, null, true);
     const hand = arm[2];
     if (A.has('armband')) g.ell(arm[1][0], arm[1][1], 2.2 * s, 1.2, IX.GOLD);
     if (A.has('mace')) { g.line(hand[0], hand[1] + 2, hand[0] - 3, hand[1] - 13 * s, IX.GOLD, 1.1); g.oell(hand[0] - 3.5, hand[1] - 15 * s, 3.6 * s, 4 * s, IX.GOLD); }
+    K.hand = hand; EXTRA(g, P, f, 'hand', K);
     g.ell(hand[0], hand[1], 1.8 * s + .3, 1.8 * s + .3, IX.BELLY);
-    g.eye(hx - 3 * s, hy - 1.2 * s);
+    if (!A.has('noEye')) g.eye(hx - 3 * s, hy - 1.2 * s);
   },
   aquatic(g, P, f) {
     const s = P.size, A = P.acc, bob = f ? 1 : 0, ground = 61;
     const rx = 17 * s, ry = 8 * s, cx = 38, cy = ground - (A.has('legs') ? 10 : 6) * s - ry + bob;
     const t = f ? 3 : -2;
+    const K = { s, cx, cy, rx, ry, ground, hx: cx - rx + 3, hy: cy - 2 * s, f };
+    EXTRA(g, P, f, 'back', K);
     g.poly([[cx + rx * .8, cy - 1], [cx + rx + 11 * s, cy - 10 * s + t], [cx + rx + 6 * s, cy + 1], [cx + rx + 11 * s, cy + 9 * s + t]], IX.ACC);
     if (A.has('legs')) g.tube([[cx - 6 * s + 3, cy + 3], [cx - 8 * s + 3, ground - 1]], 2.6 * s, 2.2 * s, IX.FAR);
     g.ell(cx, cy, rx, ry, IX.BASE);
@@ -248,10 +273,13 @@ const TEMPLATES = {
     if (A.has('trunkSmall')) g.tube([[hx - 14 * s, hy - 1 * s], [hx - 16 * s, hy - 6 * s], [hx - 13 * s + (f ? 1 : 0), hy - 8 * s]], 1.8 * s, 1, IX.BASE, null, true);
     if (A.has('horns')) g.tube([[hx + 1, hy - 5 * s], [hx + 4 * s, hy - 10 * s], [hx + 8 * s, hy - 11 * s]], 1.5 * s, .7, IX.HORN, null, true);
     if (A.has('crown')) crown(g, hx - 1, hy - 6 * s, 4 * s);
+    EXTRA(g, P, f, 'head', K);
     g.eye(hx - 3 * s, hy - 3.5 * s);
   },
   spirit(g, P, f) {
     const s = P.size, A = P.acc, hx = 32, hy = 26;
+    const K = { s, hx, hy, f };
+    EXTRA(g, P, f, 'back', K);
     if (A.has('batWings')) {
       const u = f ? 5 : 0;
       g.poly([[hx + 4, hy - 2], [hx + 24 * s, hy - 14 * s + u], [hx + 27 * s, hy + 4 * s + u], [hx + 21 * s, hy + 1 * s + u], [hx + 17 * s, hy + 9 * s + u], [hx + 12 * s, hy + 5 * s], [hx + 6, hy + 10]], IX.ACCFAR);
@@ -273,6 +301,7 @@ const TEMPLATES = {
       if (A.has('flute')) g.line(arm[2][0] - 6 * s, arm[2][1] - 4 * s, arm[2][0] + 6 * s, arm[2][1] + 3 * s, IX.GOLD, .9);
       g.tube(arm, 2.2 * s, 1.6, IX.BASE, null, true);
     }
+    EXTRA(g, P, f, 'head', K);
     if (A.has('glowEyes')) { g.rect(hx - 6 * s, hy - 2, 3, 3, IX.GLOW); g.rect(hx - 1 * s, hy - 2, 3, 3, IX.GLOW); g.put(Math.round(hx - 6 * s), Math.round(hy - 2), IX.WHITE); }
     else { g.eye(hx - 5 * s, hy - 2, true); g.eye(hx + 1 * s, hy - 2, true); }
     if (A.has('fangs')) { g.line(hx - 6 * s, hy + 4 * s, hx + 1 * s, hy + 4 * s, IX.OUT); g.put(Math.round(hx - 5 * s), Math.round(hy + 4 * s + 1), IX.WHITE); g.put(Math.round(hx), Math.round(hy + 4 * s + 1), IX.WHITE); }
@@ -352,14 +381,16 @@ function creatureFrames(spId) {
   const sp = SPECIES[spId], a = sp.art, frames = [];
   for (let f = 0; f < 2; f++) {
     const g = new Pix();
-    const P = { size: a.size, acc: new Set(a.acc), pattern: a.pattern, rng: mulberry32(hashStr(spId)) };
+    const P = { tpl: a.tpl, size: a.size, acc: new Set(a.acc), pattern: a.pattern, rng: mulberry32(hashStr(spId)) };
     TEMPLATES[a.tpl](g, P, f);
     frames.push(renderGrid(g, a.pal));
   }
   // white silhouette for evolution / taming flashes
   const sil = mkCanvas(SPR, SPR), sx = sil.getContext('2d');
   sx.drawImage(frames[0], 0, 0); sx.globalCompositeOperation = 'source-in'; sx.fillStyle = '#fff'; sx.fillRect(0, 0, SPR, SPR);
-  return SpriteCache[spId] = { frames, sil };
+  const dark = mkCanvas(SPR, SPR), dx = dark.getContext('2d');
+  dx.drawImage(frames[0], 0, 0); dx.globalCompositeOperation = 'source-in'; dx.fillStyle = '#4e3d70'; dx.fillRect(0, 0, SPR, SPR);
+  return SpriteCache[spId] = { frames, sil, dark };
 }
 
 // =====================================================================

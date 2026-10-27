@@ -63,7 +63,7 @@ function typeBadge(ctx, t, x, y) {
 }
 function drawCreature(ctx, spId, x, y, opt = {}) { // x,y = bottom centre
   const fr = creatureFrames(spId);
-  const img = opt.sil ? fr.sil : fr.frames[opt.frame !== undefined ? opt.frame : (Math.floor(Game.frames / 30) % 2)];
+  const img = opt.dark ? fr.dark : opt.sil ? fr.sil : fr.frames[opt.frame !== undefined ? opt.frame : (Math.floor(Game.frames / 30) % 2)];
   const sc = opt.scale || 1, w = SPR * sc;
   ctx.save();
   if (opt.alpha !== undefined) ctx.globalAlpha = opt.alpha;
@@ -131,15 +131,18 @@ class MenuScene {
     this.i = this.opt.start || 0; this.resolve = null;
     if (!this.opt.w) this.opt.w = Math.max(60, ...this.items.map(i => Font.measure(i.label) + (i.right ? Font.measure(i.right) + 12 : 0))) + 26;
     this.rows = Math.ceil(this.items.length / this.opt.cols);
-    this.opt.h = this.opt.h || this.rows * this.opt.lineH + 12 + (this.opt.title ? 14 : 0);
+    this.maxRows = this.opt.cols === 1 && this.opt.maxRows ? Math.min(this.opt.maxRows, this.rows) : this.rows;
+    this.top = 0; this.scrollTo();
+    this.opt.h = this.opt.h || this.maxRows * this.opt.lineH + 12 + (this.opt.title ? 14 : 0);
   }
+  scrollTo() { if (this.i < this.top) this.top = this.i; if (this.i >= this.top + this.maxRows) this.top = this.i - this.maxRows + 1; }
   update() {
     const n = this.items.length, c = this.opt.cols; let moved = false;
     if (Input.p('up')) { this.i = (this.i - c + n) % n; moved = true; }
     if (Input.p('down')) { this.i = (this.i + c) % n; moved = true; }
     if (c > 1 && Input.p('left')) { this.i = (this.i - 1 + n) % n; moved = true; }
     if (c > 1 && Input.p('right')) { this.i = (this.i + 1) % n; moved = true; }
-    if (moved) { Sound.sfx('cursor'); this.opt.onMove && this.opt.onMove(this.i); }
+    if (moved) { Sound.sfx('cursor'); this.scrollTo(); this.opt.onMove && this.opt.onMove(this.i); }
     if (Input.p('a')) { if (this.items[this.i].disabled) Sound.sfx('bump'); else { Sound.sfx('confirm'); this.close(this.i); } }
     else if ((Input.p('b') || Input.p('start')) && this.opt.cancel) { Sound.sfx('cancel'); this.close(-1); }
   }
@@ -149,8 +152,13 @@ class MenuScene {
     let y0 = o.y + 7;
     if (o.title) { Font.draw(ctx, o.title, o.x + 10, y0, UI.gold); y0 += 14; }
     const colW = (o.w - 12) / o.cols;
+    if (this.maxRows < this.rows) {
+      if (this.top > 0) Font.drawR(ctx, '▲', o.x + o.w - 4, o.y + 3, UI.gold);
+      if (this.top + this.maxRows < this.rows) Font.drawR(ctx, '▼', o.x + o.w - 4, o.y + o.h - 10, UI.gold);
+    }
     this.items.forEach((it, k) => {
-      const cx = o.x + 16 + (k % o.cols) * colW, cy = y0 + Math.floor(k / o.cols) * o.lineH;
+      if (this.maxRows < this.rows && (k < this.top || k >= this.top + this.maxRows)) return;
+      const cx = o.x + 16 + (k % o.cols) * colW, cy = y0 + Math.floor((k - (this.maxRows < this.rows ? this.top : 0)) / o.cols) * o.lineH;
       Font.draw(ctx, it.label, cx, cy, it.disabled ? UI.dim : (it.color || UI.ink));
       if (it.right) Font.drawR(ctx, it.right, o.x + o.w - 10, cy, UI.dim);
       if (k === this.i) drawCursor(ctx, cx - 10, cy);

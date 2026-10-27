@@ -215,6 +215,7 @@ class Overworld {
   async talk(n) {
     if (n.trainer) {
       const tr = TRAINERS[n.trainer];
+      if (Game.flags[tr.flag] && n.trainer === 'indra' && !Game.flags.gotBrahmastra) { Game.flags.gotBrahmastra = true; addItem('brahmastra', 1); Sound.sfx('pickup'); await say(['INDRA: Before you go - take the Brahmastra Orb. It tames any wild creature without fail, but only once.', 'You received the BRAHMASTRA ORB!'], { speaker: 'Indra' }); return; }
       if (Game.flags[tr.flag]) { await say(n.boss ? (n.trainer === 'indra' ? ['INDRA: The rains will follow you, Tamer.', 'Other gods watch from distant cities. Their roads are still sealed by mist - for now.'] : ['AGNI: Carry the flame with you. Vaijayanta awaits.']) : n.lines, { speaker: n.name }); return; }
       if (n.boss) {
         const c = await ask(n.trainer === 'indra' ? 'The air hums with thunder. Begin the Trial of the Heavens?' : 'The sacred fire roars. Challenge Agni, Lieutenant of Indra?');

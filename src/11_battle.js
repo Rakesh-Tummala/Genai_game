@@ -249,9 +249,10 @@ class BattleScene {
   async bagMenu() {
     const ids = Object.keys(Game.bag).filter(k => !ITEMS[k].orb && Game.bag[k] > 0);
     if (!ids.length) { await this.msg('No usable items in your bag.'); return null; }
-    const i = await choose(ids.map(k => ({ label: ITEMS[k].name, right: 'x' + Game.bag[k] })), { x: 120, y: 20, w: 196, title: 'BAG', extra: (ctx, i) => { drawWin(ctx, 0, 176, W, 64); Font.wrap(ITEMS[ids[i]].desc, 296).forEach((l, k) => Font.draw(ctx, l, 12, 188 + k * 13, UI.ink)); } });
+    const i = await choose(ids.map(k => ({ label: ITEMS[k].name, right: 'x' + Game.bag[k] })), { x: 120, y: 4, w: 196, title: 'BAG', maxRows: 9, extra: (ctx, i) => { drawWin(ctx, 0, 176, W, 64); Font.wrap(ITEMS[ids[i]].desc, 296).forEach((l, k) => Font.draw(ctx, l, 12, 188 + k * 13, UI.ink)); } });
     if (i < 0) return null;
     const id = ids[i];
+    if (ITEMS[id].noTarget) return { t: 'item', id, target: this.pi };
     const t = await this.partyPick(true, `Use ${ITEMS[id].name} on?`);
     if (t < 0) return null;
     const c = Game.party[t], it = ITEMS[id];
@@ -261,7 +262,7 @@ class BattleScene {
   async tameMenu() {
     const ids = Object.keys(Game.bag).filter(k => ITEMS[k].orb && Game.bag[k] > 0);
     if (!ids.length) { await this.msg('You have no orbs! Buy some at the Bazaar.'); return null; }
-    const i = await choose(ids.map(k => ({ label: ITEMS[k].name, right: 'x' + Game.bag[k] })), { x: 120, y: 20, w: 196, title: 'ORBS', extra: (ctx, i) => { drawWin(ctx, 0, 176, W, 64); Font.wrap(ITEMS[ids[i]].desc, 296).forEach((l, k) => Font.draw(ctx, l, 12, 188 + k * 13, UI.ink)); } });
+    const i = await choose(ids.map(k => ({ label: ITEMS[k].name, right: 'x' + Game.bag[k] })), { x: 120, y: 4, w: 196, title: 'ORBS', maxRows: 9, extra: (ctx, i) => { drawWin(ctx, 0, 176, W, 64); Font.wrap(ITEMS[ids[i]].desc, 296).forEach((l, k) => Font.draw(ctx, l, 12, 188 + k * 13, UI.ink)); } });
     if (i < 0) return null;
     return { t: 'tame', id: ids[i] };
   }
@@ -345,7 +346,7 @@ class BattleScene {
     await this.msg(`${un} used ${mv.name}!`, 30);
     if (mv.custom) return this.execCustom(u, uSide, t, tSide, mv);
     const fx = mv.fx || {};
-    const selfOnly = mv.cat === 'status' && !fx.foe && !fx.status;
+    const selfOnly = mv.cat === 'status' && !fx.foe && !fx.status && !fx.stun && !fx.bind;
     if (!selfOnly && Math.random() * 100 >= mv.acc) { await this.msg('But it missed!', 35); return; }
     if (mv.pow) {
       if (mv.sig) { shake(20); flash('#ffffff', 20); }
@@ -355,9 +356,11 @@ class BattleScene {
       let dmg = this.absorb(t, r.dmg, mv);
       if (dmg.absorbed) await this.msg(`${tn}'s shield absorbed ${dmg.absorbed} damage!`, 35);
       if (dmg.broke) await this.msg(`${tn}'s shield shattered!`, 35);
+      const before = t.hp;
       if (dmg.left > 0) await this.hit(t, tSide, dmg.left, r.eff, r.crit);
       if (r.crit) await this.msg('A critical hit!', 30);
       if (r.eff > 1) await this.msg('It\'s super effective!', 30); else if (r.eff < 1) await this.msg('It\'s not very effective...', 30);
+      if (fx.drain && before > t.hp && u.hp > 0) await this.heal(u, uSide, Math.max(1, Math.floor((before - t.hp) * fx.drain)));
       if (t.hp <= 0) return;
     } else {
       this.emit(fx.self || fx.heal ? uSide : tSide, mv.type, 18, fx.self || fx.heal ? 'up' : 'down');
@@ -468,7 +471,17 @@ class BattleScene {
     if (it.use === 'heal') { if (side) await this.heal(c, 'p', it.amt * healMul); else { c.hp = Math.min(maxHP(c), c.hp + it.amt); await this.msg(`${cName(c)} recovered HP.`, 30); } }
     if (it.use === 'full') { c.hp = maxHP(c); Object.assign(c.b, { burn: 0, poison: 0, sleep: 0, bind: 0, stun: false }); Sound.sfx('heal'); if (side) this.emit('p', 'Grove', 20, 'up'); await this.msg(`${cName(c)} is fully restored!`, 35); }
     if (it.use === 'revive') { c.hp = Math.floor(maxHP(c) / 2); Sound.sfx('heal'); await this.msg(`${cName(c)} was revived!`, 35); }
-    if (it.use === 'cure') { const b = c.b; const had = b.burn || b.poison || b.sleep || b.bind || b.stun; Object.assign(b, { burn: 0, poison: 0, sleep: 0, bind: 0, stun: false }); await this.msg(had ? `${cName(c)} was cured!` : 'It had no effect.', 35); }
+    if (it.use === 'cure') {   // Tulsi: one status, worst first
+      const b = c.b, order = [['burn', 'burn'], ['poison', 'poison'], ['sleep', 'sleep'], ['bind', 'bind'], ['stun', 'stun']];
+      const k = order.find(([key]) => b[key]);
+      if (k) { b[k[0]] = k[0] === 'stun' ? false : 0; Sound.sfx('heal'); await this.msg(`${cName(c)} is free of its ${k[1]}!`, 35); } else await this.msg('It had no effect.', 35);
+    }
+    if (it.use === 'cureAll') {
+      let n = 0; for (const m of Game.party) if (m.b && (m.b.burn || m.b.poison || m.b.sleep || m.b.bind || m.b.stun)) { Object.assign(m.b, { burn: 0, poison: 0, sleep: 0, bind: 0, stun: false }); n++; }
+      Sound.sfx('heal'); this.emit('p', 'Tide', 20, 'up');
+      await this.msg(n ? 'The holy water washed away every ailment!' : 'Your companions are already well.', 40);
+    }
+    if (it.use === 'defUp') { Sound.sfx('shield'); await this.stage(this.P, 'p', 'def', 2); }
     if (it.use === 'pp') { c.moves.forEach(m => m.pp = MOVES[m.id].pp); c.en = maxEN(c); Sound.sfx('heal'); await this.msg(`${cName(c)}'s PP and energy were restored!`, 35); }
   }
   async throwOrb(id) {
@@ -492,6 +505,7 @@ class BattleScene {
     if (perk() === 'capture') a *= 1.1;
     const p = Math.min(1, a / 255), q = Math.pow(p, 1 / 4);
     let shakes = 0; while (shakes < 4 && chance(q)) shakes++;
+    if (it.guaranteed) { shakes = 4; Game.flags.brahmastraUsed = true; }
     for (let s = 0; s < Math.min(3, shakes); s++) {
       await wait(18); Sound.sfx('shake');
       for (let f = 0; f < 16; f++) { this.orb.rot = Math.sin(f / 16 * Math.PI * 2) * .5; this.orb.x = POS.e.x + Math.sin(f / 16 * Math.PI * 2) * 3; await wait(1); }
@@ -596,7 +610,7 @@ async function learnMove(c, mid, msg) {
   await msg(`${name} forgot ${old} and learned ${mv.name}!`);
 }
 function drawOrb(ctx, x, y, id, rot) {
-  const col = { bana: '#c8a060', agneyastra: '#ff6a2a', varunastra: '#3a7bff', nagastra: '#3fae5a' }[id] || '#e8b030';
+  const col = { bana: '#c8a060', agneyastra: '#ff6a2a', varunastra: '#3a7bff', nagastra: '#3fae5a', vayavyastra: '#bfe8ff', gandiva: '#c040e0', brahmastra: '#ffffff' }[id] || '#e8b030';
   ctx.save(); ctx.translate(Math.round(x), Math.round(y)); ctx.rotate(rot);
   ctx.fillStyle = '#1a1020'; ctx.beginPath(); ctx.arc(0, 0, 6, 0, 7); ctx.fill();
   ctx.fillStyle = col; ctx.beginPath(); ctx.arc(0, 0, 5, Math.PI, 0); ctx.fill();
@@ -690,6 +704,10 @@ class EvolutionScene {
 async function indraEnding() {
   Sound.play('title');
   await say(['The thunder softens into gentle rain. Across Indrapuri, lamps are lit in celebration.', 'INDRA: You have stood steady in the storm. Take the Vajra Seal - proof that the heavens of Indrapuri recognise you.', 'You received the VAJRA SEAL!'], { speaker: 'Indra' });
+  if (!Game.flags.gotBrahmastra) {
+    Game.flags.gotBrahmastra = true; addItem('brahmastra', 1); Sound.sfx('pickup');
+    await say(['INDRA: Take this as well - the Brahmastra Orb. It tames any wild creature without fail, but it can never be made again.', 'You received the BRAHMASTRA ORB! (Only one exists.)'], { speaker: 'Indra' });
+  }
   await say(['TRIAL OF INDRAPURI COMPLETE.', 'This build (Stage 1) contains only the first city. The roads to Hellas, Asgard and the other mythic cities are still sealed by mist and arrive in later stages.', 'You can keep exploring, taming and levelling your companions. Remember to SAVE from the menu!']);
   Sound.play(World.map.music);
 }

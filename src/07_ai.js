@@ -217,7 +217,7 @@ const loreCache = {};
 async function expandedLore(spId) {
   const sp = SPECIES[spId];
   if (loreCache[spId]) return loreCache[spId];
-  const raw = coerceJSON(await askAI('lore', { species: sp.name, types: sp.types, lore: sp.lore, city: 'India' }));
+  const raw = coerceJSON(await askAI('lore', { species: sp.name, types: sp.types, lore: sp.lore, city: CITIES[sp.city] ? CITIES[sp.city].name + ' (' + CITIES[sp.city].culture + ')' : 'India' }));
   const t = raw && Font.sanitize(raw.lore, 300);
   if (t && t.length > 10) return loreCache[spId] = t;
   const extra = { Tide: 'Fishermen leave a marigold on the water to thank it for safe passage.', Ember: 'Temple lamps are said to burn brighter when one sleeps nearby.', Grove: 'Villagers tie threads to banyan roots where it was last seen.', Stone: 'Masons carve its likeness above doorways for protection.', Sky: 'Kite-flyers claim it steals their strings for its nest.', Shade: 'Children are told to answer its riddles politely, just in case.', Light: 'Its hum is said to keep the beat of evening prayers.', Storm: 'Its footsteps are the thunder that comes before the first rain.' };
