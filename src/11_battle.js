@@ -12,6 +12,11 @@ const HALL_BG = {
   hall: ['#3a0e08', '#8a2a10', '#ff7a1a'], palace: ['#1a1450', '#4a3a9a', '#ffd040'],
   arena: ['#5a1a10', '#c8a070', '#e8c040'], underworld: ['#0e0818', '#3a2a4a', '#c8a0ff'], olympos: ['#7aaae8', '#f4f0e6', '#e8c040'],
   forge: ['#1a1010', '#5a3a2a', '#ff7a1a'], oaths: ['#2a1a10', '#6a4a30', '#c8a040'], valgrind: ['#3a2a10', '#a87a30', '#ffd860'],
+  tomb: ['#100c14', '#4a3a2a', '#e8c040'], lioness: ['#5a1a0a', '#c86a3a', '#ffd040'], suntemple: ['#e8a040', '#f8e8c0', '#ffffff'],
+  moon: ['#0a0a2a', '#3a3a6a', '#d8e0ff'], drums: ['#2a0a0a', '#7a2a2a', '#ffe040'], sunshrine: ['#ff9a6a', '#fff0e0', '#c83a2a'],
+  crows: ['#0a0a10', '#3a2a3a', '#8a1a2a'], lughhall: ['#c89a3a', '#fff4d0', '#ffffff'], dagdahall: ['#2a1a0a', '#7a5a30', '#ffb040'],
+  ishtar: ['#0a1a4a', '#2a5aa8', '#e8c050'], nergal: ['#2a0a08', '#7a2a1a', '#ff8a3a'], esagila: ['#1a1440', '#c8a070', '#e8c050'],
+  loom: ['#1a3a1a', '#6a8a4a', '#e8d8b0'], oak: ['#1a2a4a', '#4a6a3a', '#ffe060'],
 };
 function battleBG(kind) {
   if (BG_CACHE[kind]) return BG_CACHE[kind];
@@ -38,6 +43,8 @@ function battleBG(kind) {
     x.fillStyle = '#f4f2ea'; x.fillRect(50, 78, 44, 4); x.beginPath(); x.moveTo(48, 78); x.lineTo(72, 66); x.lineTo(96, 78); x.fill(); for (let k = 0; k < 5; k++) x.fillRect(52 + k * 9, 82, 4, 16); x.fillRect(48, 98, 48, 3);
     if (kind === 'sea') { x.fillStyle = '#1e5ab0'; x.fillRect(0, 128, W, 112); x.fillStyle = '#6ab4ff'; for (let i = 0; i < 80; i++) x.fillRect(r() * W, 130 + r() * 110, 5, 1); platCol = ['#a87a4a', '#c89a6a']; }
     else { x.fillStyle = '#9ab45a'; x.fillRect(0, 128, W, 112); x.fillStyle = '#b4c86e'; for (let i = 0; i < 60; i++) x.fillRect(r() * W, 130 + r() * 110, 3, 1); for (const px of [170, 300, 228]) { x.fillStyle = '#5a4a30'; x.fillRect(px, 112, 2, 18); x.fillStyle = '#1e4a2a'; x.beginPath(); x.ellipse(px + 1, 104, 5, 16, 0, 0, 7); x.fill(); } platCol = ['#c8c6bc', '#eeece6']; }
+  } else if (OUT_KINDS.includes(kind)) {
+    platCol = outdoorScene(x, r, kind);
   } else if (kind === 'norse' || kind === 'bifrost') {
     sky(kind === 'bifrost' ? '#1a2a5a' : '#8aa8c8', kind === 'bifrost' ? '#6a8ac8' : '#e8f0f8');
     if (kind === 'bifrost') { ['#ff5a5a', '#ffa040', '#ffe060', '#60d070', '#50a0ff', '#a070ff'].forEach((col, i) => { x.strokeStyle = col; x.lineWidth = 3; x.beginPath(); x.arc(160, 170, 130 - i * 3, Math.PI, 0); x.stroke(); }); }
@@ -58,6 +65,59 @@ function battleBG(kind) {
   const plat = (cx, cy, rx, ry) => { x.fillStyle = 'rgba(0,0,0,.25)'; x.beginPath(); x.ellipse(cx, cy + 3, rx, ry, 0, 0, 7); x.fill(); x.fillStyle = platCol[0]; x.beginPath(); x.ellipse(cx, cy, rx, ry, 0, 0, 7); x.fill(); x.fillStyle = platCol[1]; x.beginPath(); x.ellipse(cx, cy - 2, rx - 6, ry - 3, 0, 0, 7); x.fill(); };
   plat(POS.e.x, POS.e.y - 4, 48, 11); plat(POS.p.x, POS.p.y - 4, 54, 12);
   return BG_CACHE[kind] = c;
+}
+
+const OUT_KINDS = ['egypt', 'nile', 'japan', 'stormsea', 'celtic', 'celticsea', 'meso', 'slavic', 'slavicriver'];
+// outdoor battle scenery for the later cities; returns platform colours
+function outdoorScene(x, r, kind) {
+  const sky = (a, b) => { const g = x.createLinearGradient(0, 0, 0, 150); g.addColorStop(0, a); g.addColorStop(1, b); x.fillStyle = g; x.fillRect(0, 0, W, 150); };
+  const ground = (c1, c2) => { x.fillStyle = c1; x.fillRect(0, 128, W, 112); x.fillStyle = c2; for (let i = 0; i < 60; i++) x.fillRect(r() * W, 130 + r() * 110, 3, 1); };
+  const water = (c1, c2, y) => { x.fillStyle = c1; x.fillRect(0, y, W, H - y); x.fillStyle = c2; for (let i = 0; i < 60; i++) x.fillRect(r() * W, y + 2 + r() * (H - y - 4), 5, 1); };
+  const sun = (c, cx, cy, rr) => { x.fillStyle = c; x.beginPath(); x.arc(cx, cy, rr, 0, 7); x.fill(); };
+  const palm = (px, trunk, leaf) => { x.fillStyle = trunk; x.fillRect(px, 94, 3, 36); x.fillStyle = leaf; for (let k = 0; k < 5; k++) { x.beginPath(); x.ellipse(px + 1 + Math.cos(k * 1.3) * 8, 94 + Math.sin(k * 1.3) * 3, 10, 3, k * 1.3, 0, 7); x.fill(); } };
+  if (kind === 'egypt' || kind === 'nile') {
+    sky('#f0a050', '#f8e0b0'); sun('#fff4c0', 250, 40, 16);
+    for (const [px, pw, ph] of [[40, 70, 50], [110, 50, 36], [180, 90, 62]]) { x.fillStyle = '#d8a860'; x.beginPath(); x.moveTo(px, 120); x.lineTo(px + pw / 2, 120 - ph); x.lineTo(px + pw, 120); x.fill(); x.fillStyle = '#b88848'; x.beginPath(); x.moveTo(px + pw / 2, 120 - ph); x.lineTo(px + pw, 120); x.lineTo(px + pw * .6, 120); x.fill(); }
+    if (kind === 'nile') { water('#2a7aa8', '#7ac0e0', 112); return ['#a87a4a', '#c89a6a']; }
+    ground('#e8c888', '#f4dca8'); palm(290, '#7a5a30', '#3f8a3a'); palm(14, '#7a5a30', '#3f8a3a');
+    return ['#d8b878', '#ecd098'];
+  }
+  if (kind === 'stormsea') {
+    sky('#2a3a5a', '#7a8aa8');
+    for (let i = 0; i < 6; i++) { x.fillStyle = 'rgba(40,50,70,.7)'; const cx = r() * W, cy = 15 + r() * 40; x.beginPath(); x.ellipse(cx, cy, 30, 10, 0, 0, 7); x.fill(); }
+    water('#1a4a6a', '#9ac0e0', 104); return ['#c83a2a', '#e85a4a'];
+  }
+  if (kind === 'japan') {
+    sky('#9ac8f0', '#ffe8f0'); sun('#ffffff', 60, 36, 12);
+    x.fillStyle = '#8a98b8'; x.beginPath(); x.moveTo(140, 120); x.lineTo(210, 46); x.lineTo(280, 120); x.fill();
+    x.fillStyle = '#ffffff'; x.beginPath(); x.moveTo(196, 61); x.lineTo(210, 46); x.lineTo(224, 61); x.lineTo(214, 58); x.lineTo(206, 62); x.fill();
+    x.fillStyle = '#c83a2a'; x.fillRect(40, 84, 4, 44); x.fillRect(76, 84, 4, 44); x.fillRect(32, 84, 56, 5); x.fillRect(36, 94, 48, 3); x.fillStyle = '#2a2a2a'; x.fillRect(30, 81, 60, 3);
+    ground('#6aa84a', '#86c060');
+    for (const px of [300, 130]) { x.fillStyle = '#5a3a2a'; x.fillRect(px, 100, 3, 30); x.fillStyle = '#f4a8c0'; x.beginPath(); x.arc(px + 1, 96, 12, 0, 7); x.fill(); x.fillStyle = '#ffd0e0'; x.beginPath(); x.arc(px - 2, 93, 6, 0, 7); x.fill(); }
+    return ['#a8a8a0', '#c8c8c0'];
+  }
+  if (kind === 'celtic' || kind === 'celticsea') {
+    sky('#7aa0c8', '#e0ecf0');
+    for (let i = 0; i < 4; i++) { x.fillStyle = 'rgba(255,255,255,.6)'; const cx = r() * W, cy = 20 + r() * 40; x.beginPath(); x.ellipse(cx, cy, 26, 7, 0, 0, 7); x.fill(); }
+    x.fillStyle = '#5a8a5a'; x.beginPath(); x.moveTo(0, 116); x.quadraticCurveTo(80, 70, 170, 112); x.quadraticCurveTo(250, 80, W, 110); x.lineTo(W, 150); x.lineTo(0, 150); x.fill();
+    x.fillStyle = '#8a8a90'; for (let i = 0; i < 5; i++) x.fillRect(60 + i * 12, 86 - (i % 2) * 3, 6, 18); x.fillRect(58, 84, 60, 3);
+    if (kind === 'celticsea') { water('#2a5a7a', '#8ab0d0', 112); return ['#8a8a80', '#a8a8a0']; }
+    ground('#4a9a4a', '#68b85a'); return ['#6aa860', '#8ac870'];
+  }
+  if (kind === 'meso') {
+    sky('#e8a860', '#f8e8c8'); sun('#fff4c0', 60, 34, 13);
+    for (let t = 0; t < 4; t++) { x.fillStyle = t % 2 ? '#c8a070' : '#a88050'; x.fillRect(180 + t * 12, 110 - (t + 1) * 14, 110 - t * 24, 15); }
+    x.fillStyle = '#2a5aa8'; x.fillRect(222, 40, 26, 16);
+    ground('#c8b078', '#d8c490'); palm(24, '#6a4a28', '#4a7a32'); palm(130, '#6a4a28', '#4a7a32');
+    return ['#c8a878', '#e0c898'];
+  }
+  // slavic / slavicriver
+  sky('#8ab0d8', '#f0e0c0');
+  for (const [px, k] of [[40, 1], [250, 1.2]]) { x.fillStyle = '#f0e8d8'; x.fillRect(px, 80, 24 * k, 34); x.fillStyle = '#3a8ac8'; x.beginPath(); x.moveTo(px + 2, 80); x.bezierCurveTo(px - 6, 62, px + 10 * k, 58, px + 12 * k, 46); x.bezierCurveTo(px + 14 * k, 58, px + 30 * k, 62, px + 22 * k, 80); x.fill(); x.fillStyle = '#e8b030'; x.fillRect(px + 12 * k - .5, 38, 1, 8); }
+  if (kind === 'slavicriver') { water('#3a5a7a', '#8ab0c8', 112); return ['#8a6a48', '#a88a68']; }
+  ground('#7a9a4a', '#9ab85a');
+  for (const px of [140, 300, 196]) { x.fillStyle = '#f0f0e8'; x.fillRect(px, 96, 3, 34); x.fillStyle = '#3a3a3a'; x.fillRect(px, 104, 2, 1); x.fillRect(px + 1, 116, 2, 1); x.fillStyle = '#e8b840'; x.beginPath(); x.arc(px + 1, 92, 10, 0, 7); x.fill(); }
+  return ['#9a7a58', '#b89a78'];
 }
 
 const TYPE_FX = {

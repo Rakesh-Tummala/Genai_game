@@ -49,7 +49,7 @@ class TitleScene {
     drawCreature(ctx, STARTERS[Math.floor(Game.frames / 240) % 3], 60, 150, {});
     drawCreature(ctx, 'garudin', 262, 146, { flip: true });
     if (!this.ready && Math.floor(Game.frames / 30) % 2) Font.drawC(ctx, 'PRESS Z / ENTER', 160, 168, '#ffffff', '#1a0f2e');
-    Font.draw(ctx, 'Stage 3 (part 1) build', 4, H - 10, '#c8a8d8');
+    Font.draw(ctx, 'Stage 3 build', 4, H - 10, '#c8a8d8');
     Font.drawR(ctx, AI_ENDPOINT ? 'AI: server mode' : 'AI: offline mode', W - 4, H - 10, '#c8a8d8');
   }
 }

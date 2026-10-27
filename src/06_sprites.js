@@ -463,6 +463,43 @@ const THEMES = {
     pillar: ['#8a6a48', '#5e4430', '#c8a040'], lamp: ['#3a2a1a', '#c8a040'], rock: ['#5a6470', '#7a8490', '#d8e4ee'], gold: ['#b8a060', '#8a7440', '#d8c080'], fence: ['#6a4e32', '#4a3420', '#8a6a48'],
   },
 };
+Object.assign(THEMES, {
+  egypt: {
+    grass: ['#e8c888', '#d8b070', '#f4dca8'], tall: ['#7a9a3a', '#8aaa4a', '#c8d870'], deep: ['#5a7a2a', '#6a8a3a', '#a8c860'],
+    path: ['#c8a060', '#b08850', '#d8b880'], plaza: ['#d8b878', '#b89858', '#ecd098'], water: ['#2a7aa8', '#5ab0d8'],
+    tree: 'palm', treeC: ['#7a5a30', '#2f6a2a', '#3f8a3a', '#5aa84a', '#8ac860'], flowers: ['#5a8ad8', '#ffffff', '#e8c040'],
+    floor: ['#d8b878', '#b89858'], wall: ['#e8d0a0', '#c8a870', '#8a6a40', '#2a5ab0', '#e8c040'], carpet: ['#2a4a98', '#e8c040', '#c84a3a'],
+    pillar: ['#e8d0a0', '#c8a870', '#2a8a9a'], lamp: ['#c8a060', '#e8c040'], rock: ['#b89060', '#d8b080', '#f0d8a8'], gold: ['#e8c040', '#c8a020', '#fff0a0'], fence: ['#c8a060', '#a88040', '#e8c890'], bridge: ['#a87a4a', '#7a5430'],
+  },
+  japan: {
+    grass: ['#6aa84a', '#5a9440', '#86c060'], tall: ['#3a7a3a', '#4a9a48', '#9ad070'], deep: ['#2a6a4a', '#3a8a5a', '#a8e0a0'],
+    path: ['#c8c0b0', '#a8a090', '#e0d8c8'], plaza: ['#a8a8a0', '#888880', '#c8c8c0'], water: ['#2a6a9a', '#6aa8d8'],
+    tree: 'cherry', treeC: ['#5a3a2a', '#e88aa8', '#f4a8c0', '#ffd0e0', '#ffffff'], flowers: ['#ff6a8a', '#ffffff', '#e8c040'],
+    floor: ['#c8c890', '#a8a870'], wall: ['#e8e0d0', '#c8c0b0', '#5a3a2a', '#c83a2a', '#2a2a2a'], carpet: ['#c83a2a', '#e8c040', '#e85a4a'],
+    pillar: ['#c83a2a', '#8a2a1a', '#2a2a2a'], lamp: ['#888880', '#a8a8a0'], rock: ['#7a7a7a', '#9a9a9a', '#c8c8c8'], gold: ['#e8c040', '#c8a020', '#fff0a0'], fence: ['#c83a2a', '#8a2a1a', '#e85a4a'], bridge: ['#c83a2a', '#8a2a1a'],
+  },
+  celtic: {
+    grass: ['#4a9a4a', '#3a843c', '#68b85a'], tall: ['#5a7a3a', '#7a5a8a', '#b088c8'], deep: ['#2a5a3a', '#3a704a', '#88c088'],
+    path: ['#a89a78', '#8a7c5a', '#c8b898'], plaza: ['#9a9a90', '#7a7a70', '#b8b8b0'], water: ['#2a5a7a', '#5a8ab0'],
+    tree: 'round', treeC: ['#4a3420', '#1e4a2a', '#2a5e34', '#3a7a42', '#6aa860'], flowers: ['#b088e8', '#ffe060', '#4a2a6a'],
+    floor: ['#8a6a4a', '#6a4e32'], wall: ['#a8a090', '#888070', '#5a5040', '#2a6a3a', '#e8c040'], carpet: ['#2a6a3a', '#e8c040', '#3a8a4a'],
+    pillar: ['#9a9a90', '#7a7a70', '#c8b878'], lamp: ['#5a5040', '#e8c040'], rock: ['#7a7a80', '#9a9aa0', '#c8c8d0'], gold: ['#c8b060', '#a89040', '#e8d890'], fence: ['#7a5a3a', '#5a3a20', '#9a7a5a'], bridge: ['#8a8a80', '#6a6a60'],
+  },
+  meso: {
+    grass: ['#c8b078', '#b09860', '#d8c490'], tall: ['#8a9a3a', '#9aaa4a', '#d8d870'], deep: ['#6a7a2a', '#7a8a3a', '#b8c860'],
+    path: ['#b87a4a', '#9a6038', '#d8986a'], plaza: ['#c8a878', '#a88858', '#e0c898'], water: ['#3a6a8a', '#6a9ab8'],
+    tree: 'palm', treeC: ['#6a4a28', '#3a6a2a', '#4a7a32', '#6a9a42', '#9ac060'], flowers: ['#e8c040', '#3a6ab8', '#8a2a1a'],
+    floor: ['#c8a878', '#a88858'], wall: ['#3a5a9a', '#2a4a7a', '#1a2a4a', '#e8c050', '#ffffff'], carpet: ['#3a5a9a', '#e8c050', '#4a6ab8'],
+    pillar: ['#c8a878', '#a88858', '#e8c050'], lamp: ['#8a6a40', '#e8c050'], rock: ['#a88860', '#c8a880', '#e8d0a8'], gold: ['#e8c050', '#c8a030', '#fff0a0'], fence: ['#a87a4a', '#8a5a30', '#c89a6a'], bridge: ['#a87a4a', '#7a5430'],
+  },
+  slavic: {
+    grass: ['#7a9a4a', '#6a8a3a', '#9ab85a'], tall: ['#a87a2a', '#c89a3a', '#e8c860'], deep: ['#5a6a3a', '#6a7a4a', '#a8b878'],
+    path: ['#8a7058', '#6a5440', '#a8907a'], plaza: ['#9a7a58', '#7a5a3a', '#b89a78'], water: ['#3a5a7a', '#6a8aa8'],
+    tree: 'birch', treeC: ['#f0f0e8', '#c8a030', '#e8b840', '#f0d060', '#3a3a3a'], flowers: ['#e83a3a', '#3a5ae8', '#f0d040'],
+    floor: ['#9a7a58', '#7a5a3a'], wall: ['#e8dcc8', '#c8b8a0', '#8a6a4a', '#c83a2a', '#2a5ab0'], carpet: ['#c83a2a', '#f0d040', '#e85a4a'],
+    pillar: ['#8a6a48', '#6a4a30', '#c83a2a'], lamp: ['#5a4030', '#e8b030'], rock: ['#7a7a70', '#9a9a90', '#c8c8c0'], gold: ['#e8b030', '#c89020', '#fff0a0'], fence: ['#8a6a48', '#6a4a30', '#a88a68'], bridge: ['#8a6a48', '#6a4a30'],
+  },
+});
 const Tiles = (() => {
   const cache = {};
   const px = (x, a, b, col) => { x.fillStyle = col; x.fillRect(a, b, 1, 1); };
@@ -477,6 +514,13 @@ const Tiles = (() => {
     grass(x, r); const c = T.treeC;
     if (T.tree === 'cypress') { x.fillStyle = c[0]; x.fillRect(7, 12, 2, 4); x.fillStyle = c[1]; x.beginPath(); x.ellipse(8, 7.5, 5, 7.5, 0, 0, 7); x.fill(); x.fillStyle = c[2]; x.beginPath(); x.ellipse(7.5, 7, 3.6, 6.4, 0, 0, 7); x.fill(); x.fillStyle = c[3]; x.fillRect(6, 3, 2, 6); px(x, 6, 2, c[4]); px(x, 7, 6, c[4]); }
     else if (T.tree === 'pine') { x.fillStyle = c[0]; x.fillRect(7, 12, 2, 4); for (let k = 0; k < 3; k++) { const y = 2 + k * 4, hw = 3 + k * 2; x.fillStyle = c[1 + (k % 2)]; x.beginPath(); x.moveTo(8, y); x.lineTo(8 + hw, y + 6); x.lineTo(8 - hw, y + 6); x.fill(); x.fillStyle = c[4]; x.fillRect(8 - hw + 1, y + 5, hw, 1); px(x, 8, y, c[4]); } }
+    else if (T.tree === 'palm') {
+      for (let k = 0; k < 6; k++) { x.fillStyle = k % 2 ? c[0] : shade(c[0], .2); x.fillRect(7 + (k > 3 ? 1 : 0), 15 - k * 2, 2, 2); }
+      for (let k = 0; k < 6; k++) { const a = -Math.PI / 2 + (k - 2.5) * .62; x.fillStyle = c[1 + (k % 3)]; x.save(); x.translate(9 + Math.cos(a) * 3, 4 + Math.sin(a) * 1.5 + 1); x.rotate(a); x.beginPath(); x.ellipse(1, 0, 5, 1.6, 0, 0, 7); x.fill(); x.restore(); }
+      x.fillStyle = '#7a4a20'; x.fillRect(8, 4, 2, 2);
+    }
+    else if (T.tree === 'cherry') { x.fillStyle = c[0]; x.fillRect(7, 9, 2, 7); x.fillRect(5, 9, 2, 2); for (const [ax, ay, rr, ci] of [[8, 7, 7, 1], [6, 6, 4.5, 2], [10, 5, 4, 2], [7, 4, 3, 3]]) { x.fillStyle = c[ci]; x.beginPath(); x.arc(ax, ay, rr, 0, 7); x.fill(); } for (let k = 0; k < 6; k++) px(x, 2 + r() * 12 | 0, 1 + r() * 10 | 0, c[4]); }
+    else if (T.tree === 'birch') { x.fillStyle = c[0]; x.fillRect(7, 6, 2, 10); x.fillStyle = c[4]; x.fillRect(7, 8, 1, 1); x.fillRect(8, 11, 1, 1); x.fillRect(7, 13, 1, 1); for (const [ax, ay, rr, ci] of [[8, 5, 5.5, 1], [6, 6, 3.5, 2], [10, 4, 3, 3]]) { x.fillStyle = c[ci]; x.beginPath(); x.arc(ax, ay, rr, 0, 7); x.fill(); } }
     else { x.fillStyle = c[0]; x.fillRect(6, 10, 4, 6); x.fillStyle = c[1]; x.beginPath(); x.arc(8, 7, 7.5, 0, 7); x.fill(); x.fillStyle = c[2]; x.beginPath(); x.arc(7, 6, 6, 0, 7); x.fill(); x.fillStyle = c[3]; x.beginPath(); x.arc(6, 4, 3.5, 0, 7); x.fill(); px(x, 5, 3, c[4]); px(x, 10, 6, c[4]); }
   }
   const P = {
@@ -494,7 +538,7 @@ const Tiles = (() => {
     'L': (x, r, f) => { plaza(x); x.fillStyle = T.lamp[0]; x.fillRect(7, 5, 2, 10); x.fillRect(5, 14, 6, 2); x.fillStyle = T.lamp[1]; x.fillRect(4, 4, 8, 2); x.fillStyle = f ? '#ffd040' : '#ff8a20'; x.fillRect(7, 1, 2, 3); px(x, 7 + f, 0, '#fff0a0'); },
     'S': (x, r) => { grass(x, r); x.fillStyle = '#6a4224'; x.fillRect(7, 9, 2, 7); x.fillStyle = '#b07a48'; x.fillRect(2, 2, 12, 8); x.fillStyle = '#8a5a32'; x.fillRect(2, 9, 12, 1); x.fillStyle = '#5a3a20'; x.fillRect(4, 4, 8, 1); x.fillRect(4, 6, 6, 1); },
     'R': (x, r) => { grass(x, r); const c = T.rock; x.fillStyle = c[0]; x.beginPath(); x.ellipse(8, 10, 7, 5.5, 0, 0, 7); x.fill(); x.fillStyle = c[1]; x.beginPath(); x.ellipse(7, 9, 5, 4, 0, 0, 7); x.fill(); px(x, 5, 7, c[2]); px(x, 6, 7, c[2]); },
-    'B': x => { x.fillStyle = '#a87a4a'; x.fillRect(0, 0, 16, 16); x.fillStyle = '#7a5430'; for (let i = 0; i < 16; i += 4) x.fillRect(i, 0, 1, 16); x.fillStyle = '#5a3a20'; x.fillRect(0, 0, 16, 1); x.fillRect(0, 15, 16, 1); },
+    'B': x => { const bc = T.bridge || ['#a87a4a', '#7a5430']; x.fillStyle = bc[0]; x.fillRect(0, 0, 16, 16); x.fillStyle = bc[1]; for (let i = 0; i < 16; i += 4) x.fillRect(i, 0, 1, 16); x.fillStyle = '#5a3a20'; x.fillRect(0, 0, 16, 1); x.fillRect(0, 15, 16, 1); },
     'Y': (x, r, f) => { const c = ['#ff5a5a', '#ffa040', '#ffe060', '#60d070', '#50a0ff', '#a070ff']; c.forEach((col, i) => { x.fillStyle = col; x.fillRect(0, i * 2 + 2, 16, 2); }); x.fillStyle = 'rgba(255,255,255,' + (f ? .35 : .15) + ')'; x.fillRect((f * 5) % 16, 2, 3, 12); x.fillStyle = '#e8e8f8'; x.fillRect(0, 0, 16, 2); x.fillRect(0, 14, 16, 2); },  // rainbow bridge
     'X': x => fill(x, '#0b0714'),
     'p': x => floor(x),
@@ -546,6 +590,46 @@ const BUILD_STYLE = {
   no_shrine: { wall: '#8a6444', band: '#5e3e24', roof: '#4a3020', roof2: '#2a1a10', sign: 'SHRINE', roofType: 'dragon', top: 14, win: 'shutter', logs: true, snow: true },
   forge: { wall: '#5a4a40', band: '#3a2a20', roof: '#4a3a30', roof2: '#2a1a14', sign: 'THUNDER FORGE', win: 'shutter', snow: true, chimney: true },
   oathhall: { wall: '#7a5434', band: '#5e3e24', roof: '#4a3020', roof2: '#2a1a10', sign: 'HALL OF OATHS', roofType: 'dragon', top: 14, win: 'shutter', logs: true, snow: true },
+  // Egypt
+  eg_house: { wall: '#e8d0a0', band: '#c8a870', roof: '#d8b878', roof2: '#b89858', roofType: 'flat', win: 'dark' },
+  eg_house2: { wall: '#f0dcb0', band: '#2a8a9a', roof: '#e0c088', roof2: '#c0a068', roofType: 'flat', win: 'dark' },
+  eg_shop: { wall: '#e8d0a0', band: '#2a5ab0', roof: '#d8b878', roof2: '#b89858', roofType: 'flat', win: 'dark', sign: 'SHOP', awning: '#2a5ab0' },
+  eg_shrine: { wall: '#f0dcb0', band: '#2a8a9a', roof: '#e8c040', roof2: '#b89858', roofType: 'pylon', top: 10, win: 'none', sign: 'SHRINE' },
+  anubis_tomb: { wall: '#3a3040', band: '#e8c040', roof: '#2a2030', roof2: '#e8c040', roofType: 'pylon', top: 12, win: 'none', sign: 'TOMB OF ANUBIS' },
+  sekhmet_hall: { wall: '#c86a3a', band: '#e8c040', roof: '#8a3a1a', roof2: '#e8c040', roofType: 'pylon', top: 12, win: 'none', sign: 'HALL OF SEKHMET' },
+  ra_temple: { wall: '#f4e0b0', band: '#2a5ab0', roof: '#e8c040', roof2: '#c8a020', roofType: 'pylon', top: 24, win: 'none', sign: 'TEMPLE OF RA', sun: true },
+  // Japan
+  jp_house: { wall: '#ece4d4', band: '#5a3a2a', roof: '#4a4a52', roof2: '#2a2a32', roofType: 'pagoda', win: 'shoji', timber: true },
+  jp_house2: { wall: '#ece4d4', band: '#5a3a2a', roof: '#5a4a3a', roof2: '#3a2a1a', roofType: 'pagoda', win: 'shoji', timber: true },
+  jp_shop: { wall: '#ece4d4', band: '#2a3a6a', roof: '#3a4a6a', roof2: '#1a2a4a', roofType: 'pagoda', win: 'shoji', timber: true, sign: 'SHOP', awning: '#2a3a6a' },
+  jp_shrine: { wall: '#ece4d4', band: '#c83a2a', roof: '#3a3a42', roof2: '#c83a2a', roofType: 'pagoda', top: 8, win: 'none', redPosts: true, sign: 'SHRINE' },
+  moon_hall: { wall: '#d8d8e8', band: '#2a2a5a', roof: '#2a2a5a', roof2: '#14143a', roofType: 'pagoda', top: 8, win: 'shoji', timber: true, sign: 'MOON HALL', moon: true },
+  thunder_hall: { wall: '#e0d8c8', band: '#c83a2a', roof: '#3a3a42', roof2: '#c83a2a', roofType: 'pagoda', top: 8, win: 'shoji', timber: true, sign: 'HALL OF THUNDER', drums: true },
+  sun_shrine: { wall: '#f4ece0', band: '#c83a2a', roof: '#3a3a42', roof2: '#e8c040', roofType: 'pagoda', tiers: 2, top: 26, win: 'none', redPosts: true, sign: 'SUN SHRINE' },
+  // Celtic
+  ce_house: { wall: '#a8a090', band: '#6a5a40', roof: '#c8a050', roof2: '#a07a30', roofType: 'thatch', top: 4, win: 'shutter' },
+  ce_house2: { wall: '#b8b0a0', band: '#6a5a40', roof: '#b89040', roof2: '#906a20', roofType: 'thatch', top: 4, win: 'shutter' },
+  ce_shop: { wall: '#a8a090', band: '#2a6a3a', roof: '#c8a050', roof2: '#a07a30', roofType: 'thatch', top: 4, win: 'shutter', sign: 'SHOP', awning: '#2a6a3a' },
+  ce_shrine: { wall: '#b8b8b0', band: '#2a6a3a', roof: '#88a060', roof2: '#5a7a3a', roofType: 'thatch', top: 8, win: 'none', sign: 'SHRINE', knot: true },
+  crow_hall: { wall: '#4a4a52', band: '#7a2a3a', roof: '#3a3a3a', roof2: '#1a1a1a', roofType: 'thatch', top: 10, win: 'shutter', sign: 'HALL OF THE MORRIGAN' },
+  lugh_hall: { wall: '#e8e0c8', band: '#e8c040', roof: '#d8b048', roof2: '#a88020', roofType: 'thatch', top: 10, win: 'shutter', sign: 'HALL OF LUGH', knot: true },
+  dagda_hall: { wall: '#8a7a60', band: '#2a6a3a', roof: '#b8903a', roof2: '#7a5a1a', roofType: 'thatch', top: 24, win: 'shutter', sign: 'HALL OF THE DAGDA', knot: true },
+  // Mesopotamia
+  me_house: { wall: '#c8a878', band: '#a88858', roof: '#b89868', roof2: '#987848', roofType: 'flat', win: 'dark', crenel: true },
+  me_house2: { wall: '#d8b888', band: '#3a5a9a', roof: '#c8a878', roof2: '#a88858', roofType: 'flat', win: 'dark', crenel: true },
+  me_shop: { wall: '#c8a878', band: '#3a5a9a', roof: '#b89868', roof2: '#987848', roofType: 'flat', win: 'dark', crenel: true, sign: 'SHOP', awning: '#3a5a9a' },
+  me_shrine: { wall: '#d8b888', band: '#3a5a9a', roof: '#c8a878', roof2: '#a88858', roofType: 'ziggurat', top: 10, win: 'none', sign: 'SHRINE' },
+  ishtar_gate: { wall: '#2a5aa8', band: '#e8c050', roof: '#2a5aa8', roof2: '#1a3a78', roofType: 'flat', win: 'none', crenel: true, figures: true, sign: 'GATE OF ISHTAR' },
+  nergal_hall: { wall: '#8a3a2a', band: '#e8c050', roof: '#6a2a1a', roof2: '#4a1a10', roofType: 'flat', win: 'dark', crenel: true, sign: 'HALL OF NERGAL' },
+  esagila: { wall: '#d8b888', band: '#2a5aa8', roof: '#c8a070', roof2: '#a88050', roofType: 'ziggurat', top: 30, win: 'none', sign: 'ESAGILA' },
+  // Slavic
+  sl_house: { wall: '#9a7a58', band: '#c83a2a', roof: '#6a4a30', roof2: '#4a3020', win: 'carved', logs: true },
+  sl_house2: { wall: '#8a6a48', band: '#2a5ab0', roof: '#7a5a38', roof2: '#4a3020', win: 'carved', logs: true },
+  sl_shop: { wall: '#9a7a58', band: '#c83a2a', roof: '#3a6a3a', roof2: '#1a4a1a', win: 'carved', logs: true, sign: 'SHOP', awning: '#c83a2a' },
+  sl_shrine: { wall: '#e8dcc8', band: '#2a5ab0', roof: '#4a6a3a', roof2: '#2a4a1a', roofType: 'onion', top: 22, win: 'arched', sign: 'SHRINE', dome: '#3a8ac8' },
+  svarog_forge: { wall: '#6a5a50', band: '#c83a2a', roof: '#4a3a30', roof2: '#2a1a14', win: 'carved', chimney: true, sign: 'FORGE OF SVAROG' },
+  mokosh_hall: { wall: '#e8dcc8', band: '#c83a2a', roof: '#8a3a2a', roof2: '#5a2a1a', roofType: 'onion', top: 22, win: 'arched', sign: 'HALL OF MOKOSH', dome: '#3a9a5a' },
+  perun_hall: { wall: '#f0e8d8', band: '#2a5ab0', roof: '#3a5a9a', roof2: '#1a3a6a', roofType: 'onion', top: 30, win: 'arched', sign: 'OAK HALL OF PERUN', dome: '#e8b030', domes: 3 },
   valgrind: { wall: '#7a5434', band: '#c8a040', roof: '#c8a040', roof2: '#8a6a20', sign: 'VALGRIND', roofType: 'dragon', top: 26, win: 'shutter', logs: true, shields: true },
 };
 function renderBuilding(b) {
@@ -557,11 +641,16 @@ function renderBuilding(b) {
   if (st.logs) { x.fillStyle = shade(st.wall, -.25); for (let y = wallY + 3; y < wallY + 26; y += 4) x.fillRect(2, y, w - 4, 1); }
   x.fillStyle = st.band; x.fillRect(2, wallY + 26, w - 4, 6); x.fillRect(2, wallY, w - 4, 2);
   const doorI = b.door - b.x;
+  if (st.timber) { x.fillStyle = st.band; for (let i = 0; i <= b.w; i++) x.fillRect(i * 16 - (i === b.w ? 4 : 0) + 1, wallY, 2, 32); }
+  if (rt === 'pylon') drawPylon(x, st, w, top, wallY);
   // windows
-  if (!st.columns) for (let i = 0; i < b.w; i++) {
+  if (!st.columns && st.win !== 'none') for (let i = 0; i < b.w; i++) {
     if (i === doorI || i === 0 || i === b.w - 1) continue;
     const wx = i * 16 + 3, wy = wallY + 6;
     if (st.win === 'arched') { x.fillStyle = '#1a2a50'; x.fillRect(wx + 1, wy + 2, 8, 10); x.beginPath(); x.arc(wx + 5, wy + 3, 4, Math.PI, 0); x.fill(); x.fillStyle = st.band; x.fillRect(wx, wy + 12, 10, 2); }
+    else if (st.win === 'dark') { x.fillStyle = '#2a1a0a'; x.fillRect(wx + 2, wy + 2, 6, 8); x.fillStyle = shade(st.wall, -.2); x.fillRect(wx + 1, wy + 10, 8, 2); }
+    else if (st.win === 'shoji') { x.fillStyle = '#f8f4e8'; x.fillRect(wx, wy, 10, 12); x.fillStyle = st.band; x.fillRect(wx + 4, wy, 1, 12); x.fillRect(wx, wy + 5, 10, 1); x.strokeStyle = st.band; x.strokeRect(wx + .5, wy + .5, 9, 11); }
+    else if (st.win === 'carved') { x.fillStyle = '#2a1a0a'; x.fillRect(wx + 2, wy + 2, 6, 8); x.fillStyle = '#ffd890'; x.fillRect(wx + 3, wy + 3, 4, 6); x.fillStyle = st.band; x.fillRect(wx, wy, 10, 2); x.fillRect(wx + 3, wy - 2, 4, 2); x.fillRect(wx, wy + 10, 10, 2); }
     else if (st.win === 'shutter') { x.fillStyle = '#2a1a0a'; x.fillRect(wx + 2, wy + 2, 6, 7); x.fillStyle = '#ffd890'; x.fillRect(wx + 3, wy + 3, 4, 5); x.fillStyle = shade(st.wall, -.4); x.fillRect(wx - 1, wy + 1, 3, 9); x.fillRect(wx + 8, wy + 1, 3, 9); }
     else { x.fillStyle = '#4a2a14'; x.fillRect(wx, wy, 10, 12); x.fillStyle = '#e8c890'; for (let a = 0; a < 3; a++) for (let q = 0; q < 3; q++) x.fillRect(wx + 1 + a * 3, wy + 1 + q * 4, 2, 2); }
   }
@@ -603,6 +692,46 @@ function renderBuilding(b) {
     x.fillStyle = st.roof2; x.beginPath(); x.moveTo(-1, roofH + 1); x.quadraticCurveTo(w / 2, -4, w + 1, roofH + 1); x.fill();
     x.fillStyle = st.roof; x.beginPath(); x.moveTo(3, roofH - 2); x.quadraticCurveTo(w / 2, 0, w - 3, roofH - 2); x.fill();
     x.fillStyle = shade(st.roof, .25); for (let i = 6; i < w - 6; i += 5) x.fillRect(i, Math.max(3, roofH - 4 - Math.sin(i / w * Math.PI) * (roofH - 8)), 1, 3);
+  } else if (rt === 'pylon') {
+    // drawn before the door by drawPylon
+  } else if (rt === 'flat') {
+    x.fillStyle = st.wall; x.fillRect(2, 6, w - 4, roofH - 6);
+    x.fillStyle = st.band; x.fillRect(2, roofH - 3, w - 4, 3);
+    if (roofH > 22 && st.win !== 'none') for (let i = 1; i < b.w - 1; i++) { x.fillStyle = '#2a1a0a'; x.fillRect(i * 16 + 6, 12, 4, 6); }
+    x.fillStyle = st.roof; x.fillRect(0, 2, w, 6); x.fillStyle = st.roof2; x.fillRect(0, 7, w, 1);
+    if (st.crenel) { x.fillStyle = st.roof; for (let i = 0; i < w; i += 8) x.fillRect(i, 0, 5, 3); }
+    if (st.figures) for (let i = 0; i < 3; i++) { const fx = 12 + i * (w - 24) / 2, fy = roofH - 16; x.fillStyle = '#e8c050'; x.fillRect(fx - 6, fy, 12, 5); x.fillRect(fx + 4, fy - 3, 4, 4); x.fillRect(fx - 5, fy + 5, 2, 4); x.fillRect(fx + 3, fy + 5, 2, 4); x.fillRect(fx - 8, fy - 1, 3, 2); }
+    if (st.figures) { x.fillStyle = '#e8c050'; for (let y = 12; y < roofH - 18; y += 8) for (let i = 4; i < w - 4; i += 8) x.fillRect(i, y, 2, 2); }
+  } else if (rt === 'pagoda') {
+    const eaveY = roofH - 6, ridgeY = top + 6;
+    const eave = (y, inset) => { x.fillStyle = st.roof2; x.beginPath(); x.moveTo(inset - 4, y - 3); x.lineTo(w - inset + 4, y - 3); x.lineTo(w - inset - 4, y + 4); x.lineTo(inset + 4, y + 4); x.fill(); x.beginPath(); x.moveTo(inset - 6, y - 9); x.lineTo(inset + 2, y - 2); x.lineTo(inset - 4, y); x.fill(); x.beginPath(); x.moveTo(w - inset + 6, y - 9); x.lineTo(w - inset - 2, y - 2); x.lineTo(w - inset + 4, y); x.fill(); };
+    x.fillStyle = st.roof; x.beginPath(); x.moveTo(6, eaveY - 3); x.lineTo(w - 6, eaveY - 3); x.lineTo(w - 18, ridgeY); x.lineTo(18, ridgeY); x.fill();
+    x.fillStyle = shade(st.roof, -.25); for (let i = 10; i < w - 10; i += 4) x.fillRect(i, Math.max(ridgeY + 2, ridgeY + Math.abs(i - w / 2) * 0), 1, eaveY - ridgeY - 4);
+    if (st.tiers === 2) { const my = (ridgeY + eaveY) / 2 + 2; eave(my, 14); }
+    eave(eaveY, 0);
+    x.fillStyle = st.roof2; x.fillRect(16, ridgeY - 4, w - 32, 4); x.fillRect(13, ridgeY - 7, 4, 4); x.fillRect(w - 17, ridgeY - 7, 4, 4);
+    if (st.moon) { x.fillStyle = '#f8f4d8'; x.beginPath(); x.arc(w / 2, ridgeY + 10, 5, 0, 7); x.fill(); x.fillStyle = st.roof; x.beginPath(); x.arc(w / 2 + 3, ridgeY + 9, 4.5, 0, 7); x.fill(); }
+    if (st.drums) for (const dxp of [w * .3, w * .7]) { x.fillStyle = '#c83a2a'; x.beginPath(); x.arc(dxp, ridgeY + 12, 5, 0, 7); x.fill(); x.fillStyle = '#e8c040'; x.beginPath(); x.arc(dxp, ridgeY + 12, 2, 0, 7); x.fill(); }
+  } else if (rt === 'thatch') {
+    const peak = top + 1;
+    x.fillStyle = st.roof2; x.beginPath(); x.moveTo(-3, roofH + 2); x.quadraticCurveTo(w / 2, 2 * peak - roofH, w + 3, roofH + 2); x.fill();
+    x.fillStyle = st.roof; x.beginPath(); x.moveTo(2, roofH - 1); x.quadraticCurveTo(w / 2, 2 * peak - roofH + 6, w - 2, roofH - 1); x.fill();
+    x.fillStyle = shade(st.roof, -.2); for (let i = 5; i < w - 5; i += 3) { const yy = roofH - 2 - Math.sin(i / w * Math.PI) * (roofH - peak - 6); x.fillRect(i, yy, 1, 4); }
+    x.fillStyle = shade(st.roof, .25); x.fillRect(4, roofH - 3, w - 8, 2);
+    if (st.knot) { x.strokeStyle = '#e8c040'; x.lineWidth = 1; x.beginPath(); x.arc(w / 2 - 3, roofH - 14, 4, 0, 7); x.arc(w / 2 + 3, roofH - 14, 4, 0, 7); x.stroke(); }
+  } else if (rt === 'ziggurat') {
+    const tiers = 4, base = roofH, th = (roofH - top + 2) / (tiers + .5);
+    for (let t = 0; t < tiers; t++) { const tw = w * (1 - t * .17), ty = base - (t + 1) * th; x.fillStyle = t % 2 ? st.roof : st.roof2; x.fillRect((w - tw) / 2, ty, tw, th + 1); x.fillStyle = shade(st.roof, .3); x.fillRect((w - tw) / 2, ty, tw, 1); }
+    x.fillStyle = shade(st.roof, .35); x.fillRect(w / 2 - 4, base - tiers * th, 8, tiers * th);
+    x.fillStyle = shade(st.roof, -.2); for (let y = base - tiers * th + 2; y < base; y += 3) x.fillRect(w / 2 - 4, y, 8, 1);
+    x.fillStyle = st.band; x.fillRect(w / 2 - 8, base - tiers * th - 8, 16, 8); x.fillStyle = '#e8c050'; x.fillRect(w / 2 - 2, base - tiers * th - 12, 4, 4);
+  } else if (rt === 'onion') {
+    x.fillStyle = st.roof2; x.fillRect(0, roofH - 6, w, 8);
+    x.fillStyle = st.roof; x.beginPath(); x.moveTo(0, roofH - 2); x.lineTo(12, top + 12); x.lineTo(w - 12, top + 12); x.lineTo(w, roofH - 2); x.fill();
+    x.fillStyle = shade(st.roof, -.25); for (let y = top + 16; y < roofH - 4; y += 5) x.fillRect(6, y, w - 12, 1);
+    const dome = (cx, base, r) => { x.fillStyle = shade(st.wall, -.1); x.fillRect(cx - r * .6, base - r * .5, r * 1.2, r * .6); x.fillStyle = st.dome; x.beginPath(); x.moveTo(cx - r * .7, base - r * .5); x.bezierCurveTo(cx - r * 1.4, base - r * 1.4, cx - r * .2, base - r * 1.7, cx, base - r * 2.4); x.bezierCurveTo(cx + r * .2, base - r * 1.7, cx + r * 1.4, base - r * 1.4, cx + r * .7, base - r * .5); x.fill(); x.fillStyle = shade(st.dome, .35); x.fillRect(cx - r * .45, base - r * 1.2, 2, r * .5); x.fillStyle = '#e8c040'; x.fillRect(cx - .5, base - r * 2.4 - 5, 1, 5); x.fillRect(cx - 2, base - r * 2.4 - 4, 5, 1); };
+    if (st.domes === 3) { dome(w * .22, top + 16, 6); dome(w * .78, top + 16, 6); }
+    dome(w / 2, top + 14, 9);
   } else if (rt === 'dragon') {
     const peak = Math.max(2, top - 4);
     x.fillStyle = st.roof2; x.beginPath(); x.moveTo(-2, roofH + 1); x.lineTo(w / 2, peak); x.lineTo(w + 2, roofH + 1); x.fill();
@@ -619,6 +748,7 @@ function renderBuilding(b) {
     if (st.flame) { x.fillStyle = '#ff7a1a'; x.beginPath(); x.moveTo(w / 2 - 6, roofH - 10); x.lineTo(w / 2, roofH - 26); x.lineTo(w / 2 + 6, roofH - 10); x.fill(); x.fillStyle = '#ffd040'; x.beginPath(); x.moveTo(w / 2 - 3, roofH - 10); x.lineTo(w / 2, roofH - 19); x.lineTo(w / 2 + 3, roofH - 10); x.fill(); }
     if (st.chimney) { x.fillStyle = '#3a3a40'; x.fillRect(w - 22, 0, 8, 14); x.fillStyle = '#ff7a1a'; x.fillRect(w - 20, 1, 4, 2); }
   }
+  if (st.redPosts) { x.fillStyle = '#c83a2a'; x.fillRect(4, wallY - 4, 5, 36); x.fillRect(w - 9, wallY - 4, 5, 36); x.fillStyle = '#2a2a2a'; x.fillRect(2, wallY - 6, w - 4, 3); }
   if (st.awning) { for (let i = 0; i < w; i += 8) { x.fillStyle = (i / 8) % 2 ? '#ffffff' : st.awning; x.fillRect(i, wallY - 6, 8, 6); } }
   if (st.snow) { x.fillStyle = '#f4f8fc'; if (rt === 'gable') { x.fillRect(8, 0, w - 16, 3); } else if (rt === 'dragon') { const peak = Math.max(2, top - 4); x.beginPath(); x.moveTo(w / 2 - 14, peak + 14); x.lineTo(w / 2, peak + 2); x.lineTo(w / 2 + 14, peak + 14); x.fill(); } else { x.beginPath(); x.moveTo(8, roofH * .45); x.quadraticCurveTo(w / 2, -2, w - 8, roofH * .45); x.lineTo(w - 12, roofH * .5); x.quadraticCurveTo(w / 2, 5, 12, roofH * .5); x.fill(); } }
   if (st.sign) {
@@ -627,4 +757,20 @@ function renderBuilding(b) {
     Font.draw(x, st.sign, sx + 3, sy + 1, st.signCol || '#ffd040');
   }
   return { canvas: c, top };
+}
+// Egyptian pylon gateway: two sloping towers with a lintel between them
+function drawPylon(x, st, w, top, wallY) {
+  const bot = wallY + 32, tw = w * .4;
+  x.fillStyle = st.wall;
+  x.beginPath(); x.moveTo(0, bot); x.lineTo(5, top + 2); x.lineTo(tw - 3, top + 2); x.lineTo(tw, bot); x.fill();
+  x.beginPath(); x.moveTo(w, bot); x.lineTo(w - 5, top + 2); x.lineTo(w - tw + 3, top + 2); x.lineTo(w - tw, bot); x.fill();
+  x.fillStyle = st.roof; x.fillRect(3, top, tw - 4, 5); x.fillRect(w - tw + 1, top, tw - 4, 5);
+  x.fillStyle = shade(st.wall, -.15); x.fillRect(tw - 3, top + 6, 3, bot - top - 6); x.fillRect(w - 6, top + 6, 3, bot - top - 6);
+  x.fillStyle = st.wall; x.fillRect(tw - 2, wallY - 10, w - 2 * tw + 4, 42);
+  x.fillStyle = st.roof; x.fillRect(tw - 4, wallY - 14, w - 2 * tw + 8, 5);
+  // carved glyph rows
+  x.fillStyle = shade(st.wall, -.35);
+  for (let y = top + 10; y < bot - 6; y += 6) for (let i = 8; i < tw - 8; i += 5) if (((i * 7 + y) % 3) !== 0) { x.fillRect(i, y, 2, 3); x.fillRect(w - i - 2, y, 2, 3); }
+  x.fillStyle = st.band; x.fillRect(2, bot - 4, w - 4, 4);
+  if (st.sun) { const cy = wallY - 18; x.fillStyle = '#e8c040'; x.beginPath(); x.moveTo(w / 2 - 22, cy); x.lineTo(w / 2 - 6, cy - 3); x.lineTo(w / 2 - 6, cy + 3); x.fill(); x.beginPath(); x.moveTo(w / 2 + 22, cy); x.lineTo(w / 2 + 6, cy - 3); x.lineTo(w / 2 + 6, cy + 3); x.fill(); x.fillStyle = '#ff7a1a'; x.beginPath(); x.arc(w / 2, cy, 6, 0, 7); x.fill(); x.fillStyle = '#ffd040'; x.beginPath(); x.arc(w / 2, cy, 4, 0, 7); x.fill(); }
 }

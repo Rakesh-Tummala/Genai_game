@@ -42,24 +42,29 @@ On phones and tablets an on-screen D-pad with A/B/MENU buttons appears automatic
 
 ## Stage 1: what is playable
 
-This build is **Stage 3, part 1**. Three cities are fully playable - Indrapuri (India), Olympos (Greece) and Asgard (Norse) - with the full creature roster, all orbs and items, the Bestiary and world-map travel. The other five cities come in the next Stage 3 steps.
+This build is **Stage 3 (complete)**. All eight mythic cities are playable from Indrapuri to Kitezh, with the full creature roster, all orbs and items, the Bestiary and world-map travel. Stage 4 (more characters, fuller audio, polish) is next.
 
 **Playable now**
 
 - Title screen, 3 playable characters (Ira, Tarun, Saanvi), each with a small perk (+10% taming chance, +10% XP, 15% shop discount).
 - Choice of 3 starter creatures (Yalicub, Makarin, Vanarling).
-- **Three playable cities**, each with its own tiles, buildings, music, battle backgrounds and weather:
+- **Eight playable cities**, each with its own tiles, trees, buildings, music, battle backgrounds and weather:
   - **Indrapuri (India)** - details below.
   - **Olympos (Greece)** - white marble agora, Temple of Zeus, Arena of Ares, Gate of Hades, a harbour pier, olive leaves drifting. Trainers Hoplite Nikos and Oracle Kallisto (4 creatures each), lieutenants Ares (4), Poseidon (5, on the pier) and Hades (4), and Zeus's trial (6 creatures, signature move *Keraunos Bolt* on his eagle Aetonyx). Wild creatures Lv 16-27.
   - **Asgard (Norse)** - snowy log town with turf roofs, frozen lake, the rainbow bridge, aurora at night. Trainers Shieldmaiden Sigrun and Skald Bjorn (4 each), lieutenants Thor (5), Tyr (4) and Heimdall (4, on the rainbow bridge), and Odin's trial in Valgrind (6 creatures, signature move *Gungnir Cast*, which never misses). Wild creatures Lv 22-33.
-  - Order in each city: beat both trainers > the three lieutenants (any order) > the god. Beating a god unlocks the next city.
+  - **Heliopolis (Egypt)** - sandstone town with a pylon Temple of Ra, the Tomb of Anubis, the Hall of Sekhmet and the Nile, drifting sand. Trainers Scribe Nefer and Charioteer Khafra, lieutenants Anubis (5), Sekhmet (4) and Set (4, on the sun-barque pier), and Ra's trial (6, *Solar Barque*). Wild Lv 26-36.
+  - **Takama (Japan)** - curved-roof town with the Sun Shrine, Moon Hall, Hall of Thunder, cherry trees and falling blossoms. Trainers Shrine Maiden Hana and Ronin Kenji, lieutenants Tsukuyomi (5), Raijin (4) and Susanoo (4, on the pier), and Amaterasu's trial (6, *Sacred Mirror Ray*, never misses). Wild Lv 30-38.
+  - **Tir na nOg (Celtic)** - thatched halls, a loch and heather, drifting leaves. Trainers Bard Ciaran and Druid Aisling, lieutenants the Morrigan (4), Lugh (5) and Manannan (4, on the pier), and the Dagda's trial (6, *Harp of Seasons*, heals as it hits). Wild Lv 34-42.
+  - **Babylon (Mesopotamia)** - mud-brick town with the blue Ishtar Gate, the Hall of Nergal and the ziggurat Esagila. Trainers Scribe Ludin and Archer Ishmi, lieutenants Ishtar (4, with the Bull of Heaven), Nergal (4) and Enlil (5, on the river pier), and Marduk's trial (6, *Seven Winds*). Wild Lv 36-44.
+  - **Kitezh (Slavic)** - carved log houses, onion domes, a river and birch woods in autumn. Trainers Hunter Bogdan and Weaver Milena, lieutenants Svarog (4), Mokosh (5) and Veles (4, on the river pier), and Perun's final trial (6, *Thunder Axe*, all Lv 50). Wild Lv 38-46.
+  - Order in each city: beat both trainers > the three lieutenants (any order) > the god. Beating a god unlocks the next city: India > Greece > Norse > Egypt > Japan > Celtic > Mesopotamia > Slavic. Beating Perun completes all eight trials.
 - **World map (the Mist Road)**: open it with Menu > TRAVEL (outdoors) or by walking through a city's south gate (in India, the sealed rocks at the end of the Monsoon Trail). Unlocked cities can be visited any time.
 - Each city has its own shop and healing shrine; if all your creatures faint you return to the last shrine you used.
 - Overworld (India): the city of Indrapuri (palace, Fire Hall, shrine, shop, houses, lotus pond) and the Monsoon Trail route with two grass zones (Lv 3-7 and the Sacred Grove at Lv 10-16), river and bridge, pickup items. Tile-based movement, following camera, day/night tint with lamp glow, animated water/grass/fire, marigold petals by day and fireflies by night.
 - **70 creatures** with procedural sprites, stats, 4+ learnable moves, rarity, lore and home city:
   - India (13): Yalicub, Makarin, Vanarling, Nagling, Garudin, Kinnarel, Vetalix, Gandharin, evolutions Yalidhar, Makaraja, Vanaveer, Nagaraja, and Airavat (Indra's team only).
   - 8 each for Greece, Norse, Egypt, Japan, Celtic, Mesopotamia and Slavic folklore (56), including evolutions such as Pegafoal > Pegasorn, Fenrisk > Fenrimaw, Bennuling > Bennurah, Kitsunko > Kyubirei, Selkin > Selkara, Lamassel > Lamassar and Zharling > Zharplume.
-  - India, Greece and Norse creatures can be met in the wild and in battles. The other 32 (Egypt, Japan, Celtic, Mesopotamia, Slavic) arrive with their cities; you can view them with **Options > Bestiary preview**.
+  - Every city's creatures can be met in its grass zones and battles. **Options > Bestiary preview** still reveals all entries if you want to look ahead.
   - 70 creatures in total now, including Aetonyx, Zeus's trial-only eagle.
 - 59 moves across the 8 types plus Neutral, including draining, priority, stun, sleep and stat moves.
 - Turn-based battles: speed order and priority, STAB, critical hits, 8-type chart (2x / 0.5x / 0x), burn, poison, sleep, stun, bind, stat stages, shields, terrain, PP and energy (EN), switching, items, running, XP and levelling (cap 50), learning moves, evolution.
@@ -69,14 +74,14 @@ This build is **Stage 3, part 1**. Three cities are fully playable - Indrapuri (
 - **Custom AI attacks** in battle, with the offline interpreter and the optional server.
 - India trainers: Pilgrim Rohan (regular trainer, 4 creatures, spots you on the road), lieutenants Agni (Fire Hall), Vayu and Varuna (inside Vaijayanta Palace, 4 creatures each), and Indra's trial (god, 5 creatures, unique intro, signature move *Vajra Thunderbolt*). Indra now requires Vayu and Varuna first.
 - AI-powered NPC dialogue, expanded creature lore (Party > Summary > Z) and Mythic Forms, each with built-in fallback text.
-- **Bestiary** (menu > BESTIARY): all 69 entries grouped by city, seen/tamed progress, silhouettes for unseen creatures, lore, evolutions and base stats for tamed creatures, and expanded AI lore with Z.
+- **Bestiary** (menu > BESTIARY): all 70 entries grouped by city, seen/tamed progress, silhouettes for unseen creatures, lore, evolutions and base stats for tamed creatures, and expanded AI lore with Z.
 - Save / load (localStorage), options (text speed, music, sound effects, mute), chiptune music and sound effects.
 
 **Not in this build yet**
 
-- Heliopolis (Egypt), Takama (Japan), Tir na nOg (Celtic), Babylon (Mesopotamia) and Kitezh (Slavic): their maps, trainers, lieutenants and gods (next Stage 3 steps). They show as sealed on the world map.
-- Encounters with the 32 creatures of those five cities.
-- Characters 4-10 and the full audio / polish pass (Stage 4).
+- Characters 4-10 and their perks (Stage 4). Only Ira, Tarun and Saanvi are playable.
+- The full audio pass (Stage 4). Each city has one music loop; battles share two tracks.
+- A general polish and balance pass (Stage 4). Late-game levels were only spot-checked with strong test teams.
 
 ---
 
@@ -173,7 +178,7 @@ and start the server with `ALLOW_FILE_ORIGIN=1`.
 |---|---|
 | `mythbound.html` | The game. Built from `src/`; this is the file you play. |
 | `src/shell.html` | HTML/CSS shell. |
-| `src/01_core.js` ... `src/13_main.js` (plus `05_data_world.js`, `05_data_z_cities.js`, `06_sprites_parts.js`, `10_world_cities.js`) | Game source, concatenated in order (core, font, audio, input, data, sprites, AI, game state, UI, world, battle, scenes, main loop). |
+| `src/01_core.js` ... `src/13_main.js` (plus `05_data_world.js`, `05_data_z_cities.js`, `05_data_zz_cities2.js`, `06_sprites_parts.js`, `10_world_cities.js`, `10_world_cities2.js`) | Game source, concatenated in order (core, font, audio, input, data, sprites, AI, game state, UI, world, battle, scenes, main loop). |
 | `build.js` | Inlines `src/` into `mythbound.html`: `node build.js`. |
 | `server.js` | Optional AI server. |
 | `package.json` | Scripts and the SDK dependency for live mode. |
@@ -188,5 +193,5 @@ Edit files in `src/`, then run `node build.js`.
 |---|---|---|
 | 1 | Complete loop in India: city, route, 13 creatures, battles, taming, custom AI attacks, trainer, Agni, Indra, save/load, server | Done |
 | 2 | All creatures, all orbs and items, Bestiary | Done |
-| 3 | Remaining 7 cities with trainers, lieutenants and gods; world map | **In progress** - Greece, Norse and the world map done; Egypt and Japan next |
+| 3 | Remaining 7 cities with trainers, lieutenants and gods; world map | Done |
 | 4 | 10 characters, full audio, polish | Planned |

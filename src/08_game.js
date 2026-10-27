@@ -39,7 +39,7 @@ function addCreature(c) {
   if (Game.party.length < 6) { Game.party.push(c); return 'party'; }
   Game.storage.push(c); return 'storage';
 }
-function badgeCount() { return ['beatIndra', 'beatZeus', 'beatOdin'].filter(f => Game.flags[f]).length; }
+function badgeCount() { return ['beatIndra', 'beatZeus', 'beatOdin', 'beatRa', 'beatAmaterasu', 'beatDagda', 'beatMarduk', 'beatPerun'].filter(f => Game.flags[f]).length; }
 function playTimeStr() { const s = Math.floor(Game.frames / 60), h = Math.floor(s / 3600), m = Math.floor(s / 60) % 60; return h + ':' + String(m).padStart(2, '0'); }
 function clockStr() { const m = Math.floor(Game.clock) % 1440; return String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0'); }
 // 0 = day, 1 = deep night

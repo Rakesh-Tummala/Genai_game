@@ -20,6 +20,11 @@ const Sound = (() => {
     boss: { bpm: 168, drone: [36], lead: 'C5 Db5 E5 C5 F5 E5 Db5 C5 G5 - Ab5 G5 F5 E5 Db5 - | C6 B5 Ab5 G5 F5 E5 F5 G5 Ab5 G5 F5 E5 Db5 - C5 -', bass: 'C2 C3 C2 C3 C2 C3 Db2 Db3 C2 C3 C2 C3 C2 C3 Db2 Db3 F2 F3 F2 F3 G2 G3 G2 G3 Ab2 Ab3 G2 G3 Db2 Db3 C2 C3', drums: 'kkhsk.hskkhsk.ss' },
     greece: { bpm: 116, lead: 'D5 - A4 - D5 E5 F5 - E5 D5 C5 - D5 - - - | F5 - G5 A5 - G5 F5 E5 D5 - E5 F5 E5 - - -', bass: 'D3 . A2 . D3 . A2 . C3 . G2 . D3 . . . F2 . C3 . G2 . D3 . A2 . E3 . A2 . . .', drums: 'k.h.k.h.s.h.k.hh' },
     norse: { bpm: 92, drone: [33, 40], lead: 'A4 - - C5 E5 - D5 C5 B4 - - - G4 - A4 - | C5 - D5 E5 - - G5 E5 D5 - C5 B4 A4 - - -', bass: 'A2 - - - - - - - G2 - - - - - - - F2 - - - - - - - E2 - - - G2 - - -', drums: 'k.......k...s...' },
+    egypt: { bpm: 112, drone: [38], lead: 'D5 Eb5 F#5 - G5 F#5 Eb5 D5 C5 - D5 - - - - - | A4 - Bb4 C5 D5 - Eb5 D5 C5 Bb4 A4 - D5 - - -', bass: 'D3 . D3 . A2 . D3 . C3 . C3 . D3 . . . D3 . D3 . G2 . G2 . A2 . A2 . D3 . . .', drums: 'k.hk.hs.k.hk.sh.' },
+    japan: { bpm: 96, lead: 'E5 - F5 - A5 - - - B5 A5 F5 E5 - - - - | C5 - E5 F5 A5 - F5 E5 B4 - C5 - E5 - - -', bass: 'E2 - - - - - - - A2 - - - - - - - F2 - - - - - - - E2 - - - B2 - - -', drums: 'k...h...k.k.s...' },
+    celtic: { bpm: 132, lead: 'G5 A5 B5 A5 G5 E5 D5 E5 G5 - A5 - B5 - D6 - | E6 D6 B5 A5 G5 A5 B5 G5 A5 - E5 - G5 - - -', bass: 'G2 . D3 . G2 . D3 . F2 . C3 . F2 . C3 . A2 . E3 . A2 . E3 . D3 . G2 . . . . .', drums: 'k.hk.hs.hk.hs.h.' },
+    meso: { bpm: 100, drone: [33], lead: 'A4 - Bb4 - C5 - D5 - E5 - F5 E5 D5 - - - | C5 - D5 E5 - D5 C5 Bb4 A4 - - - G4 - A4 -', bass: 'A2 - - - E2 - - - F2 - - - E2 - - - A2 - - - D3 - - - E2 - - - A2 - - -', drums: 'k..k..s.k..k.ss.' },
+    slavic: { bpm: 120, lead: 'A4 - C5 - E5 - D5 C5 B4 - G4 - A4 - - - | E5 - F5 E5 D5 - C5 B4 C5 - A4 - B4 - - -', bass: 'A2 . E3 . A2 . E3 . G2 . D3 . G2 . D3 . F2 . C3 . F2 . C3 . E2 . B2 . E2 . . .', drums: 'k.h.s.h.k.hks.h.' },
     victory: { bpm: 150, once: true, lead: 'C5 E5 G5 C6 - - G5 C6 - - - - . . . .', bass: 'C3 - - - - - G2 C3 - - - - . . . .', drums: 'k...k...k.s.k...' },
   };
   for (const k in T) { T[k].L = parseLine(T[k].lead); T[k].B = parseLine(T[k].bass); }

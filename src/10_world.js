@@ -272,11 +272,12 @@ class Overworld {
       const kind = this.map.particles || 'petals';
       if (kind === 'snow') this.parts.push({ k: 'snow', x: this.cam.x + Math.random() * (W + 80) - 40, y: this.cam.y - 8, vx: -.1 + Math.random() * .3, vy: .4 + Math.random() * .5, life: 700, ph: Math.random() * 6, s: chance(.3) ? 2 : 1 });
       else if (night > .5) this.parts.push({ k: 'fly', x: this.cam.x + Math.random() * W, y: this.cam.y + Math.random() * H, vx: 0, vy: 0, life: 300, ph: Math.random() * 6 });
-      else if (kind === 'leaves') this.parts.push({ k: 'petal', x: this.cam.x + Math.random() * (W + 80) - 40, y: this.cam.y - 8, vx: .4 + Math.random() * .4, vy: .25 + Math.random() * .25, life: 700, ph: Math.random() * 6, c: pick(['#7a9a4a', '#a8c070', '#5a7a3a']) });
+      else if (kind === 'sand') this.parts.push({ k: 'sand', x: this.cam.x - 10, y: this.cam.y + Math.random() * H, vx: 1.2 + Math.random() * 1.2, vy: (Math.random() - .5) * .2, life: 400, ph: Math.random() * 6, c: pick(this.map.pColors) });
+      else if (kind === 'leaves' || kind === 'blossom') this.parts.push({ k: 'petal', x: this.cam.x + Math.random() * (W + 80) - 40, y: this.cam.y - 8, vx: .4 + Math.random() * .4, vy: .25 + Math.random() * .25, life: 700, ph: Math.random() * 6, c: pick(this.map.pColors || ['#7a9a4a', '#a8c070', '#5a7a3a']) });
       else this.parts.push({ k: 'petal', x: this.cam.x + Math.random() * (W + 80) - 40, y: this.cam.y - 8, vx: .2 + Math.random() * .3, vy: .35 + Math.random() * .3, life: 700, ph: Math.random() * 6, c: pick(['#ff9f1a', '#ffd23a', '#ff6a3a']) });
     }
-    for (const q of this.parts) { q.life--; q.ph += .05; if (q.k === 'petal' || q.k === 'snow') { q.x += q.vx + Math.sin(q.ph) * .4; q.y += q.vy; } else { q.x += Math.sin(q.ph * 1.3) * .3; q.y += Math.cos(q.ph) * .25; } }
-    this.parts = this.parts.filter(q => q.life > 0 && q.y < this.cam.y + H + 10);
+    for (const q of this.parts) { q.life--; q.ph += .05; if (q.k === 'petal' || q.k === 'snow') { q.x += q.vx + Math.sin(q.ph) * .4; q.y += q.vy; } else if (q.k === 'sand') { q.x += q.vx; q.y += q.vy + Math.sin(q.ph) * .2; } else { q.x += Math.sin(q.ph * 1.3) * .3; q.y += Math.cos(q.ph) * .25; } }
+    this.parts = this.parts.filter(q => q.life > 0 && q.y < this.cam.y + H + 10 && q.x < this.cam.x + W + 20);
   }
   draw(ctx) {
     const m = this.map, [px, py] = this.entityPos(this.p);
@@ -330,6 +331,7 @@ class Overworld {
       for (const q of this.parts) {
         const qx = Math.round(q.x - cx), qy = Math.round(q.y - cy);
         if (q.k === 'snow') { ctx.fillStyle = '#ffffff'; ctx.fillRect(qx, qy, q.s, q.s); }
+        else if (q.k === 'sand') { ctx.fillStyle = q.c; ctx.fillRect(qx, qy, 2, 1); }
         else if (q.k === 'petal') { ctx.fillStyle = q.c; ctx.fillRect(qx, qy, 2, 1); ctx.fillRect(qx + (Math.sin(q.ph) > 0 ? 1 : 0), qy + 1, 1, 1); }
         else { const a = .5 + .5 * Math.sin(q.ph * 3); ctx.fillStyle = `rgba(220,255,140,${a})`; ctx.fillRect(qx, qy, 1, 1); ctx.fillStyle = `rgba(220,255,140,${a * .3})`; ctx.fillRect(qx - 1, qy - 1, 3, 3); }
       }

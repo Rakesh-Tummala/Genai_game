@@ -135,6 +135,7 @@ function buildMoreCities() {
     interior('tyr_hall', 'Hall of Oaths', 'norse', HALL_ROWS, 'P', [{ id: 'tyr', name: 'Tyr', look: 'tyr', x: 5, y: 2, dir: 'down', trainer: 'tyr', boss: true }], ['norse', 26, 8, 'down'], { music: 'boss', bg: 'oaths' });
     interior('valgrind_hall', 'Valgrind', 'norse', PALACE_ROWS, 'F', [{ id: 'odin', name: 'Odin', look: 'odin', x: 6, y: 2, dir: 'down', trainer: 'odin', boss: true }], ['norse', 16, 8, 'down'], { music: 'boss', bg: 'valgrind' });
   }
+  buildCities2();
   // shop/shrine greetings per city
   for (const id of ['greece_shop', 'norse_shop']) MAPS[id].greet = id === 'greece_shop' ? 'Welcome to the Agora! Orbs from every city, fair prices.' : 'Welcome, frost-walker! Warm herbs and strong orbs here.';
 }

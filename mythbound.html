@@ -245,6 +245,11 @@ const Sound = (() => {
     boss: { bpm: 168, drone: [36], lead: 'C5 Db5 E5 C5 F5 E5 Db5 C5 G5 - Ab5 G5 F5 E5 Db5 - | C6 B5 Ab5 G5 F5 E5 F5 G5 Ab5 G5 F5 E5 Db5 - C5 -', bass: 'C2 C3 C2 C3 C2 C3 Db2 Db3 C2 C3 C2 C3 C2 C3 Db2 Db3 F2 F3 F2 F3 G2 G3 G2 G3 Ab2 Ab3 G2 G3 Db2 Db3 C2 C3', drums: 'kkhsk.hskkhsk.ss' },
     greece: { bpm: 116, lead: 'D5 - A4 - D5 E5 F5 - E5 D5 C5 - D5 - - - | F5 - G5 A5 - G5 F5 E5 D5 - E5 F5 E5 - - -', bass: 'D3 . A2 . D3 . A2 . C3 . G2 . D3 . . . F2 . C3 . G2 . D3 . A2 . E3 . A2 . . .', drums: 'k.h.k.h.s.h.k.hh' },
     norse: { bpm: 92, drone: [33, 40], lead: 'A4 - - C5 E5 - D5 C5 B4 - - - G4 - A4 - | C5 - D5 E5 - - G5 E5 D5 - C5 B4 A4 - - -', bass: 'A2 - - - - - - - G2 - - - - - - - F2 - - - - - - - E2 - - - G2 - - -', drums: 'k.......k...s...' },
+    egypt: { bpm: 112, drone: [38], lead: 'D5 Eb5 F#5 - G5 F#5 Eb5 D5 C5 - D5 - - - - - | A4 - Bb4 C5 D5 - Eb5 D5 C5 Bb4 A4 - D5 - - -', bass: 'D3 . D3 . A2 . D3 . C3 . C3 . D3 . . . D3 . D3 . G2 . G2 . A2 . A2 . D3 . . .', drums: 'k.hk.hs.k.hk.sh.' },
+    japan: { bpm: 96, lead: 'E5 - F5 - A5 - - - B5 A5 F5 E5 - - - - | C5 - E5 F5 A5 - F5 E5 B4 - C5 - E5 - - -', bass: 'E2 - - - - - - - A2 - - - - - - - F2 - - - - - - - E2 - - - B2 - - -', drums: 'k...h...k.k.s...' },
+    celtic: { bpm: 132, lead: 'G5 A5 B5 A5 G5 E5 D5 E5 G5 - A5 - B5 - D6 - | E6 D6 B5 A5 G5 A5 B5 G5 A5 - E5 - G5 - - -', bass: 'G2 . D3 . G2 . D3 . F2 . C3 . F2 . C3 . A2 . E3 . A2 . E3 . D3 . G2 . . . . .', drums: 'k.hk.hs.hk.hs.h.' },
+    meso: { bpm: 100, drone: [33], lead: 'A4 - Bb4 - C5 - D5 - E5 - F5 E5 D5 - - - | C5 - D5 E5 - D5 C5 Bb4 A4 - - - G4 - A4 -', bass: 'A2 - - - E2 - - - F2 - - - E2 - - - A2 - - - D3 - - - E2 - - - A2 - - -', drums: 'k..k..s.k..k.ss.' },
+    slavic: { bpm: 120, lead: 'A4 - C5 - E5 - D5 C5 B4 - G4 - A4 - - - | E5 - F5 E5 D5 - C5 B4 C5 - A4 - B4 - - -', bass: 'A2 . E3 . A2 . E3 . G2 . D3 . G2 . D3 . F2 . C3 . F2 . C3 . E2 . B2 . E2 . . .', drums: 'k.h.s.h.k.hks.h.' },
     victory: { bpm: 150, once: true, lead: 'C5 E5 G5 C6 - - G5 C6 - - - - . . . .', bass: 'C3 - - - - - G2 C3 - - - - . . . .', drums: 'k...k...k.s.k...' },
   };
   for (const k in T) { T[k].L = parseLine(T[k].lead); T[k].B = parseLine(T[k].bass); }
@@ -915,6 +920,167 @@ function makeTeam(tr) {
   return tr.team.map(([s, l, moves]) => { const c = newCreature(s, l); if (moves) c.moves = moves.map(id => ({ id, pp: MOVES[id].pp })); return c; });
 }
 
+// ---- 05_data_zz_cities2.js ----
+// =====================================================================
+//  STAGE 3 DATA (part 2): Egypt, Japan, Celtic, Mesopotamia, Slavic
+//  Gods are portrayed respectfully, as fictional ceremonial trials.
+// =====================================================================
+Object.assign(CITY_INFO, {
+  egypt: { built: true, unlock: () => !!Game.flags.beatOdin, arrive: ['egypt', 15, 27, 'up'], god: 'Ra', needs: 'Pass Odin\'s trial in Asgard' },
+  japan: { built: true, unlock: () => !!Game.flags.beatRa, arrive: ['japan', 15, 27, 'up'], god: 'Amaterasu', needs: 'Pass Ra\'s trial in Heliopolis' },
+  celtic: { built: true, unlock: () => !!Game.flags.beatAmaterasu, arrive: ['celtic', 15, 27, 'up'], god: 'The Dagda', needs: 'Pass Amaterasu\'s trial in Takama' },
+  meso: { built: true, unlock: () => !!Game.flags.beatDagda, arrive: ['meso', 15, 27, 'up'], god: 'Marduk', needs: 'Pass the Dagda\'s trial in Tir na nOg' },
+  slavic: { built: true, unlock: () => !!Game.flags.beatMarduk, arrive: ['slavic', 15, 27, 'up'], god: 'Perun', needs: 'Pass Marduk\'s trial in Babylon' },
+});
+Object.assign(MOVES, {
+  solarbarque: { name: 'Solar Barque', type: 'Light', pow: 115, acc: 95, pp: 5, sig: true, fx: { status: { kind: 'burn', ch: .3 } } },
+  mirrorray: { name: 'Sacred Mirror Ray', type: 'Light', pow: 110, acc: 100, pp: 5, sig: true, sure: true, fx: { foe: { atk: -1 }, foeCh: .4 } },
+  seasonsharp: { name: 'Harp of Seasons', type: 'Grove', pow: 105, acc: 100, pp: 5, sig: true, fx: { drain: .35 } },
+  sevenwinds: { name: 'Seven Winds', type: 'Sky', pow: 115, acc: 95, pp: 5, sig: true, fx: { bind: .4 } },
+  thunderaxe: { name: 'Thunder Axe', type: 'Storm', pow: 120, acc: 95, pp: 5, sig: true, fx: { stun: .3, breakShield: true } },
+});
+const LT = (o) => Object.assign({ reward: 100, music: 'boss', lieutenant: true }, o);
+const GOD = (o) => Object.assign({ reward: 160, music: 'boss', god: true }, o);
+Object.assign(TRAINERS, {
+  // ---------------- EGYPT (Heliopolis) ----------------
+  nefer: { name: 'Scribe Nefer', title: 'Trainer', look: 'eg_scribe', team: [['scarabix', 32], ['uraeling', 32], ['bennuling', 33], ['sobeken', 33]], reward: 55, music: 'battle', flag: 'beatNefer',
+    intro: ['I record every battle on papyrus. Let us write a good one!'], lose: 'A fine chapter! The lieutenants will read it.' },
+  khafra: { name: 'Charioteer Khafra', title: 'Trainer', look: 'eg_charioteer', team: [['sobeken', 33], ['ammitar', 33], ['sphinxel', 34], ['scarabix', 34]], reward: 55, music: 'battle', flag: 'beatKhafra',
+    intro: ['My wheels have crossed the whole desert. Keep up with me!'], lose: 'You outpaced my chariot. Impressive!' },
+  anubis: LT({ name: 'Anubis', title: 'Lieutenant of Ra', look: 'anubis', team: [['ammitar', 35], ['scarabix', 36], ['sphinxel', 36], ['uraeling', 36], ['ammitar', 37]], flag: 'beatAnubis', bg: 'tomb',
+    requires: ['beatNefer', 'beatKhafra'], blocked: 'ANUBIS: The tomb opens only to those who have faced the city\'s trainers, Nefer and Khafra.',
+    confirm: 'Incense curls through the dark tomb. Accept the trial of Anubis?',
+    intro: ['ANUBIS: I guide travellers through the hall of judgement and weigh each heart against a feather.', 'ANUBIS: Show me a heart that is light, honest and brave.'],
+    lose: 'ANUBIS: Your heart is lighter than the feather. You may pass.', after: ['ANUBIS: Walk in balance, Tamer.'] }),
+  sekhmet: LT({ name: 'Sekhmet', title: 'Lieutenant of Ra', look: 'sekhmet', team: [['sphinxel', 36], ['bennuling', 36], ['uraeling', 37], ['sphinxel', 38]], flag: 'beatSekhmet', bg: 'lioness',
+    requires: ['beatNefer', 'beatKhafra'], blocked: 'SEKHMET: Prove yourself to Nefer and Khafra first, little cub.',
+    confirm: 'A desert wind as hot as a forge fills the hall. Accept the trial of Sekhmet?',
+    intro: ['SEKHMET: I am the fierce heat of the noonday sun - and the healer who cools the fever after.', 'SEKHMET: Fight with fire, and remember mercy!'],
+    lose: 'SEKHMET: You burn bright, and you know when to stop. A true healer\'s heart.', after: ['SEKHMET: Rest well. The sun is strong today.'] }),
+  set: LT({ name: 'Set', title: 'Lieutenant of Ra', look: 'set', team: [['apepling', 36], ['sobeken', 37], ['ammitar', 37], ['apepling', 38]], flag: 'beatSet', bg: 'nile',
+    requires: ['beatNefer', 'beatKhafra'], blocked: 'SET: The storm waits for no one - except those who skipped Nefer and Khafra.',
+    confirm: 'The sun-barque rocks in a sudden sandstorm. Accept the trial of Set?',
+    intro: ['SET: Each night I stand at the prow of the sun-barque and hold back the chaos serpent.', 'SET: Storms and deserts are my domain. Let us see if you can weather them!'],
+    lose: 'SET: Ha! You held your ground like a rock in the sand. Well fought.', after: ['SET: Even storms must make way for the sunrise.'] }),
+  ra: GOD({ name: 'Ra', title: 'Sun of Heliopolis', look: 'ra', team: [['sphinxel', 39], ['uraeling', 39], ['scarabix', 40], ['sobeken', 40], ['ammitar', 40], ['bennurah', 41, ['solarbarque', 'firewing', 'solarflare', 'blessing']]], flag: 'beatRa', bg: 'suntemple', sigSp: 'bennurah',
+    requires: ['beatAnubis', 'beatSekhmet', 'beatSet'], blocked: 'RA: First face Anubis, Sekhmet and Set. The sun rises in its proper order.',
+    confirm: 'Golden light fills the temple. Begin the Trial of the Sun?',
+    intro: ['Sunlight pours through the temple doors like liquid gold.', 'RA: Each day I sail across the sky so the world may see. Each night I journey through the dark and return.', 'RA: Show me that your bond can rise again, however long the night.', 'RA: Let the trial of the sun begin!'],
+    lose: 'RA: Like the sunrise, you return stronger each time. Heliopolis honours you.', after: ['RA: The road east to Takama is open. Amaterasu awaits.'],
+    sigLine: 'Bennurah blazes like the dawn. The Solar Barque rises behind it!',
+    ending: ['The temple glows with morning light.', 'RA: Take the Sun Seal of Heliopolis.', 'You received the SUN SEAL!', 'The mist on the road to TAKAMA has lifted.'] }),
+  // ---------------- JAPAN (Takama) ----------------
+  hana: { name: 'Shrine Maiden Hana', title: 'Trainer', look: 'jp_miko', team: [['kitsunko', 36], ['chochibi', 36], ['kappling', 37], ['tanukin', 37]], reward: 60, music: 'battle', flag: 'beatHana',
+    intro: ['Please bow before we begin. Good manners make good battles!'], lose: 'Thank you for a wonderful match. Please visit the shrine.' },
+  kenji: { name: 'Ronin Kenji', title: 'Trainer', look: 'jp_ronin', team: [['tengumi', 37], ['raikitt', 37], ['tanukin', 38], ['ryugo', 38]], reward: 60, music: 'battle', flag: 'beatKenji',
+    intro: ['A wandering warrior must test every road. Today, the road is you.'], lose: 'My path continues - wiser than before. Thank you.' },
+  tsukuyomi: LT({ name: 'Tsukuyomi', title: 'Lieutenant of Amaterasu', look: 'tsukuyomi', team: [['chochibi', 39], ['tanukin', 40], ['kitsunko', 40], ['chochibi', 41], ['kyubirei', 42]], flag: 'beatTsukuyomi', bg: 'moon',
+    requires: ['beatHana', 'beatKenji'], blocked: 'TSUKUYOMI: The moon is patient. Defeat Hana and Kenji, then return.',
+    confirm: 'Silver moonlight floods the hall. Accept the trial of Tsukuyomi?',
+    intro: ['TSUKUYOMI: I keep the night calm and the tides in order.', 'TSUKUYOMI: Fight quietly, like moonlight on water.'],
+    lose: 'TSUKUYOMI: Calm and clear. You understand the night.', after: ['TSUKUYOMI: Rest under the moon, Tamer.'] }),
+  raijin: LT({ name: 'Raijin', title: 'Lieutenant of Amaterasu', look: 'raijin', team: [['raikitt', 40], ['tengumi', 40], ['raikitt', 41], ['ryugo', 42]], flag: 'beatRaijin', bg: 'drums',
+    requires: ['beatHana', 'beatKenji'], blocked: 'RAIJIN: BOOM! Not yet! Beat Hana and Kenji first!',
+    confirm: 'Thunder drums boom through the hall. Accept the trial of Raijin?',
+    intro: ['RAIJIN: Hear my drums! Every beat is a thunderclap!', 'RAIJIN: Keep the rhythm, or be swept away by the storm!'],
+    lose: 'RAIJIN: What rhythm! You could play the thunder drums yourself!', after: ['RAIJIN: BOOM! ...sorry. Good luck!'] }),
+  susanoo: LT({ name: 'Susanoo', title: 'Lieutenant of Amaterasu', look: 'susanoo', team: [['ryugo', 39], ['raikitt', 40], ['kappling', 40], ['ryugo', 41]], flag: 'beatSusanoo', bg: 'stormsea',
+    requires: ['beatHana', 'beatKenji'], blocked: 'SUSANOO: The sea is wild, but it is not careless. Beat Hana and Kenji first.',
+    confirm: 'Waves crash and the wind howls. Accept the trial of Susanoo?',
+    intro: ['SUSANOO: I am the storm over the sea - wild, but I protect those I love.', 'SUSANOO: I once faced an eight-headed serpent. You will do!'],
+    lose: 'SUSANOO: Ha! You stood in my storm and did not blink. My sister will like you.', after: ['SUSANOO: Go on - Amaterasu is waiting.'] }),
+  amaterasu: GOD({ name: 'Amaterasu', title: 'Sun of Takama', look: 'amaterasu', team: [['kitsunko', 43], ['tengumi', 43], ['kappling', 43], ['ryugo', 44], ['chochibi', 44], ['kyubirei', 45, ['mirrorray', 'sunpyre', 'dawnlance', 'blessing']]], flag: 'beatAmaterasu', bg: 'sunshrine', sigSp: 'kyubirei',
+    requires: ['beatTsukuyomi', 'beatRaijin', 'beatSusanoo'], blocked: 'AMATERASU: Please meet my siblings and Raijin first. Then the sun will rise for you.',
+    confirm: 'The shrine doors open to a warm sunrise. Begin the Trial of the Sun Shrine?',
+    intro: ['A sacred mirror hangs above the shrine, catching the dawn.', 'AMATERASU: Once, I hid in a cave and the whole world went dark - until laughter and a mirror called me out.', 'AMATERASU: Light returns when we share joy. Show me the joy you share with your companions!', 'AMATERASU: Let the trial of the sun begin!'],
+    lose: 'AMATERASU: Your light is warm and kind. Takama shines for you.', after: ['AMATERASU: The road west to Tir na nOg is open.'],
+    sigLine: 'Kyubirei\'s nine tails glow. The Sacred Mirror catches the sun!',
+    ending: ['Cherry petals swirl through the shrine in the morning light.', 'AMATERASU: Take the Mirror Seal of Takama.', 'You received the MIRROR SEAL!', 'The mist on the road to TIR NA NOG has lifted.'] }),
+  // ---------------- CELTIC (Tir na nOg) ----------------
+  ciaran: { name: 'Bard Ciaran', title: 'Trainer', look: 'ce_bard', team: [['sidhel', 40], ['selkin', 40], ['pookin', 41], ['kelpling', 41]], reward: 65, music: 'battle', flag: 'beatCiaran',
+    intro: ['A song for the battle, and a battle for the song!'], lose: 'That will be a ballad by tonight. Well played!' },
+  aisling: { name: 'Druid Aisling', title: 'Trainer', look: 'ce_druid', team: [['cusith', 41], ['keenwail', 41], ['sidhel', 42], ['hartwyn', 42]], reward: 65, music: 'battle', flag: 'beatAisling',
+    intro: ['The oaks whispered that you were coming. Let us see if they were right.'], lose: 'The oaks were right. You carry the strength of the old forest.' },
+  morrigan: LT({ name: 'The Morrigan', title: 'Lieutenant of the Dagda', look: 'morrigan', team: [['keenwail', 43], ['pookin', 43], ['cusith', 44], ['keenwail', 45]], flag: 'beatMorrigan', bg: 'crows',
+    requires: ['beatCiaran', 'beatAisling'], blocked: 'THE MORRIGAN: The crows say you have not yet faced Ciaran and Aisling.',
+    confirm: 'Crows gather on the rafters, watching. Accept the trial of the Morrigan?',
+    intro: ['THE MORRIGAN: I see the threads of fate before they are woven.', 'THE MORRIGAN: Fate favours the bold. Show me boldness!'],
+    lose: 'THE MORRIGAN: The threads bend around you. Interesting.', after: ['THE MORRIGAN: Your fate is your own to weave.'] }),
+  lugh: LT({ name: 'Lugh', title: 'Lieutenant of the Dagda', look: 'lugh', team: [['sidhel', 43], ['hartwyn', 44], ['selkara', 44], ['sidhel', 44], ['hartwyn', 45]], flag: 'beatLugh', bg: 'lughhall',
+    requires: ['beatCiaran', 'beatAisling'], blocked: 'LUGH: Master the basics first - Ciaran and Aisling await you.',
+    confirm: 'The hall shines like noon. Accept the trial of Lugh of many skills?',
+    intro: ['LUGH: I am a smith, a harper, a poet and a champion - skilled in every art.', 'LUGH: Show me all your skills at once!'],
+    lose: 'LUGH: A true all-rounder! You would be welcome at any court.', after: ['LUGH: Keep learning. Every skill is a light.'] }),
+  manannan: LT({ name: 'Manannan', title: 'Lieutenant of the Dagda', look: 'manannan', team: [['selkin', 43], ['kelpling', 44], ['selkara', 45], ['kelpling', 45]], flag: 'beatManannan', bg: 'celticsea',
+    requires: ['beatCiaran', 'beatAisling'], blocked: 'MANANNAN: The sea mist hides me until you have faced Ciaran and Aisling.',
+    confirm: 'A cloak of sea mist rolls over the pier. Accept the trial of Manannan?',
+    intro: ['MANANNAN: My cloak of mist hides the islands of the blessed.', 'MANANNAN: Cross the waves to find me!'],
+    lose: 'MANANNAN: The mist parts for you. Sail well.', after: ['MANANNAN: The sea remembers kindness.'] }),
+  dagda: GOD({ name: 'The Dagda', title: 'Good God of Tir na nOg', look: 'dagda', team: [['cusith', 46], ['selkara', 46], ['kelpling', 46], ['pookin', 46], ['keenwail', 47], ['hartwyn', 47, ['seasonsharp', 'leafblade', 'dawnlance', 'blessing']]], flag: 'beatDagda', bg: 'dagdahall', sigSp: 'hartwyn',
+    requires: ['beatMorrigan', 'beatLugh', 'beatManannan'], blocked: 'THE DAGDA: Ho there! Meet the Morrigan, Lugh and Manannan first, then we feast - er, fight.',
+    confirm: 'A great harp plays by itself in the hall. Begin the Trial of the Dagda?',
+    intro: ['A cauldron that never empties bubbles beside the hearth.', 'THE DAGDA: Welcome, welcome! Have some stew. No? After the battle, then!', 'THE DAGDA: My harp plays the seasons into order. Let us see which season you are!', 'THE DAGDA: Let the trial begin!'],
+    lose: 'THE DAGDA: Ha ha! A summer of a Tamer! Now you MUST have some stew.', after: ['THE DAGDA: The road to Babylon is open. Take some bread for the journey.'],
+    sigLine: 'Hartwyn lowers its antlers. The Harp of Seasons begins to play!',
+    ending: ['The harp plays a warm summer tune and the hall fills with laughter.', 'THE DAGDA: Take the Harp Seal of Tir na nOg.', 'You received the HARP SEAL!', 'The mist on the road to BABYLON has lifted.'] }),
+  // ---------------- MESOPOTAMIA (Babylon) ----------------
+  ludin: { name: 'Scribe Ludin', title: 'Trainer', look: 'me_scribe', team: [['apkalu', 43], ['lamassel', 43], ['girtab', 44], ['humbabo', 44]], reward: 70, music: 'battle', flag: 'beatLudin',
+    intro: ['I have written this battle on a clay tablet already. Let us see if I guessed the ending.'], lose: 'I will have to bake a new tablet.' },
+  ishmi: { name: 'Archer Ishmi', title: 'Trainer', look: 'me_archer', team: [['anzoo', 43], ['girtab', 44], ['mushush', 44], ['lamassel', 44]], reward: 70, music: 'battle', flag: 'beatIshmi',
+    intro: ['I never miss a target. Let us see if you can dodge!'], lose: 'You were the target that got away. Well done!' },
+  ishtar: LT({ name: 'Ishtar', title: 'Lieutenant of Marduk', look: 'ishtar', team: [['anzoo', 45], ['mushush', 46], ['lamassar', 46], ['gugalan', 47]], flag: 'beatIshtar', bg: 'ishtar',
+    requires: ['beatLudin', 'beatIshmi'], blocked: 'ISHTAR: My gate stays shut until you have faced Ludin and Ishmi.',
+    confirm: 'The blue-glazed gate shimmers like the evening star. Accept the trial of Ishtar?',
+    intro: ['ISHTAR: I am the morning and the evening star, bright and bold.', 'ISHTAR: My Bull of Heaven has been waiting for a worthy opponent!'],
+    lose: 'ISHTAR: You shine almost as brightly as a star. Almost!', after: ['ISHTAR: Follow the stars, Tamer.'] }),
+  nergal: LT({ name: 'Nergal', title: 'Lieutenant of Marduk', look: 'nergal', team: [['girtab', 45], ['mushush', 46], ['girtab', 46], ['humbabo', 47]], flag: 'beatNergal', bg: 'nergal',
+    requires: ['beatLudin', 'beatIshmi'], blocked: 'NERGAL: Face Ludin and Ishmi first. Then come down to my hall.',
+    confirm: 'The hall is warm and quiet, like the earth at night. Accept the trial of Nergal?',
+    intro: ['NERGAL: I rule the great below and guard the fierce heat of midsummer.', 'NERGAL: Endure the heat, and you will have my respect.'],
+    lose: 'NERGAL: You endured. That is the hardest skill of all.', after: ['NERGAL: Go back to the sunlight, Tamer.'] }),
+  enlil: LT({ name: 'Enlil', title: 'Lieutenant of Marduk', look: 'enlil', team: [['anzoo', 46], ['apkalu', 46], ['anzoo', 47], ['lamassar', 47], ['humbabo', 47]], flag: 'beatEnlil', bg: 'meso',
+    requires: ['beatLudin', 'beatIshmi'], blocked: 'ENLIL: The wind blows only after Ludin and Ishmi have tested you.',
+    confirm: 'A strong wind sweeps over the river. Accept the trial of Enlil?',
+    intro: ['ENLIL: I am the wind between heaven and earth, keeper of the tablets of law.', 'ENLIL: Let the wind test your footing!'],
+    lose: 'ENLIL: You stood firm in my wind. Your footing is true.', after: ['ENLIL: Let the wind carry you to Esagila.'] }),
+  marduk: GOD({ name: 'Marduk', title: 'Lord of Babylon', look: 'marduk', team: [['lamassar', 48], ['anzoo', 48], ['girtab', 48], ['apkalu', 48], ['humbabo', 48], ['mushush', 49, ['sevenwinds', 'sunpyre', 'hexbolt', 'venomfang']]], flag: 'beatMarduk', bg: 'esagila', sigSp: 'mushush',
+    requires: ['beatIshtar', 'beatNergal', 'beatEnlil'], blocked: 'MARDUK: Ishtar, Nergal and Enlil must speak for you first.',
+    confirm: 'The great ziggurat hums with ancient power. Begin the Trial of Babylon?',
+    intro: ['Fifty names are carved in gold above the high temple.', 'MARDUK: Long ago I calmed the waters of chaos with the seven winds and set the stars in their paths.', 'MARDUK: Order is not cruelty, Tamer - it is a garden kept with care. Show me how you care for your companions.', 'MARDUK: Let the trial of Babylon begin!'],
+    lose: 'MARDUK: Wise and caring. You keep your garden well.', after: ['MARDUK: The last road leads north, to Kitezh. Perun awaits.'],
+    sigLine: 'Mushush rears up on the gate. The Seven Winds begin to howl!',
+    ending: ['The stars above the ziggurat shine in perfect order.', 'MARDUK: Take the Star Seal of Babylon.', 'You received the STAR SEAL!', 'The mist on the final road to KITEZH has lifted.'] }),
+  // ---------------- SLAVIC (Kitezh) ----------------
+  bogdan: { name: 'Hunter Bogdan', title: 'Trainer', look: 'sl_hunter', team: [['leshko', 45], ['zharling', 45], ['kikimor', 46], ['zmeyok', 46]], reward: 75, music: 'battle', flag: 'beatBogdan',
+    intro: ['I track firebirds through the birch woods. Today I track you!'], lose: 'You slipped my snare! Good hunting, friend.' },
+  milena: { name: 'Weaver Milena', title: 'Trainer', look: 'sl_weaver', team: [['rusalin', 45], ['domovik', 45], ['vodyan', 46], ['kikimor', 46]], reward: 75, music: 'battle', flag: 'beatMilena',
+    intro: ['Every thread has its place. Let us see how your threads hold!'], lose: 'A strong weave. Mokosh would approve.' },
+  svarog: LT({ name: 'Svarog', title: 'Lieutenant of Perun', look: 'svarog', team: [['zharling', 47], ['domovik', 48], ['zmeyok', 48], ['zharplume', 49]], flag: 'beatSvarog', bg: 'forge',
+    requires: ['beatBogdan', 'beatMilena'], blocked: 'SVAROG: The forge is not hot enough yet. Beat Bogdan and Milena first.',
+    confirm: 'The heavenly forge roars. Accept the trial of Svarog?',
+    intro: ['SVAROG: I forged the sun and taught people to work iron.', 'SVAROG: Let us see what you are made of!'],
+    lose: 'SVAROG: Strong as tempered steel! Well forged.', after: ['SVAROG: Keep your spirit hot and your head cool.'] }),
+  mokosh: LT({ name: 'Mokosh', title: 'Lieutenant of Perun', look: 'mokosh', team: [['domovik', 47], ['leshko', 48], ['rusalin', 48], ['kikimor', 48], ['leshko', 49]], flag: 'beatMokosh', bg: 'loom',
+    requires: ['beatBogdan', 'beatMilena'], blocked: 'MOKOSH: Bogdan and Milena first, dear. Then sit and we shall see.',
+    confirm: 'A great loom clicks softly in the hall. Accept the trial of Mokosh?',
+    intro: ['MOKOSH: I spin the threads of the harvest and keep the moist earth fertile.', 'MOKOSH: A good battle is like weaving - patient, careful, and bold at the right moment.'],
+    lose: 'MOKOSH: A beautiful weave. You have patient hands.', after: ['MOKOSH: Take care of the earth, and it takes care of you.'] }),
+  veles: LT({ name: 'Veles', title: 'Lieutenant of Perun', look: 'veles', team: [['vodyan', 47], ['rusalin', 47], ['leshko', 48], ['zmeyok', 49]], flag: 'beatVeles', bg: 'slavicriver',
+    requires: ['beatBogdan', 'beatMilena'], blocked: 'VELES: The river is deep. Face Bogdan and Milena before you wade in.',
+    confirm: 'Mist rises from the river and cattle low in the meadow. Accept the trial of Veles?',
+    intro: ['VELES: I watch over herds, rivers and the world below the roots.', 'VELES: Perun and I have argued for ages, but we both want the world in balance.'],
+    lose: 'VELES: Clever and steady. The river carries you onward.', after: ['VELES: Tell Perun I said hello. He will grumble.'] }),
+  perun: GOD({ name: 'Perun', title: 'Thunderer of Kitezh', look: 'perun', team: [['zmeyok', 50], ['leshko', 50], ['vodyan', 50], ['domovik', 50], ['rusalin', 50], ['zharplume', 50, ['thunderaxe', 'sunpyre', 'firewing', 'tailwind']]], flag: 'beatPerun', bg: 'oak', sigSp: 'zharplume',
+    requires: ['beatSvarog', 'beatMokosh', 'beatVeles'], blocked: 'PERUN: Svarog, Mokosh and Veles must test you first. Yes, even Veles.',
+    confirm: 'Thunder rolls through the great oak hall. Begin the final Trial of Kitezh?',
+    intro: ['Lightning flickers through the branches of a mighty oak growing inside the hall.', 'PERUN: So, the Tamer who has walked the whole Mist Road stands before me at last.', 'PERUN: My thunder brings the spring rain after every winter. Show me that you bring life wherever you go!', 'PERUN: Let the final trial begin!'],
+    lose: 'PERUN: The thunder salutes you! Spring has come to all eight cities.', after: ['PERUN: You have walked the whole Mist Road. Go and visit your friends in every city!'],
+    sigLine: 'Zharplume blazes on the oak branch. The Thunder Axe crackles in the storm!',
+    ending: ['The oak bursts into spring leaves and thunder rolls across all eight cities.', 'PERUN: Take the Oak Seal, last of the eight.', 'You received the OAK SEAL!', 'ALL EIGHT SEALS COLLECTED! You have completed every trial on the Mist Road.', 'Thank you for playing MYTHBOUND. Keep taming - the Bestiary still has creatures to fill!'] }),
+});
+TRAINERS.odin.ending = ['The torches flare gold and the ravens cry out together.', 'ODIN: Take the Raven Seal, sign of Asgard\'s respect.', 'You received the RAVEN SEAL!', 'The mist on the road to HELIOPOLIS has lifted.'];
+TRAINERS.odin.after = ['ODIN: The road south to the desert city of Heliopolis is open.'];
+
 // ---- 06_sprites.js ----
 // =====================================================================
 //  PROCEDURAL PIXEL ART
@@ -1381,6 +1547,43 @@ const THEMES = {
     pillar: ['#8a6a48', '#5e4430', '#c8a040'], lamp: ['#3a2a1a', '#c8a040'], rock: ['#5a6470', '#7a8490', '#d8e4ee'], gold: ['#b8a060', '#8a7440', '#d8c080'], fence: ['#6a4e32', '#4a3420', '#8a6a48'],
   },
 };
+Object.assign(THEMES, {
+  egypt: {
+    grass: ['#e8c888', '#d8b070', '#f4dca8'], tall: ['#7a9a3a', '#8aaa4a', '#c8d870'], deep: ['#5a7a2a', '#6a8a3a', '#a8c860'],
+    path: ['#c8a060', '#b08850', '#d8b880'], plaza: ['#d8b878', '#b89858', '#ecd098'], water: ['#2a7aa8', '#5ab0d8'],
+    tree: 'palm', treeC: ['#7a5a30', '#2f6a2a', '#3f8a3a', '#5aa84a', '#8ac860'], flowers: ['#5a8ad8', '#ffffff', '#e8c040'],
+    floor: ['#d8b878', '#b89858'], wall: ['#e8d0a0', '#c8a870', '#8a6a40', '#2a5ab0', '#e8c040'], carpet: ['#2a4a98', '#e8c040', '#c84a3a'],
+    pillar: ['#e8d0a0', '#c8a870', '#2a8a9a'], lamp: ['#c8a060', '#e8c040'], rock: ['#b89060', '#d8b080', '#f0d8a8'], gold: ['#e8c040', '#c8a020', '#fff0a0'], fence: ['#c8a060', '#a88040', '#e8c890'], bridge: ['#a87a4a', '#7a5430'],
+  },
+  japan: {
+    grass: ['#6aa84a', '#5a9440', '#86c060'], tall: ['#3a7a3a', '#4a9a48', '#9ad070'], deep: ['#2a6a4a', '#3a8a5a', '#a8e0a0'],
+    path: ['#c8c0b0', '#a8a090', '#e0d8c8'], plaza: ['#a8a8a0', '#888880', '#c8c8c0'], water: ['#2a6a9a', '#6aa8d8'],
+    tree: 'cherry', treeC: ['#5a3a2a', '#e88aa8', '#f4a8c0', '#ffd0e0', '#ffffff'], flowers: ['#ff6a8a', '#ffffff', '#e8c040'],
+    floor: ['#c8c890', '#a8a870'], wall: ['#e8e0d0', '#c8c0b0', '#5a3a2a', '#c83a2a', '#2a2a2a'], carpet: ['#c83a2a', '#e8c040', '#e85a4a'],
+    pillar: ['#c83a2a', '#8a2a1a', '#2a2a2a'], lamp: ['#888880', '#a8a8a0'], rock: ['#7a7a7a', '#9a9a9a', '#c8c8c8'], gold: ['#e8c040', '#c8a020', '#fff0a0'], fence: ['#c83a2a', '#8a2a1a', '#e85a4a'], bridge: ['#c83a2a', '#8a2a1a'],
+  },
+  celtic: {
+    grass: ['#4a9a4a', '#3a843c', '#68b85a'], tall: ['#5a7a3a', '#7a5a8a', '#b088c8'], deep: ['#2a5a3a', '#3a704a', '#88c088'],
+    path: ['#a89a78', '#8a7c5a', '#c8b898'], plaza: ['#9a9a90', '#7a7a70', '#b8b8b0'], water: ['#2a5a7a', '#5a8ab0'],
+    tree: 'round', treeC: ['#4a3420', '#1e4a2a', '#2a5e34', '#3a7a42', '#6aa860'], flowers: ['#b088e8', '#ffe060', '#4a2a6a'],
+    floor: ['#8a6a4a', '#6a4e32'], wall: ['#a8a090', '#888070', '#5a5040', '#2a6a3a', '#e8c040'], carpet: ['#2a6a3a', '#e8c040', '#3a8a4a'],
+    pillar: ['#9a9a90', '#7a7a70', '#c8b878'], lamp: ['#5a5040', '#e8c040'], rock: ['#7a7a80', '#9a9aa0', '#c8c8d0'], gold: ['#c8b060', '#a89040', '#e8d890'], fence: ['#7a5a3a', '#5a3a20', '#9a7a5a'], bridge: ['#8a8a80', '#6a6a60'],
+  },
+  meso: {
+    grass: ['#c8b078', '#b09860', '#d8c490'], tall: ['#8a9a3a', '#9aaa4a', '#d8d870'], deep: ['#6a7a2a', '#7a8a3a', '#b8c860'],
+    path: ['#b87a4a', '#9a6038', '#d8986a'], plaza: ['#c8a878', '#a88858', '#e0c898'], water: ['#3a6a8a', '#6a9ab8'],
+    tree: 'palm', treeC: ['#6a4a28', '#3a6a2a', '#4a7a32', '#6a9a42', '#9ac060'], flowers: ['#e8c040', '#3a6ab8', '#8a2a1a'],
+    floor: ['#c8a878', '#a88858'], wall: ['#3a5a9a', '#2a4a7a', '#1a2a4a', '#e8c050', '#ffffff'], carpet: ['#3a5a9a', '#e8c050', '#4a6ab8'],
+    pillar: ['#c8a878', '#a88858', '#e8c050'], lamp: ['#8a6a40', '#e8c050'], rock: ['#a88860', '#c8a880', '#e8d0a8'], gold: ['#e8c050', '#c8a030', '#fff0a0'], fence: ['#a87a4a', '#8a5a30', '#c89a6a'], bridge: ['#a87a4a', '#7a5430'],
+  },
+  slavic: {
+    grass: ['#7a9a4a', '#6a8a3a', '#9ab85a'], tall: ['#a87a2a', '#c89a3a', '#e8c860'], deep: ['#5a6a3a', '#6a7a4a', '#a8b878'],
+    path: ['#8a7058', '#6a5440', '#a8907a'], plaza: ['#9a7a58', '#7a5a3a', '#b89a78'], water: ['#3a5a7a', '#6a8aa8'],
+    tree: 'birch', treeC: ['#f0f0e8', '#c8a030', '#e8b840', '#f0d060', '#3a3a3a'], flowers: ['#e83a3a', '#3a5ae8', '#f0d040'],
+    floor: ['#9a7a58', '#7a5a3a'], wall: ['#e8dcc8', '#c8b8a0', '#8a6a4a', '#c83a2a', '#2a5ab0'], carpet: ['#c83a2a', '#f0d040', '#e85a4a'],
+    pillar: ['#8a6a48', '#6a4a30', '#c83a2a'], lamp: ['#5a4030', '#e8b030'], rock: ['#7a7a70', '#9a9a90', '#c8c8c0'], gold: ['#e8b030', '#c89020', '#fff0a0'], fence: ['#8a6a48', '#6a4a30', '#a88a68'], bridge: ['#8a6a48', '#6a4a30'],
+  },
+});
 const Tiles = (() => {
   const cache = {};
   const px = (x, a, b, col) => { x.fillStyle = col; x.fillRect(a, b, 1, 1); };
@@ -1395,6 +1598,13 @@ const Tiles = (() => {
     grass(x, r); const c = T.treeC;
     if (T.tree === 'cypress') { x.fillStyle = c[0]; x.fillRect(7, 12, 2, 4); x.fillStyle = c[1]; x.beginPath(); x.ellipse(8, 7.5, 5, 7.5, 0, 0, 7); x.fill(); x.fillStyle = c[2]; x.beginPath(); x.ellipse(7.5, 7, 3.6, 6.4, 0, 0, 7); x.fill(); x.fillStyle = c[3]; x.fillRect(6, 3, 2, 6); px(x, 6, 2, c[4]); px(x, 7, 6, c[4]); }
     else if (T.tree === 'pine') { x.fillStyle = c[0]; x.fillRect(7, 12, 2, 4); for (let k = 0; k < 3; k++) { const y = 2 + k * 4, hw = 3 + k * 2; x.fillStyle = c[1 + (k % 2)]; x.beginPath(); x.moveTo(8, y); x.lineTo(8 + hw, y + 6); x.lineTo(8 - hw, y + 6); x.fill(); x.fillStyle = c[4]; x.fillRect(8 - hw + 1, y + 5, hw, 1); px(x, 8, y, c[4]); } }
+    else if (T.tree === 'palm') {
+      for (let k = 0; k < 6; k++) { x.fillStyle = k % 2 ? c[0] : shade(c[0], .2); x.fillRect(7 + (k > 3 ? 1 : 0), 15 - k * 2, 2, 2); }
+      for (let k = 0; k < 6; k++) { const a = -Math.PI / 2 + (k - 2.5) * .62; x.fillStyle = c[1 + (k % 3)]; x.save(); x.translate(9 + Math.cos(a) * 3, 4 + Math.sin(a) * 1.5 + 1); x.rotate(a); x.beginPath(); x.ellipse(1, 0, 5, 1.6, 0, 0, 7); x.fill(); x.restore(); }
+      x.fillStyle = '#7a4a20'; x.fillRect(8, 4, 2, 2);
+    }
+    else if (T.tree === 'cherry') { x.fillStyle = c[0]; x.fillRect(7, 9, 2, 7); x.fillRect(5, 9, 2, 2); for (const [ax, ay, rr, ci] of [[8, 7, 7, 1], [6, 6, 4.5, 2], [10, 5, 4, 2], [7, 4, 3, 3]]) { x.fillStyle = c[ci]; x.beginPath(); x.arc(ax, ay, rr, 0, 7); x.fill(); } for (let k = 0; k < 6; k++) px(x, 2 + r() * 12 | 0, 1 + r() * 10 | 0, c[4]); }
+    else if (T.tree === 'birch') { x.fillStyle = c[0]; x.fillRect(7, 6, 2, 10); x.fillStyle = c[4]; x.fillRect(7, 8, 1, 1); x.fillRect(8, 11, 1, 1); x.fillRect(7, 13, 1, 1); for (const [ax, ay, rr, ci] of [[8, 5, 5.5, 1], [6, 6, 3.5, 2], [10, 4, 3, 3]]) { x.fillStyle = c[ci]; x.beginPath(); x.arc(ax, ay, rr, 0, 7); x.fill(); } }
     else { x.fillStyle = c[0]; x.fillRect(6, 10, 4, 6); x.fillStyle = c[1]; x.beginPath(); x.arc(8, 7, 7.5, 0, 7); x.fill(); x.fillStyle = c[2]; x.beginPath(); x.arc(7, 6, 6, 0, 7); x.fill(); x.fillStyle = c[3]; x.beginPath(); x.arc(6, 4, 3.5, 0, 7); x.fill(); px(x, 5, 3, c[4]); px(x, 10, 6, c[4]); }
   }
   const P = {
@@ -1412,7 +1622,7 @@ const Tiles = (() => {
     'L': (x, r, f) => { plaza(x); x.fillStyle = T.lamp[0]; x.fillRect(7, 5, 2, 10); x.fillRect(5, 14, 6, 2); x.fillStyle = T.lamp[1]; x.fillRect(4, 4, 8, 2); x.fillStyle = f ? '#ffd040' : '#ff8a20'; x.fillRect(7, 1, 2, 3); px(x, 7 + f, 0, '#fff0a0'); },
     'S': (x, r) => { grass(x, r); x.fillStyle = '#6a4224'; x.fillRect(7, 9, 2, 7); x.fillStyle = '#b07a48'; x.fillRect(2, 2, 12, 8); x.fillStyle = '#8a5a32'; x.fillRect(2, 9, 12, 1); x.fillStyle = '#5a3a20'; x.fillRect(4, 4, 8, 1); x.fillRect(4, 6, 6, 1); },
     'R': (x, r) => { grass(x, r); const c = T.rock; x.fillStyle = c[0]; x.beginPath(); x.ellipse(8, 10, 7, 5.5, 0, 0, 7); x.fill(); x.fillStyle = c[1]; x.beginPath(); x.ellipse(7, 9, 5, 4, 0, 0, 7); x.fill(); px(x, 5, 7, c[2]); px(x, 6, 7, c[2]); },
-    'B': x => { x.fillStyle = '#a87a4a'; x.fillRect(0, 0, 16, 16); x.fillStyle = '#7a5430'; for (let i = 0; i < 16; i += 4) x.fillRect(i, 0, 1, 16); x.fillStyle = '#5a3a20'; x.fillRect(0, 0, 16, 1); x.fillRect(0, 15, 16, 1); },
+    'B': x => { const bc = T.bridge || ['#a87a4a', '#7a5430']; x.fillStyle = bc[0]; x.fillRect(0, 0, 16, 16); x.fillStyle = bc[1]; for (let i = 0; i < 16; i += 4) x.fillRect(i, 0, 1, 16); x.fillStyle = '#5a3a20'; x.fillRect(0, 0, 16, 1); x.fillRect(0, 15, 16, 1); },
     'Y': (x, r, f) => { const c = ['#ff5a5a', '#ffa040', '#ffe060', '#60d070', '#50a0ff', '#a070ff']; c.forEach((col, i) => { x.fillStyle = col; x.fillRect(0, i * 2 + 2, 16, 2); }); x.fillStyle = 'rgba(255,255,255,' + (f ? .35 : .15) + ')'; x.fillRect((f * 5) % 16, 2, 3, 12); x.fillStyle = '#e8e8f8'; x.fillRect(0, 0, 16, 2); x.fillRect(0, 14, 16, 2); },  // rainbow bridge
     'X': x => fill(x, '#0b0714'),
     'p': x => floor(x),
@@ -1464,6 +1674,46 @@ const BUILD_STYLE = {
   no_shrine: { wall: '#8a6444', band: '#5e3e24', roof: '#4a3020', roof2: '#2a1a10', sign: 'SHRINE', roofType: 'dragon', top: 14, win: 'shutter', logs: true, snow: true },
   forge: { wall: '#5a4a40', band: '#3a2a20', roof: '#4a3a30', roof2: '#2a1a14', sign: 'THUNDER FORGE', win: 'shutter', snow: true, chimney: true },
   oathhall: { wall: '#7a5434', band: '#5e3e24', roof: '#4a3020', roof2: '#2a1a10', sign: 'HALL OF OATHS', roofType: 'dragon', top: 14, win: 'shutter', logs: true, snow: true },
+  // Egypt
+  eg_house: { wall: '#e8d0a0', band: '#c8a870', roof: '#d8b878', roof2: '#b89858', roofType: 'flat', win: 'dark' },
+  eg_house2: { wall: '#f0dcb0', band: '#2a8a9a', roof: '#e0c088', roof2: '#c0a068', roofType: 'flat', win: 'dark' },
+  eg_shop: { wall: '#e8d0a0', band: '#2a5ab0', roof: '#d8b878', roof2: '#b89858', roofType: 'flat', win: 'dark', sign: 'SHOP', awning: '#2a5ab0' },
+  eg_shrine: { wall: '#f0dcb0', band: '#2a8a9a', roof: '#e8c040', roof2: '#b89858', roofType: 'pylon', top: 10, win: 'none', sign: 'SHRINE' },
+  anubis_tomb: { wall: '#3a3040', band: '#e8c040', roof: '#2a2030', roof2: '#e8c040', roofType: 'pylon', top: 12, win: 'none', sign: 'TOMB OF ANUBIS' },
+  sekhmet_hall: { wall: '#c86a3a', band: '#e8c040', roof: '#8a3a1a', roof2: '#e8c040', roofType: 'pylon', top: 12, win: 'none', sign: 'HALL OF SEKHMET' },
+  ra_temple: { wall: '#f4e0b0', band: '#2a5ab0', roof: '#e8c040', roof2: '#c8a020', roofType: 'pylon', top: 24, win: 'none', sign: 'TEMPLE OF RA', sun: true },
+  // Japan
+  jp_house: { wall: '#ece4d4', band: '#5a3a2a', roof: '#4a4a52', roof2: '#2a2a32', roofType: 'pagoda', win: 'shoji', timber: true },
+  jp_house2: { wall: '#ece4d4', band: '#5a3a2a', roof: '#5a4a3a', roof2: '#3a2a1a', roofType: 'pagoda', win: 'shoji', timber: true },
+  jp_shop: { wall: '#ece4d4', band: '#2a3a6a', roof: '#3a4a6a', roof2: '#1a2a4a', roofType: 'pagoda', win: 'shoji', timber: true, sign: 'SHOP', awning: '#2a3a6a' },
+  jp_shrine: { wall: '#ece4d4', band: '#c83a2a', roof: '#3a3a42', roof2: '#c83a2a', roofType: 'pagoda', top: 8, win: 'none', redPosts: true, sign: 'SHRINE' },
+  moon_hall: { wall: '#d8d8e8', band: '#2a2a5a', roof: '#2a2a5a', roof2: '#14143a', roofType: 'pagoda', top: 8, win: 'shoji', timber: true, sign: 'MOON HALL', moon: true },
+  thunder_hall: { wall: '#e0d8c8', band: '#c83a2a', roof: '#3a3a42', roof2: '#c83a2a', roofType: 'pagoda', top: 8, win: 'shoji', timber: true, sign: 'HALL OF THUNDER', drums: true },
+  sun_shrine: { wall: '#f4ece0', band: '#c83a2a', roof: '#3a3a42', roof2: '#e8c040', roofType: 'pagoda', tiers: 2, top: 26, win: 'none', redPosts: true, sign: 'SUN SHRINE' },
+  // Celtic
+  ce_house: { wall: '#a8a090', band: '#6a5a40', roof: '#c8a050', roof2: '#a07a30', roofType: 'thatch', top: 4, win: 'shutter' },
+  ce_house2: { wall: '#b8b0a0', band: '#6a5a40', roof: '#b89040', roof2: '#906a20', roofType: 'thatch', top: 4, win: 'shutter' },
+  ce_shop: { wall: '#a8a090', band: '#2a6a3a', roof: '#c8a050', roof2: '#a07a30', roofType: 'thatch', top: 4, win: 'shutter', sign: 'SHOP', awning: '#2a6a3a' },
+  ce_shrine: { wall: '#b8b8b0', band: '#2a6a3a', roof: '#88a060', roof2: '#5a7a3a', roofType: 'thatch', top: 8, win: 'none', sign: 'SHRINE', knot: true },
+  crow_hall: { wall: '#4a4a52', band: '#7a2a3a', roof: '#3a3a3a', roof2: '#1a1a1a', roofType: 'thatch', top: 10, win: 'shutter', sign: 'HALL OF THE MORRIGAN' },
+  lugh_hall: { wall: '#e8e0c8', band: '#e8c040', roof: '#d8b048', roof2: '#a88020', roofType: 'thatch', top: 10, win: 'shutter', sign: 'HALL OF LUGH', knot: true },
+  dagda_hall: { wall: '#8a7a60', band: '#2a6a3a', roof: '#b8903a', roof2: '#7a5a1a', roofType: 'thatch', top: 24, win: 'shutter', sign: 'HALL OF THE DAGDA', knot: true },
+  // Mesopotamia
+  me_house: { wall: '#c8a878', band: '#a88858', roof: '#b89868', roof2: '#987848', roofType: 'flat', win: 'dark', crenel: true },
+  me_house2: { wall: '#d8b888', band: '#3a5a9a', roof: '#c8a878', roof2: '#a88858', roofType: 'flat', win: 'dark', crenel: true },
+  me_shop: { wall: '#c8a878', band: '#3a5a9a', roof: '#b89868', roof2: '#987848', roofType: 'flat', win: 'dark', crenel: true, sign: 'SHOP', awning: '#3a5a9a' },
+  me_shrine: { wall: '#d8b888', band: '#3a5a9a', roof: '#c8a878', roof2: '#a88858', roofType: 'ziggurat', top: 10, win: 'none', sign: 'SHRINE' },
+  ishtar_gate: { wall: '#2a5aa8', band: '#e8c050', roof: '#2a5aa8', roof2: '#1a3a78', roofType: 'flat', win: 'none', crenel: true, figures: true, sign: 'GATE OF ISHTAR' },
+  nergal_hall: { wall: '#8a3a2a', band: '#e8c050', roof: '#6a2a1a', roof2: '#4a1a10', roofType: 'flat', win: 'dark', crenel: true, sign: 'HALL OF NERGAL' },
+  esagila: { wall: '#d8b888', band: '#2a5aa8', roof: '#c8a070', roof2: '#a88050', roofType: 'ziggurat', top: 30, win: 'none', sign: 'ESAGILA' },
+  // Slavic
+  sl_house: { wall: '#9a7a58', band: '#c83a2a', roof: '#6a4a30', roof2: '#4a3020', win: 'carved', logs: true },
+  sl_house2: { wall: '#8a6a48', band: '#2a5ab0', roof: '#7a5a38', roof2: '#4a3020', win: 'carved', logs: true },
+  sl_shop: { wall: '#9a7a58', band: '#c83a2a', roof: '#3a6a3a', roof2: '#1a4a1a', win: 'carved', logs: true, sign: 'SHOP', awning: '#c83a2a' },
+  sl_shrine: { wall: '#e8dcc8', band: '#2a5ab0', roof: '#4a6a3a', roof2: '#2a4a1a', roofType: 'onion', top: 22, win: 'arched', sign: 'SHRINE', dome: '#3a8ac8' },
+  svarog_forge: { wall: '#6a5a50', band: '#c83a2a', roof: '#4a3a30', roof2: '#2a1a14', win: 'carved', chimney: true, sign: 'FORGE OF SVAROG' },
+  mokosh_hall: { wall: '#e8dcc8', band: '#c83a2a', roof: '#8a3a2a', roof2: '#5a2a1a', roofType: 'onion', top: 22, win: 'arched', sign: 'HALL OF MOKOSH', dome: '#3a9a5a' },
+  perun_hall: { wall: '#f0e8d8', band: '#2a5ab0', roof: '#3a5a9a', roof2: '#1a3a6a', roofType: 'onion', top: 30, win: 'arched', sign: 'OAK HALL OF PERUN', dome: '#e8b030', domes: 3 },
   valgrind: { wall: '#7a5434', band: '#c8a040', roof: '#c8a040', roof2: '#8a6a20', sign: 'VALGRIND', roofType: 'dragon', top: 26, win: 'shutter', logs: true, shields: true },
 };
 function renderBuilding(b) {
@@ -1475,11 +1725,16 @@ function renderBuilding(b) {
   if (st.logs) { x.fillStyle = shade(st.wall, -.25); for (let y = wallY + 3; y < wallY + 26; y += 4) x.fillRect(2, y, w - 4, 1); }
   x.fillStyle = st.band; x.fillRect(2, wallY + 26, w - 4, 6); x.fillRect(2, wallY, w - 4, 2);
   const doorI = b.door - b.x;
+  if (st.timber) { x.fillStyle = st.band; for (let i = 0; i <= b.w; i++) x.fillRect(i * 16 - (i === b.w ? 4 : 0) + 1, wallY, 2, 32); }
+  if (rt === 'pylon') drawPylon(x, st, w, top, wallY);
   // windows
-  if (!st.columns) for (let i = 0; i < b.w; i++) {
+  if (!st.columns && st.win !== 'none') for (let i = 0; i < b.w; i++) {
     if (i === doorI || i === 0 || i === b.w - 1) continue;
     const wx = i * 16 + 3, wy = wallY + 6;
     if (st.win === 'arched') { x.fillStyle = '#1a2a50'; x.fillRect(wx + 1, wy + 2, 8, 10); x.beginPath(); x.arc(wx + 5, wy + 3, 4, Math.PI, 0); x.fill(); x.fillStyle = st.band; x.fillRect(wx, wy + 12, 10, 2); }
+    else if (st.win === 'dark') { x.fillStyle = '#2a1a0a'; x.fillRect(wx + 2, wy + 2, 6, 8); x.fillStyle = shade(st.wall, -.2); x.fillRect(wx + 1, wy + 10, 8, 2); }
+    else if (st.win === 'shoji') { x.fillStyle = '#f8f4e8'; x.fillRect(wx, wy, 10, 12); x.fillStyle = st.band; x.fillRect(wx + 4, wy, 1, 12); x.fillRect(wx, wy + 5, 10, 1); x.strokeStyle = st.band; x.strokeRect(wx + .5, wy + .5, 9, 11); }
+    else if (st.win === 'carved') { x.fillStyle = '#2a1a0a'; x.fillRect(wx + 2, wy + 2, 6, 8); x.fillStyle = '#ffd890'; x.fillRect(wx + 3, wy + 3, 4, 6); x.fillStyle = st.band; x.fillRect(wx, wy, 10, 2); x.fillRect(wx + 3, wy - 2, 4, 2); x.fillRect(wx, wy + 10, 10, 2); }
     else if (st.win === 'shutter') { x.fillStyle = '#2a1a0a'; x.fillRect(wx + 2, wy + 2, 6, 7); x.fillStyle = '#ffd890'; x.fillRect(wx + 3, wy + 3, 4, 5); x.fillStyle = shade(st.wall, -.4); x.fillRect(wx - 1, wy + 1, 3, 9); x.fillRect(wx + 8, wy + 1, 3, 9); }
     else { x.fillStyle = '#4a2a14'; x.fillRect(wx, wy, 10, 12); x.fillStyle = '#e8c890'; for (let a = 0; a < 3; a++) for (let q = 0; q < 3; q++) x.fillRect(wx + 1 + a * 3, wy + 1 + q * 4, 2, 2); }
   }
@@ -1521,6 +1776,46 @@ function renderBuilding(b) {
     x.fillStyle = st.roof2; x.beginPath(); x.moveTo(-1, roofH + 1); x.quadraticCurveTo(w / 2, -4, w + 1, roofH + 1); x.fill();
     x.fillStyle = st.roof; x.beginPath(); x.moveTo(3, roofH - 2); x.quadraticCurveTo(w / 2, 0, w - 3, roofH - 2); x.fill();
     x.fillStyle = shade(st.roof, .25); for (let i = 6; i < w - 6; i += 5) x.fillRect(i, Math.max(3, roofH - 4 - Math.sin(i / w * Math.PI) * (roofH - 8)), 1, 3);
+  } else if (rt === 'pylon') {
+    // drawn before the door by drawPylon
+  } else if (rt === 'flat') {
+    x.fillStyle = st.wall; x.fillRect(2, 6, w - 4, roofH - 6);
+    x.fillStyle = st.band; x.fillRect(2, roofH - 3, w - 4, 3);
+    if (roofH > 22 && st.win !== 'none') for (let i = 1; i < b.w - 1; i++) { x.fillStyle = '#2a1a0a'; x.fillRect(i * 16 + 6, 12, 4, 6); }
+    x.fillStyle = st.roof; x.fillRect(0, 2, w, 6); x.fillStyle = st.roof2; x.fillRect(0, 7, w, 1);
+    if (st.crenel) { x.fillStyle = st.roof; for (let i = 0; i < w; i += 8) x.fillRect(i, 0, 5, 3); }
+    if (st.figures) for (let i = 0; i < 3; i++) { const fx = 12 + i * (w - 24) / 2, fy = roofH - 16; x.fillStyle = '#e8c050'; x.fillRect(fx - 6, fy, 12, 5); x.fillRect(fx + 4, fy - 3, 4, 4); x.fillRect(fx - 5, fy + 5, 2, 4); x.fillRect(fx + 3, fy + 5, 2, 4); x.fillRect(fx - 8, fy - 1, 3, 2); }
+    if (st.figures) { x.fillStyle = '#e8c050'; for (let y = 12; y < roofH - 18; y += 8) for (let i = 4; i < w - 4; i += 8) x.fillRect(i, y, 2, 2); }
+  } else if (rt === 'pagoda') {
+    const eaveY = roofH - 6, ridgeY = top + 6;
+    const eave = (y, inset) => { x.fillStyle = st.roof2; x.beginPath(); x.moveTo(inset - 4, y - 3); x.lineTo(w - inset + 4, y - 3); x.lineTo(w - inset - 4, y + 4); x.lineTo(inset + 4, y + 4); x.fill(); x.beginPath(); x.moveTo(inset - 6, y - 9); x.lineTo(inset + 2, y - 2); x.lineTo(inset - 4, y); x.fill(); x.beginPath(); x.moveTo(w - inset + 6, y - 9); x.lineTo(w - inset - 2, y - 2); x.lineTo(w - inset + 4, y); x.fill(); };
+    x.fillStyle = st.roof; x.beginPath(); x.moveTo(6, eaveY - 3); x.lineTo(w - 6, eaveY - 3); x.lineTo(w - 18, ridgeY); x.lineTo(18, ridgeY); x.fill();
+    x.fillStyle = shade(st.roof, -.25); for (let i = 10; i < w - 10; i += 4) x.fillRect(i, Math.max(ridgeY + 2, ridgeY + Math.abs(i - w / 2) * 0), 1, eaveY - ridgeY - 4);
+    if (st.tiers === 2) { const my = (ridgeY + eaveY) / 2 + 2; eave(my, 14); }
+    eave(eaveY, 0);
+    x.fillStyle = st.roof2; x.fillRect(16, ridgeY - 4, w - 32, 4); x.fillRect(13, ridgeY - 7, 4, 4); x.fillRect(w - 17, ridgeY - 7, 4, 4);
+    if (st.moon) { x.fillStyle = '#f8f4d8'; x.beginPath(); x.arc(w / 2, ridgeY + 10, 5, 0, 7); x.fill(); x.fillStyle = st.roof; x.beginPath(); x.arc(w / 2 + 3, ridgeY + 9, 4.5, 0, 7); x.fill(); }
+    if (st.drums) for (const dxp of [w * .3, w * .7]) { x.fillStyle = '#c83a2a'; x.beginPath(); x.arc(dxp, ridgeY + 12, 5, 0, 7); x.fill(); x.fillStyle = '#e8c040'; x.beginPath(); x.arc(dxp, ridgeY + 12, 2, 0, 7); x.fill(); }
+  } else if (rt === 'thatch') {
+    const peak = top + 1;
+    x.fillStyle = st.roof2; x.beginPath(); x.moveTo(-3, roofH + 2); x.quadraticCurveTo(w / 2, 2 * peak - roofH, w + 3, roofH + 2); x.fill();
+    x.fillStyle = st.roof; x.beginPath(); x.moveTo(2, roofH - 1); x.quadraticCurveTo(w / 2, 2 * peak - roofH + 6, w - 2, roofH - 1); x.fill();
+    x.fillStyle = shade(st.roof, -.2); for (let i = 5; i < w - 5; i += 3) { const yy = roofH - 2 - Math.sin(i / w * Math.PI) * (roofH - peak - 6); x.fillRect(i, yy, 1, 4); }
+    x.fillStyle = shade(st.roof, .25); x.fillRect(4, roofH - 3, w - 8, 2);
+    if (st.knot) { x.strokeStyle = '#e8c040'; x.lineWidth = 1; x.beginPath(); x.arc(w / 2 - 3, roofH - 14, 4, 0, 7); x.arc(w / 2 + 3, roofH - 14, 4, 0, 7); x.stroke(); }
+  } else if (rt === 'ziggurat') {
+    const tiers = 4, base = roofH, th = (roofH - top + 2) / (tiers + .5);
+    for (let t = 0; t < tiers; t++) { const tw = w * (1 - t * .17), ty = base - (t + 1) * th; x.fillStyle = t % 2 ? st.roof : st.roof2; x.fillRect((w - tw) / 2, ty, tw, th + 1); x.fillStyle = shade(st.roof, .3); x.fillRect((w - tw) / 2, ty, tw, 1); }
+    x.fillStyle = shade(st.roof, .35); x.fillRect(w / 2 - 4, base - tiers * th, 8, tiers * th);
+    x.fillStyle = shade(st.roof, -.2); for (let y = base - tiers * th + 2; y < base; y += 3) x.fillRect(w / 2 - 4, y, 8, 1);
+    x.fillStyle = st.band; x.fillRect(w / 2 - 8, base - tiers * th - 8, 16, 8); x.fillStyle = '#e8c050'; x.fillRect(w / 2 - 2, base - tiers * th - 12, 4, 4);
+  } else if (rt === 'onion') {
+    x.fillStyle = st.roof2; x.fillRect(0, roofH - 6, w, 8);
+    x.fillStyle = st.roof; x.beginPath(); x.moveTo(0, roofH - 2); x.lineTo(12, top + 12); x.lineTo(w - 12, top + 12); x.lineTo(w, roofH - 2); x.fill();
+    x.fillStyle = shade(st.roof, -.25); for (let y = top + 16; y < roofH - 4; y += 5) x.fillRect(6, y, w - 12, 1);
+    const dome = (cx, base, r) => { x.fillStyle = shade(st.wall, -.1); x.fillRect(cx - r * .6, base - r * .5, r * 1.2, r * .6); x.fillStyle = st.dome; x.beginPath(); x.moveTo(cx - r * .7, base - r * .5); x.bezierCurveTo(cx - r * 1.4, base - r * 1.4, cx - r * .2, base - r * 1.7, cx, base - r * 2.4); x.bezierCurveTo(cx + r * .2, base - r * 1.7, cx + r * 1.4, base - r * 1.4, cx + r * .7, base - r * .5); x.fill(); x.fillStyle = shade(st.dome, .35); x.fillRect(cx - r * .45, base - r * 1.2, 2, r * .5); x.fillStyle = '#e8c040'; x.fillRect(cx - .5, base - r * 2.4 - 5, 1, 5); x.fillRect(cx - 2, base - r * 2.4 - 4, 5, 1); };
+    if (st.domes === 3) { dome(w * .22, top + 16, 6); dome(w * .78, top + 16, 6); }
+    dome(w / 2, top + 14, 9);
   } else if (rt === 'dragon') {
     const peak = Math.max(2, top - 4);
     x.fillStyle = st.roof2; x.beginPath(); x.moveTo(-2, roofH + 1); x.lineTo(w / 2, peak); x.lineTo(w + 2, roofH + 1); x.fill();
@@ -1537,6 +1832,7 @@ function renderBuilding(b) {
     if (st.flame) { x.fillStyle = '#ff7a1a'; x.beginPath(); x.moveTo(w / 2 - 6, roofH - 10); x.lineTo(w / 2, roofH - 26); x.lineTo(w / 2 + 6, roofH - 10); x.fill(); x.fillStyle = '#ffd040'; x.beginPath(); x.moveTo(w / 2 - 3, roofH - 10); x.lineTo(w / 2, roofH - 19); x.lineTo(w / 2 + 3, roofH - 10); x.fill(); }
     if (st.chimney) { x.fillStyle = '#3a3a40'; x.fillRect(w - 22, 0, 8, 14); x.fillStyle = '#ff7a1a'; x.fillRect(w - 20, 1, 4, 2); }
   }
+  if (st.redPosts) { x.fillStyle = '#c83a2a'; x.fillRect(4, wallY - 4, 5, 36); x.fillRect(w - 9, wallY - 4, 5, 36); x.fillStyle = '#2a2a2a'; x.fillRect(2, wallY - 6, w - 4, 3); }
   if (st.awning) { for (let i = 0; i < w; i += 8) { x.fillStyle = (i / 8) % 2 ? '#ffffff' : st.awning; x.fillRect(i, wallY - 6, 8, 6); } }
   if (st.snow) { x.fillStyle = '#f4f8fc'; if (rt === 'gable') { x.fillRect(8, 0, w - 16, 3); } else if (rt === 'dragon') { const peak = Math.max(2, top - 4); x.beginPath(); x.moveTo(w / 2 - 14, peak + 14); x.lineTo(w / 2, peak + 2); x.lineTo(w / 2 + 14, peak + 14); x.fill(); } else { x.beginPath(); x.moveTo(8, roofH * .45); x.quadraticCurveTo(w / 2, -2, w - 8, roofH * .45); x.lineTo(w - 12, roofH * .5); x.quadraticCurveTo(w / 2, 5, 12, roofH * .5); x.fill(); } }
   if (st.sign) {
@@ -1545,6 +1841,22 @@ function renderBuilding(b) {
     Font.draw(x, st.sign, sx + 3, sy + 1, st.signCol || '#ffd040');
   }
   return { canvas: c, top };
+}
+// Egyptian pylon gateway: two sloping towers with a lintel between them
+function drawPylon(x, st, w, top, wallY) {
+  const bot = wallY + 32, tw = w * .4;
+  x.fillStyle = st.wall;
+  x.beginPath(); x.moveTo(0, bot); x.lineTo(5, top + 2); x.lineTo(tw - 3, top + 2); x.lineTo(tw, bot); x.fill();
+  x.beginPath(); x.moveTo(w, bot); x.lineTo(w - 5, top + 2); x.lineTo(w - tw + 3, top + 2); x.lineTo(w - tw, bot); x.fill();
+  x.fillStyle = st.roof; x.fillRect(3, top, tw - 4, 5); x.fillRect(w - tw + 1, top, tw - 4, 5);
+  x.fillStyle = shade(st.wall, -.15); x.fillRect(tw - 3, top + 6, 3, bot - top - 6); x.fillRect(w - 6, top + 6, 3, bot - top - 6);
+  x.fillStyle = st.wall; x.fillRect(tw - 2, wallY - 10, w - 2 * tw + 4, 42);
+  x.fillStyle = st.roof; x.fillRect(tw - 4, wallY - 14, w - 2 * tw + 8, 5);
+  // carved glyph rows
+  x.fillStyle = shade(st.wall, -.35);
+  for (let y = top + 10; y < bot - 6; y += 6) for (let i = 8; i < tw - 8; i += 5) if (((i * 7 + y) % 3) !== 0) { x.fillRect(i, y, 2, 3); x.fillRect(w - i - 2, y, 2, 3); }
+  x.fillStyle = st.band; x.fillRect(2, bot - 4, w - 4, 4);
+  if (st.sun) { const cy = wallY - 18; x.fillStyle = '#e8c040'; x.beginPath(); x.moveTo(w / 2 - 22, cy); x.lineTo(w / 2 - 6, cy - 3); x.lineTo(w / 2 - 6, cy + 3); x.fill(); x.beginPath(); x.moveTo(w / 2 + 22, cy); x.lineTo(w / 2 + 6, cy - 3); x.lineTo(w / 2 + 6, cy + 3); x.fill(); x.fillStyle = '#ff7a1a'; x.beginPath(); x.arc(w / 2, cy, 6, 0, 7); x.fill(); x.fillStyle = '#ffd040'; x.beginPath(); x.arc(w / 2, cy, 4, 0, 7); x.fill(); }
 }
 
 // ---- 06_sprites_parts.js ----
@@ -1980,7 +2292,7 @@ function addCreature(c) {
   if (Game.party.length < 6) { Game.party.push(c); return 'party'; }
   Game.storage.push(c); return 'storage';
 }
-function badgeCount() { return ['beatIndra', 'beatZeus', 'beatOdin'].filter(f => Game.flags[f]).length; }
+function badgeCount() { return ['beatIndra', 'beatZeus', 'beatOdin', 'beatRa', 'beatAmaterasu', 'beatDagda', 'beatMarduk', 'beatPerun'].filter(f => Game.flags[f]).length; }
 function playTimeStr() { const s = Math.floor(Game.frames / 60), h = Math.floor(s / 3600), m = Math.floor(s / 60) % 60; return h + ':' + String(m).padStart(2, '0'); }
 function clockStr() { const m = Math.floor(Game.clock) % 1440; return String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0'); }
 // 0 = day, 1 = deep night
@@ -2471,11 +2783,12 @@ class Overworld {
       const kind = this.map.particles || 'petals';
       if (kind === 'snow') this.parts.push({ k: 'snow', x: this.cam.x + Math.random() * (W + 80) - 40, y: this.cam.y - 8, vx: -.1 + Math.random() * .3, vy: .4 + Math.random() * .5, life: 700, ph: Math.random() * 6, s: chance(.3) ? 2 : 1 });
       else if (night > .5) this.parts.push({ k: 'fly', x: this.cam.x + Math.random() * W, y: this.cam.y + Math.random() * H, vx: 0, vy: 0, life: 300, ph: Math.random() * 6 });
-      else if (kind === 'leaves') this.parts.push({ k: 'petal', x: this.cam.x + Math.random() * (W + 80) - 40, y: this.cam.y - 8, vx: .4 + Math.random() * .4, vy: .25 + Math.random() * .25, life: 700, ph: Math.random() * 6, c: pick(['#7a9a4a', '#a8c070', '#5a7a3a']) });
+      else if (kind === 'sand') this.parts.push({ k: 'sand', x: this.cam.x - 10, y: this.cam.y + Math.random() * H, vx: 1.2 + Math.random() * 1.2, vy: (Math.random() - .5) * .2, life: 400, ph: Math.random() * 6, c: pick(this.map.pColors) });
+      else if (kind === 'leaves' || kind === 'blossom') this.parts.push({ k: 'petal', x: this.cam.x + Math.random() * (W + 80) - 40, y: this.cam.y - 8, vx: .4 + Math.random() * .4, vy: .25 + Math.random() * .25, life: 700, ph: Math.random() * 6, c: pick(this.map.pColors || ['#7a9a4a', '#a8c070', '#5a7a3a']) });
       else this.parts.push({ k: 'petal', x: this.cam.x + Math.random() * (W + 80) - 40, y: this.cam.y - 8, vx: .2 + Math.random() * .3, vy: .35 + Math.random() * .3, life: 700, ph: Math.random() * 6, c: pick(['#ff9f1a', '#ffd23a', '#ff6a3a']) });
     }
-    for (const q of this.parts) { q.life--; q.ph += .05; if (q.k === 'petal' || q.k === 'snow') { q.x += q.vx + Math.sin(q.ph) * .4; q.y += q.vy; } else { q.x += Math.sin(q.ph * 1.3) * .3; q.y += Math.cos(q.ph) * .25; } }
-    this.parts = this.parts.filter(q => q.life > 0 && q.y < this.cam.y + H + 10);
+    for (const q of this.parts) { q.life--; q.ph += .05; if (q.k === 'petal' || q.k === 'snow') { q.x += q.vx + Math.sin(q.ph) * .4; q.y += q.vy; } else if (q.k === 'sand') { q.x += q.vx; q.y += q.vy + Math.sin(q.ph) * .2; } else { q.x += Math.sin(q.ph * 1.3) * .3; q.y += Math.cos(q.ph) * .25; } }
+    this.parts = this.parts.filter(q => q.life > 0 && q.y < this.cam.y + H + 10 && q.x < this.cam.x + W + 20);
   }
   draw(ctx) {
     const m = this.map, [px, py] = this.entityPos(this.p);
@@ -2529,6 +2842,7 @@ class Overworld {
       for (const q of this.parts) {
         const qx = Math.round(q.x - cx), qy = Math.round(q.y - cy);
         if (q.k === 'snow') { ctx.fillStyle = '#ffffff'; ctx.fillRect(qx, qy, q.s, q.s); }
+        else if (q.k === 'sand') { ctx.fillStyle = q.c; ctx.fillRect(qx, qy, 2, 1); }
         else if (q.k === 'petal') { ctx.fillStyle = q.c; ctx.fillRect(qx, qy, 2, 1); ctx.fillRect(qx + (Math.sin(q.ph) > 0 ? 1 : 0), qy + 1, 1, 1); }
         else { const a = .5 + .5 * Math.sin(q.ph * 3); ctx.fillStyle = `rgba(220,255,140,${a})`; ctx.fillRect(qx, qy, 1, 1); ctx.fillStyle = `rgba(220,255,140,${a * .3})`; ctx.fillRect(qx - 1, qy - 1, 3, 3); }
       }
@@ -2684,6 +2998,7 @@ function buildMoreCities() {
     interior('tyr_hall', 'Hall of Oaths', 'norse', HALL_ROWS, 'P', [{ id: 'tyr', name: 'Tyr', look: 'tyr', x: 5, y: 2, dir: 'down', trainer: 'tyr', boss: true }], ['norse', 26, 8, 'down'], { music: 'boss', bg: 'oaths' });
     interior('valgrind_hall', 'Valgrind', 'norse', PALACE_ROWS, 'F', [{ id: 'odin', name: 'Odin', look: 'odin', x: 6, y: 2, dir: 'down', trainer: 'odin', boss: true }], ['norse', 16, 8, 'down'], { music: 'boss', bg: 'valgrind' });
   }
+  buildCities2();
   // shop/shrine greetings per city
   for (const id of ['greece_shop', 'norse_shop']) MAPS[id].greet = id === 'greece_shop' ? 'Welcome to the Agora! Orbs from every city, fair prices.' : 'Welcome, frost-walker! Warm herbs and strong orbs here.';
 }
@@ -2746,6 +3061,194 @@ async function openWorldMap() {
   await fadeOut(20); World.load(m, x, y, d); Game.flags['visited_' + dest] = true; await fadeIn(20);
 }
 
+// ---- 10_world_cities2.js ----
+// =====================================================================
+//  STAGE 3 WORLD (part 2): Heliopolis, Takama, Tir na nOg, Babylon, Kitezh
+//  Built by one generator from per-city settings (same layout as Olympos/Asgard).
+// =====================================================================
+Object.assign(LOOKS, {
+  // Egypt
+  eg_guard: { hair: '#1a1210', skin: '#a8703a', outfit: '#f0e8d0', accent: '#2a5ab0', pants: '#f0e8d0', style: 'short', crown: true },
+  eg_villager: { hair: '#1a1210', skin: '#b87a40', outfit: '#f4ecd8', accent: '#e8c040', pants: '#f4ecd8', style: 'long', style2: 'robe' },
+  eg_kid: { hair: '#1a1210', skin: '#c88a50', outfit: '#f4ecd8', accent: '#2a8a9a', pants: '#c8a060', style: 'short' },
+  eg_scribe: { hair: '#1a1210', skin: '#b87a40', outfit: '#f8f0dc', accent: '#2a5ab0', pants: '#f8f0dc', style: 'short', style2: 'robe' },
+  eg_charioteer: { hair: '#1a1210', skin: '#a8703a', outfit: '#2a5ab0', accent: '#e8c040', pants: '#f0e8d0', style: 'short' },
+  anubis: { hair: '#1a1a1a', skin: '#2a2a2a', outfit: '#e8c040', accent: '#2a5ab0', pants: '#1a1a1a', style: 'long', crown: true, style2: 'robe' },
+  sekhmet: { hair: '#c8803a', skin: '#c88a50', outfit: '#c8302a', accent: '#e8c040', pants: '#c8302a', style: 'long', crown: true, style2: 'robe' },
+  set: { hair: '#8a3a1a', skin: '#b8703a', outfit: '#8a3a1a', accent: '#e8c040', pants: '#4a2a1a', style: 'short', crown: true },
+  ra: { hair: '#e8c040', skin: '#c88a50', outfit: '#f8f0dc', accent: '#ff7a1a', pants: '#e8c040', style: 'long', crown: true, style2: 'robe' },
+  // Japan
+  jp_guard: { hair: '#1a1210', skin: '#e8c8a0', outfit: '#3a3a52', accent: '#c83a2a', pants: '#2a2a3a', style: 'bun' },
+  jp_villager: { hair: '#1a1210', skin: '#f0d0b0', outfit: '#5a7ab8', accent: '#ffffff', pants: '#3a4a7a', style: 'bun', style2: 'robe' },
+  jp_kid: { hair: '#1a1210', skin: '#f0d0b0', outfit: '#e85a7a', accent: '#ffe060', pants: '#3a3a5a', style: 'short' },
+  jp_miko: { hair: '#1a1210', skin: '#f0d0b0', outfit: '#ffffff', accent: '#c83a2a', pants: '#c83a2a', style: 'long' },
+  jp_ronin: { hair: '#1a1210', skin: '#e0b890', outfit: '#3a3a4a', accent: '#8a8aa0', pants: '#2a2a3a', style: 'bun' },
+  tsukuyomi: { hair: '#c8d0f0', skin: '#e8e0f0', outfit: '#2a2a5a', accent: '#c8d0f0', pants: '#14143a', style: 'long', style2: 'robe' },
+  raijin: { hair: '#f0f0f0', skin: '#c84a3a', outfit: '#3a5ab8', accent: '#ffe040', pants: '#2a2a5a', style: 'long', beard: true },
+  susanoo: { hair: '#1a1210', skin: '#d8b090', outfit: '#2a5a8a', accent: '#e8e8f0', pants: '#1a3a5a', style: 'long', beard: true },
+  amaterasu: { hair: '#1a1210', skin: '#f4dcc0', outfit: '#ffffff', accent: '#e8c040', pants: '#c83a2a', style: 'long', crown: true, style2: 'robe' },
+  // Celtic
+  ce_guard: { hair: '#8a4a20', skin: '#f0c8a8', outfit: '#2a6a3a', accent: '#e8c040', pants: '#5a4a30', style: 'long', beard: true },
+  ce_villager: { hair: '#c86a2a', skin: '#f4d0b8', outfit: '#6a4a8a', accent: '#e8c040', pants: '#5a4a30', style: 'long' },
+  ce_kid: { hair: '#e8a040', skin: '#f4d0b8', outfit: '#3a8a4a', accent: '#ffffff', pants: '#5a4a30', style: 'short' },
+  ce_bard: { hair: '#5a3a1a', skin: '#f0c8a8', outfit: '#3a5a9a', accent: '#e8c040', pants: '#4a3a2a', style: 'short', beard: true },
+  ce_druid: { hair: '#e8e0d0', skin: '#f0c8a8', outfit: '#f0f0e8', accent: '#3a8a4a', pants: '#f0f0e8', style: 'long', style2: 'robe' },
+  morrigan: { hair: '#1a1a1a', skin: '#e8d8d8', outfit: '#2a2a2a', accent: '#8a1a2a', pants: '#1a1a1a', style: 'long', style2: 'robe' },
+  lugh: { hair: '#e8c040', skin: '#f0c8a8', outfit: '#e8e0c8', accent: '#e8c040', pants: '#3a6a3a', style: 'short', crown: true },
+  manannan: { hair: '#c8d8e8', skin: '#e8d0b8', outfit: '#3a6a8a', accent: '#c8d8e8', pants: '#2a4a6a', style: 'long', beard: true, style2: 'robe' },
+  dagda: { hair: '#8a4a20', skin: '#e8b890', outfit: '#3a6a3a', accent: '#c8a040', pants: '#5a3a1a', style: 'short', beard: true },
+  // Mesopotamia
+  me_guard: { hair: '#1a1210', skin: '#c08a58', outfit: '#3a5a9a', accent: '#e8c050', pants: '#c8a878', style: 'long', beard: true },
+  me_villager: { hair: '#1a1210', skin: '#c08a58', outfit: '#c8a878', accent: '#8a2a1a', pants: '#c8a878', style: 'long', style2: 'robe' },
+  me_kid: { hair: '#1a1210', skin: '#c89a68', outfit: '#e8d0a8', accent: '#3a5a9a', pants: '#8a6a40', style: 'short' },
+  me_scribe: { hair: '#1a1210', skin: '#c08a58', outfit: '#e8d8b8', accent: '#3a5a9a', pants: '#e8d8b8', style: 'short', beard: true, style2: 'robe' },
+  me_archer: { hair: '#1a1210', skin: '#b87a48', outfit: '#8a2a1a', accent: '#e8c050', pants: '#c8a878', style: 'long' },
+  ishtar: { hair: '#1a1210', skin: '#d8a070', outfit: '#3a5ab8', accent: '#e8c050', pants: '#3a5ab8', style: 'long', crown: true, style2: 'robe' },
+  nergal: { hair: '#2a1a10', skin: '#b87048', outfit: '#8a3a2a', accent: '#e8c050', pants: '#4a1a10', style: 'long', beard: true, crown: true },
+  enlil: { hair: '#e8e8e8', skin: '#c89a68', outfit: '#e8e0d0', accent: '#3a8ab8', pants: '#e8e0d0', style: 'long', beard: true, crown: true, style2: 'robe' },
+  marduk: { hair: '#1a1210', skin: '#c89a68', outfit: '#2a4a98', accent: '#e8c050', pants: '#e8c050', style: 'long', beard: true, crown: true, style2: 'robe' },
+  // Slavic
+  sl_guard: { hair: '#8a5a2a', skin: '#f0c8a8', outfit: '#8a2a2a', accent: '#c8c8d0', pants: '#3a3a4a', style: 'short', beard: true, crown: true },
+  sl_villager: { hair: '#c8902a', skin: '#f4d0b8', outfit: '#f0e8d8', accent: '#c83a2a', pants: '#3a5a9a', style: 'long' },
+  sl_kid: { hair: '#f0d070', skin: '#f4d0b8', outfit: '#c83a2a', accent: '#f0e8d8', pants: '#3a3a4a', style: 'short' },
+  sl_hunter: { hair: '#6a4a2a', skin: '#e8c0a0', outfit: '#5a6a3a', accent: '#8a5a2a', pants: '#3a3a2a', style: 'short', beard: true },
+  sl_weaver: { hair: '#c8902a', skin: '#f4d0b8', outfit: '#f0e8d8', accent: '#c83a2a', pants: '#c83a2a', style: 'long', style2: 'robe' },
+  svarog: { hair: '#e8e0d0', skin: '#e8b890', outfit: '#5a4a40', accent: '#ff7a1a', pants: '#3a2a20', style: 'short', beard: true },
+  mokosh: { hair: '#5a3a1a', skin: '#f0c8a8', outfit: '#3a8a4a', accent: '#c83a2a', pants: '#3a8a4a', style: 'long', crown: true, style2: 'robe' },
+  veles: { hair: '#4a3a2a', skin: '#d8b090', outfit: '#4a5a3a', accent: '#8a6a3a', pants: '#3a3a2a', style: 'long', beard: true, style2: 'robe' },
+  perun: { hair: '#c8c8c8', skin: '#e8c0a0', outfit: '#2a4a8a', accent: '#e8b030', pants: '#3a2a20', style: 'long', beard: true, crown: true },
+});
+// The standard city layout (same as Olympos/Asgard): temple top-centre, two lieutenant halls,
+// shop and shrine, two houses, two grass zones, a pier over water bottom-right (third lieutenant),
+// optional lake bottom-left, and the Mist Road gate at the bottom.
+function makeCity(c) {
+  const w = 32, h = 30, t = blank(w, h, '.');
+  R(t, 0, 0, w, 2, 'T'); R(t, 0, h - 1, w, 1, 'T'); R(t, 0, 0, 1, h, 'T'); R(t, w - 1, 0, 1, h, 'T');
+  R(t, 2, 8, 28, 3, '='); R(t, 15, 11, 2, 19, '_');
+  R(t, 5, 16, 1, 1, '_'); R(t, 25, 16, 1, 1, '_'); R(t, 11, 16, 1, 1, '_'); R(t, 20, 16, 1, 1, '_');
+  R(t, 5, 17, 10, 1, '_'); R(t, 17, 17, 9, 1, '_');
+  if (c.lake) { R(t, 2, 18, 11, 5, ','); R(t, 2, 24, 9, 5, '~'); } else R(t, 2, 19, 11, 7, ',');
+  R(t, 18, 18, 5, 3, ':');
+  R(t, 21, 22, 10, 1, '_'); R(t, 21, 23, 10, 6, '~'); R(t, 26, 22, 1, 6, 'B');
+  R(t, 8, 11, 5, 1, 'f'); R(t, 18, 11, 5, 1, 'f');
+  for (const [x, y] of [[2, 11], [29, 11], [13, 25], [19, 27], [14, 23], [12, 27], [1, 2], [30, 2], [10, 2], [21, 2], [21, 20]]) t[y][x] = 'T';
+  if (!c.lake) for (const [x, y] of [[2, 27], [6, 27], [10, 27]]) t[y][x] = 'T';
+  for (const [x, y] of [[2, 8], [29, 8], [12, 10], [19, 10]]) t[y][x] = 'L';
+  t[27][14] = 'S';
+  const [l1, l2, l3] = c.lts, god = c.god, allLt = () => [l1, l2, l3].every(id => Game.flags[TRAINERS[id].flag]);
+  const tr1y = c.lake ? 20 : 21;
+  MAPS[c.id] = {
+    id: c.id, name: c.name, outdoor: true, music: c.id, theme: c.id, bg: c.id, particles: c.particles, pColors: c.pColors, t, w, h,
+    buildings: [
+      { x: 12, y: 2, w: 8, h: 6, style: c.styles.temple, door: 15, to: [c.id + '_temple', 6, 12] },
+      { x: 2, y: 3, w: 7, h: 5, style: c.styles.lt1, door: 5, to: [c.id + '_lt1', 5, 10] },
+      { x: 23, y: 3, w: 7, h: 5, style: c.styles.lt2, door: 26, to: [c.id + '_lt2', 5, 10] },
+      { x: 3, y: 12, w: 6, h: 4, style: c.styles.shop, door: 5, to: [c.id + '_shop', 4, 6] },
+      { x: 23, y: 12, w: 6, h: 4, style: c.styles.shrine, door: 25, to: [c.id + '_shrine', 4, 6] },
+      { x: 9, y: 12, w: 5, h: 4, style: c.styles.house, door: 11, locked: c.locked[0] },
+      { x: 18, y: 12, w: 5, h: 4, style: c.styles.house2, door: 20, locked: c.locked[1] },
+    ],
+    warps: [{ x: 15, y: 29, to: ['@travel'] }, { x: 16, y: 29, to: ['@travel'] }],
+    signs: { '14,27': 'SOUTH GATE: the Mist Road. Walk through the gate to travel to other cities.' },
+    npcs: [
+      { id: c.id + '_guard', name: c.guard.name, look: c.guard.look, x: 15, y: 8, dir: 'down', when: () => !allLt(), lines: c.guard.lines },
+      { id: c.id + '_guard2', name: c.guard.name, look: c.guard.look, x: 14, y: 8, dir: 'right', when: allLt, lines: [c.guard.open] },
+      { id: l3, name: TRAINERS[l3].name, look: TRAINERS[l3].look, x: 26, y: 27, dir: 'up', trainer: l3, boss: true },
+      { id: c.trainers[0], name: TRAINERS[c.trainers[0]].name, look: TRAINERS[c.trainers[0]].look, x: 13, y: tr1y, dir: 'right', trainer: c.trainers[0], sight: 2, lines: [c.trainerAfter[0]] },
+      { id: c.trainers[1], name: TRAINERS[c.trainers[1]].name, look: TRAINERS[c.trainers[1]].look, x: 19, y: 24, dir: 'left', trainer: c.trainers[1], sight: 3, lines: [c.trainerAfter[1]] },
+      Object.assign({ x: 20, y: 9, dir: 'down' }, c.villagers[0]),
+      Object.assign({ x: 23, y: 21, dir: 'left' }, c.villagers[1]),
+      Object.assign({ x: 10, y: 17, dir: 'down', wander: 2 }, c.villagers[2]),
+      { id: c.id + '_gate', name: 'Gatekeeper', look: c.guard.look, x: 17, y: 28, dir: 'left', lines: ['The Mist Road connects the eight mythic cities. Walk through the gate behind me, or use TRAVEL in your menu.'] },
+    ],
+    encounters: c.encounters,
+    items: c.items.map((it, k) => ({ id: c.id + '_i' + k, x: it[0], y: it[1], item: it[2], n: it[3] })),
+    greet: c.shopGreet,
+  };
+  interior(c.id + '_shop', c.rooms.shop, c.id, SHOP_ROWS, 'p', [{ id: c.id + '_clerk', name: c.clerk[0], look: c.clerk[1], x: 4, y: 2, dir: 'down', role: 'shop' }], [c.id, 5, 16, 'down'], { greet: c.shopGreet });
+  interior(c.id + '_shrine', c.rooms.shrine, c.id, SHRINE_ROWS, 'p', [{ id: c.id + '_priest', name: c.priest[0], look: c.priest[1], x: 4, y: 2, dir: 'down', role: 'heal' }, { id: 'sanctum', name: 'Sanctum Stone', look: 'stone', x: 7, y: 2, dir: 'down', role: 'storage' }], [c.id, 25, 16, 'down']);
+  interior(c.id + '_lt1', c.rooms.lt1, c.id, HALL_ROWS, c.deco[0], [{ id: l1, name: TRAINERS[l1].name, look: TRAINERS[l1].look, x: 5, y: 2, dir: 'down', trainer: l1, boss: true }], [c.id, 5, 8, 'down'], { music: 'boss', bg: TRAINERS[l1].bg });
+  interior(c.id + '_lt2', c.rooms.lt2, c.id, HALL_ROWS, c.deco[1], [{ id: l2, name: TRAINERS[l2].name, look: TRAINERS[l2].look, x: 5, y: 2, dir: 'down', trainer: l2, boss: true }], [c.id, 26, 8, 'down'], { music: 'boss', bg: TRAINERS[l2].bg });
+  interior(c.id + '_temple', c.rooms.temple, c.id, PALACE_ROWS, c.deco[2], [{ id: god, name: TRAINERS[god].name, look: TRAINERS[god].look, x: 6, y: 2, dir: 'down', trainer: god, boss: true }], [c.id, 15, 8, 'down'], { music: 'boss', bg: TRAINERS[god].bg });
+}
+function buildCities2() {
+  makeCity({
+    id: 'egypt', name: 'Heliopolis', particles: 'sand', pColors: ['#f0d8a0', '#e8c888', '#d8b070'],
+    styles: { temple: 'ra_temple', lt1: 'anubis_tomb', lt2: 'sekhmet_hall', shop: 'eg_shop', shrine: 'eg_shrine', house: 'eg_house', house2: 'eg_house2' },
+    lts: ['anubis', 'sekhmet', 'set'], god: 'ra', trainers: ['nefer', 'khafra'], trainerAfter: ['My papyrus is full of your victory!', 'Next time I bring two horses.'],
+    guard: { name: 'Temple Guard', look: 'eg_guard', lines: ['Only those who have faced Anubis, Sekhmet and Set may enter the Temple of Ra.', 'Anubis keeps the tomb to the west, Sekhmet the red hall to the east, and Set stands on the sun-barque by the Nile.'], open: 'The three have spoken for you. Enter the Temple of Ra.' },
+    villagers: [{ id: 'eg_v1', name: 'Priestess Meret', look: 'eg_villager', ai: 'temple priestess who explains Egyptian myths respectfully', lines: ['Each night Ra sails through the underworld, and each dawn he rises again.', 'Bennu birds are said to be reborn in fire. Look for them at sunrise.'] },
+      { id: 'eg_v2', name: 'Boatman Ahmose', look: 'eg_villager', ai: 'Nile boatman who talks about the river and crocodiles', lines: ['The Nile floods each year and makes the fields green. Sobekens keep the floods gentle.', 'Set stands on the sun-barque at the end of the pier. Bring water - it is hot!'] },
+      { id: 'eg_v3', name: 'Little Tiy', look: 'eg_kid', ai: 'curious child who collects scarab beetles', lines: ['Scarabix roll little balls of sunlight! I have three.', 'Sphinxels ask riddles, but they always give hints.'] }],
+    clerk: ['Merchant Hapu', 'eg_villager'], priest: ['Healer Tawaret', 'eg_villager'], shopGreet: 'Welcome to the bazaar of Heliopolis! Cool water and strong orbs.',
+    locked: ['A sleepy voice: "Come back after the heat of the day."', 'A sign: "Gone to the festival of the Nile."'],
+    rooms: { shop: 'Heliopolis Bazaar', shrine: 'House of Healing', lt1: 'Tomb of Anubis', lt2: 'Hall of Sekhmet', temple: 'Temple of Ra' }, deco: ['P', 'F', 'P'],
+    encounters: { ',': { lv: [26, 32], table: [['scarabix', 25], ['uraeling', 25], ['sobeken', 20], ['bennuling', 12], ['ammitar', 8, 'night'], ['sphinxel', 6]] },
+      ':': { lv: [32, 36], table: [['sobeken', 18], ['ammitar', 18, 'night'], ['sphinxel', 16], ['bennuling', 16], ['uraeling', 14], ['apepling', 6, 'night'], ['scarabix', 10]] } },
+    items: [[4, 24, 'soma', 3], [22, 19, 'varunastra', 2], [9, 26, 'amrita', 1]],
+  });
+  makeCity({
+    id: 'japan', name: 'Takama', particles: 'blossom', pColors: ['#ffb8d0', '#ff8ab0', '#ffffff'],
+    styles: { temple: 'sun_shrine', lt1: 'moon_hall', lt2: 'thunder_hall', shop: 'jp_shop', shrine: 'jp_shrine', house: 'jp_house', house2: 'jp_house2' },
+    lts: ['tsukuyomi', 'raijin', 'susanoo'], god: 'amaterasu', trainers: ['hana', 'kenji'], trainerAfter: ['Please rest at the shrine before the lieutenants.', 'The road taught me humility today.'],
+    guard: { name: 'Shrine Guard', look: 'jp_guard', lines: ['The Sun Shrine opens only after Tsukuyomi, Raijin and Susanoo have tested you.', 'Tsukuyomi waits in the Moon Hall, Raijin in the Hall of Thunder, and Susanoo at the end of the pier.'], open: 'The three have spoken for you. Please enter the Sun Shrine.' },
+    villagers: [{ id: 'jp_v1', name: 'Tea Master Sen', look: 'jp_villager', ai: 'calm tea master who shares respectful stories of Amaterasu', lines: ['When Amaterasu hid in a cave, the world went dark. Laughter and a mirror brought her back.', 'A battle is like tea - patience first, then warmth.'] },
+      { id: 'jp_v2', name: 'Fisher Taro', look: 'jp_villager', ai: 'fisherman who tells stories about sea dragons', lines: ['A young Ryugo lives under the pier. It keeps a tide pearl.', 'Susanoo once faced an eight-headed serpent. He waits on the pier now.'] },
+      { id: 'jp_v3', name: 'Little Yuki', look: 'jp_kid', ai: 'playful child who loves fox spirits', lines: ['Kitsunko light blue foxfires at night! So pretty!', 'If you see a teapot with a tail, it is probably a Tanukin.'] }],
+    clerk: ['Shopkeeper Aiko', 'jp_villager'], priest: ['Priestess Haru', 'jp_miko'], shopGreet: 'Irasshaimase! Welcome! Orbs and herbs for every journey.',
+    locked: ['Someone inside is practising calligraphy. Shh.', 'A note: "Gone to view the cherry blossoms."'],
+    rooms: { shop: 'Takama Market', shrine: 'Shrine of Healing', lt1: 'Moon Hall', lt2: 'Hall of Thunder', temple: 'Sun Shrine' }, deco: ['P', 'F', 'P'],
+    encounters: { ',': { lv: [30, 35], table: [['kitsunko', 22], ['kappling', 22], ['tanukin', 22], ['chochibi', 15, 'night'], ['tengumi', 10], ['raikitt', 9]] },
+      ':': { lv: [35, 38], table: [['tengumi', 18], ['raikitt', 18], ['tanukin', 14], ['kitsunko', 14], ['chochibi', 14, 'night'], ['ryugo', 8], ['kyubirei', 3]] } },
+    items: [[4, 24, 'gangajal', 2], [22, 19, 'gandiva', 1], [9, 26, 'akshaya', 2]],
+  });
+  makeCity({
+    id: 'celtic', name: 'Tir na nOg', lake: true, particles: 'leaves', pColors: ['#6aa860', '#8ac870', '#e8e070'],
+    styles: { temple: 'dagda_hall', lt1: 'crow_hall', lt2: 'lugh_hall', shop: 'ce_shop', shrine: 'ce_shrine', house: 'ce_house', house2: 'ce_house2' },
+    lts: ['morrigan', 'lugh', 'manannan'], god: 'dagda', trainers: ['ciaran', 'aisling'], trainerAfter: ['I am still tuning the verse about you.', 'The oaks will remember your name.'],
+    guard: { name: 'Hall Guard', look: 'ce_guard', lines: ['The Dagda feasts with those who have faced the Morrigan, Lugh and Manannan.', 'The Morrigan keeps the dark hall to the west, Lugh the bright hall to the east, and Manannan stands on the pier.'], open: 'The three have spoken for you. The Dagda says the stew is ready.' },
+    villagers: [{ id: 'ce_v1', name: 'Storyteller Brigid', look: 'ce_villager', ai: 'warm storyteller who shares respectful Irish and Celtic myths', lines: ['The Dagda has a harp that plays the seasons and a cauldron that never empties.', 'Lugh can do every craft. Ask him about anything!'] },
+      { id: 'ce_v2', name: 'Fisher Ronan', look: 'ce_villager', ai: 'fisherman who tells tales of selkies and the sea god Manannan', lines: ['Selkins dance on the beach on moonlit nights. Do not hide their skins!', 'Manannan wraps the islands in mist. He waits on the pier.'] },
+      { id: 'ce_v3', name: 'Little Niamh', look: 'ce_kid', ai: 'child who believes in fairies', lines: ['Sidhel trade you shiny gifts, but they turn into leaves!', 'Never ride a Kelpling, my gran says.'] }],
+    clerk: ['Trader Fergus', 'ce_bard'], priest: ['Healer Airmed', 'ce_druid'], shopGreet: 'Failte! Welcome! Fine orbs and healing herbs from the hollow hills.',
+    locked: ['A peat fire crackles inside. The owner is napping.', 'A sign: "At the gathering on the hill. Back by sunset."'],
+    rooms: { shop: 'Trading Hall', shrine: 'Well of Healing', lt1: 'Hall of the Morrigan', lt2: 'Hall of Lugh', temple: 'Hall of the Dagda' }, deco: ['F', 'P', 'F'],
+    encounters: { ',': { lv: [34, 39], table: [['selkin', 22], ['sidhel', 22], ['pookin', 20], ['keenwail', 14, 'night'], ['kelpling', 12], ['cusith', 6]] },
+      ':': { lv: [38, 42], table: [['kelpling', 18], ['cusith', 16], ['keenwail', 16, 'night'], ['pookin', 14], ['sidhel', 12], ['hartwyn', 6], ['selkara', 4]] } },
+    items: [[4, 22, 'kavach', 2], [22, 19, 'nagastra', 3], [12, 26, 'amrita', 1]],
+  });
+  makeCity({
+    id: 'meso', name: 'Babylon', particles: 'sand', pColors: ['#e8d0a0', '#d8c088', '#c8a878'],
+    styles: { temple: 'esagila', lt1: 'ishtar_gate', lt2: 'nergal_hall', shop: 'me_shop', shrine: 'me_shrine', house: 'me_house', house2: 'me_house2' },
+    lts: ['ishtar', 'nergal', 'enlil'], god: 'marduk', trainers: ['ludin', 'ishmi'], trainerAfter: ['I wrote a new tablet about your win.', 'I missed! That never happens.'],
+    guard: { name: 'Gate Guard', look: 'me_guard', lines: ['Esagila is open only to those who faced Ishtar, Nergal and Enlil.', 'Ishtar waits at her blue gate to the west, Nergal in his hall to the east, and Enlil on the river pier.'], open: 'The three have spoken for you. Climb to Esagila.' },
+    villagers: [{ id: 'me_v1', name: 'Astronomer Bel-ibni', look: 'me_villager', ai: 'astronomer who explains Mesopotamian myths and the stars respectfully', lines: ['Marduk set the stars in their paths. We still follow them to plant our barley.', 'Lamassu guard every great gate. They have human faces and very good manners.'] },
+      { id: 'me_v2', name: 'Boatman Ur-Nanshe', look: 'me_villager', ai: 'river boatman who talks about the Euphrates and the wind god Enlil', lines: ['The river feeds the whole city. Apkalu sages say they came from its waters.', 'Enlil stands on the pier. Hold your hat!'] },
+      { id: 'me_v3', name: 'Little Ninsa', look: 'me_kid', ai: 'child who is learning to write cuneiform', lines: ['I am learning to write! It is all little wedges.', 'Anzoo has a lion head and eagle wings. It is very loud.'] }],
+    clerk: ['Merchant Kudur', 'me_villager'], priest: ['Healer Gula', 'me_villager'], shopGreet: 'Welcome to the markets of Babylon! Weighed fairly, sold gladly.',
+    locked: ['Someone inside is counting barley. Out loud.', 'A clay tablet hangs on the door: "At the temple."'],
+    rooms: { shop: 'Babylon Market', shrine: 'House of Healing', lt1: 'Gate of Ishtar', lt2: 'Hall of Nergal', temple: 'Esagila' }, deco: ['P', 'F', 'P'],
+    encounters: { ',': { lv: [36, 40], table: [['apkalu', 22], ['lamassel', 22], ['humbabo', 20], ['girtab', 16, 'night'], ['anzoo', 10], ['mushush', 6]] },
+      ':': { lv: [40, 44], table: [['girtab', 18, 'night'], ['humbabo', 16], ['anzoo', 16], ['mushush', 14], ['apkalu', 12], ['lamassel', 10], ['lamassar', 4]] } },
+    items: [[4, 24, 'sanjivani', 2], [22, 19, 'gandiva', 2], [9, 26, 'akshaya', 2]],
+  });
+  makeCity({
+    id: 'slavic', name: 'Kitezh', lake: true, particles: 'leaves', pColors: ['#e8b840', '#d87a2a', '#c8402a'],
+    styles: { temple: 'perun_hall', lt1: 'svarog_forge', lt2: 'mokosh_hall', shop: 'sl_shop', shrine: 'sl_shrine', house: 'sl_house', house2: 'sl_house2' },
+    lts: ['svarog', 'mokosh', 'veles'], god: 'perun', trainers: ['bogdan', 'milena'], trainerAfter: ['My snares are no match for you!', 'Your threads hold strong.'],
+    guard: { name: 'Druzhina Guard', look: 'sl_guard', lines: ['Perun receives only those who have faced Svarog, Mokosh and Veles.', 'Svarog works at the forge to the west, Mokosh weaves in the green-domed hall to the east, and Veles waits on the river pier.'], open: 'The three have spoken for you. Enter the Oak Hall of Perun.' },
+    villagers: [{ id: 'sl_v1', name: 'Grandmother Vesna', look: 'sl_villager', ai: 'kind grandmother who tells respectful Slavic folk tales', lines: ['Perun and Veles argue every year, and every year the spring rain comes.', 'Leave porridge for the Domovik and your house will stay warm.'] },
+      { id: 'sl_v2', name: 'Ferryman Stepan', look: 'sl_villager', ai: 'ferryman who tells stories about river spirits', lines: ['Rusalins comb their hair on the willow branches. Do not splash!', 'Veles waits on the pier. He likes cattle and riddles.'] },
+      { id: 'sl_v3', name: 'Little Ivan', look: 'sl_kid', ai: 'child who dreams of catching a firebird', lines: ['I saw a Zharling feather! It lit up my whole room!', 'Kikimors tangle my yarn every night.'] }],
+    clerk: ['Merchant Lada', 'sl_villager'], priest: ['Healer Zhiva', 'sl_weaver'], shopGreet: 'Welcome, traveller! Bread, salt and orbs for the road.',
+    locked: ['The smell of fresh bread drifts out, but the door is barred.', 'A carved sign: "At the harvest dance."'],
+    rooms: { shop: 'Kitezh Market', shrine: 'Chapel of Healing', lt1: 'Forge of Svarog', lt2: 'Hall of Mokosh', temple: 'Oak Hall of Perun' }, deco: ['F', 'P', 'F'],
+    encounters: { ',': { lv: [38, 42], table: [['domovik', 22], ['vodyan', 22], ['kikimor', 16, 'night'], ['zharling', 14], ['rusalin', 14], ['leshko', 12]] },
+      ':': { lv: [42, 46], table: [['leshko', 18], ['rusalin', 16], ['zmeyok', 14], ['kikimor', 14, 'night'], ['zharling', 12], ['vodyan', 12], ['zharplume', 3]] } },
+    items: [[4, 22, 'amrita', 2], [22, 19, 'gandiva', 2], [12, 26, 'sanjivani', 2]],
+  });
+}
+
 // ---- 11_battle.js ----
 // =====================================================================
 //  BATTLE SYSTEM
@@ -2761,6 +3264,11 @@ const HALL_BG = {
   hall: ['#3a0e08', '#8a2a10', '#ff7a1a'], palace: ['#1a1450', '#4a3a9a', '#ffd040'],
   arena: ['#5a1a10', '#c8a070', '#e8c040'], underworld: ['#0e0818', '#3a2a4a', '#c8a0ff'], olympos: ['#7aaae8', '#f4f0e6', '#e8c040'],
   forge: ['#1a1010', '#5a3a2a', '#ff7a1a'], oaths: ['#2a1a10', '#6a4a30', '#c8a040'], valgrind: ['#3a2a10', '#a87a30', '#ffd860'],
+  tomb: ['#100c14', '#4a3a2a', '#e8c040'], lioness: ['#5a1a0a', '#c86a3a', '#ffd040'], suntemple: ['#e8a040', '#f8e8c0', '#ffffff'],
+  moon: ['#0a0a2a', '#3a3a6a', '#d8e0ff'], drums: ['#2a0a0a', '#7a2a2a', '#ffe040'], sunshrine: ['#ff9a6a', '#fff0e0', '#c83a2a'],
+  crows: ['#0a0a10', '#3a2a3a', '#8a1a2a'], lughhall: ['#c89a3a', '#fff4d0', '#ffffff'], dagdahall: ['#2a1a0a', '#7a5a30', '#ffb040'],
+  ishtar: ['#0a1a4a', '#2a5aa8', '#e8c050'], nergal: ['#2a0a08', '#7a2a1a', '#ff8a3a'], esagila: ['#1a1440', '#c8a070', '#e8c050'],
+  loom: ['#1a3a1a', '#6a8a4a', '#e8d8b0'], oak: ['#1a2a4a', '#4a6a3a', '#ffe060'],
 };
 function battleBG(kind) {
   if (BG_CACHE[kind]) return BG_CACHE[kind];
@@ -2787,6 +3295,8 @@ function battleBG(kind) {
     x.fillStyle = '#f4f2ea'; x.fillRect(50, 78, 44, 4); x.beginPath(); x.moveTo(48, 78); x.lineTo(72, 66); x.lineTo(96, 78); x.fill(); for (let k = 0; k < 5; k++) x.fillRect(52 + k * 9, 82, 4, 16); x.fillRect(48, 98, 48, 3);
     if (kind === 'sea') { x.fillStyle = '#1e5ab0'; x.fillRect(0, 128, W, 112); x.fillStyle = '#6ab4ff'; for (let i = 0; i < 80; i++) x.fillRect(r() * W, 130 + r() * 110, 5, 1); platCol = ['#a87a4a', '#c89a6a']; }
     else { x.fillStyle = '#9ab45a'; x.fillRect(0, 128, W, 112); x.fillStyle = '#b4c86e'; for (let i = 0; i < 60; i++) x.fillRect(r() * W, 130 + r() * 110, 3, 1); for (const px of [170, 300, 228]) { x.fillStyle = '#5a4a30'; x.fillRect(px, 112, 2, 18); x.fillStyle = '#1e4a2a'; x.beginPath(); x.ellipse(px + 1, 104, 5, 16, 0, 0, 7); x.fill(); } platCol = ['#c8c6bc', '#eeece6']; }
+  } else if (OUT_KINDS.includes(kind)) {
+    platCol = outdoorScene(x, r, kind);
   } else if (kind === 'norse' || kind === 'bifrost') {
     sky(kind === 'bifrost' ? '#1a2a5a' : '#8aa8c8', kind === 'bifrost' ? '#6a8ac8' : '#e8f0f8');
     if (kind === 'bifrost') { ['#ff5a5a', '#ffa040', '#ffe060', '#60d070', '#50a0ff', '#a070ff'].forEach((col, i) => { x.strokeStyle = col; x.lineWidth = 3; x.beginPath(); x.arc(160, 170, 130 - i * 3, Math.PI, 0); x.stroke(); }); }
@@ -2807,6 +3317,59 @@ function battleBG(kind) {
   const plat = (cx, cy, rx, ry) => { x.fillStyle = 'rgba(0,0,0,.25)'; x.beginPath(); x.ellipse(cx, cy + 3, rx, ry, 0, 0, 7); x.fill(); x.fillStyle = platCol[0]; x.beginPath(); x.ellipse(cx, cy, rx, ry, 0, 0, 7); x.fill(); x.fillStyle = platCol[1]; x.beginPath(); x.ellipse(cx, cy - 2, rx - 6, ry - 3, 0, 0, 7); x.fill(); };
   plat(POS.e.x, POS.e.y - 4, 48, 11); plat(POS.p.x, POS.p.y - 4, 54, 12);
   return BG_CACHE[kind] = c;
+}
+
+const OUT_KINDS = ['egypt', 'nile', 'japan', 'stormsea', 'celtic', 'celticsea', 'meso', 'slavic', 'slavicriver'];
+// outdoor battle scenery for the later cities; returns platform colours
+function outdoorScene(x, r, kind) {
+  const sky = (a, b) => { const g = x.createLinearGradient(0, 0, 0, 150); g.addColorStop(0, a); g.addColorStop(1, b); x.fillStyle = g; x.fillRect(0, 0, W, 150); };
+  const ground = (c1, c2) => { x.fillStyle = c1; x.fillRect(0, 128, W, 112); x.fillStyle = c2; for (let i = 0; i < 60; i++) x.fillRect(r() * W, 130 + r() * 110, 3, 1); };
+  const water = (c1, c2, y) => { x.fillStyle = c1; x.fillRect(0, y, W, H - y); x.fillStyle = c2; for (let i = 0; i < 60; i++) x.fillRect(r() * W, y + 2 + r() * (H - y - 4), 5, 1); };
+  const sun = (c, cx, cy, rr) => { x.fillStyle = c; x.beginPath(); x.arc(cx, cy, rr, 0, 7); x.fill(); };
+  const palm = (px, trunk, leaf) => { x.fillStyle = trunk; x.fillRect(px, 94, 3, 36); x.fillStyle = leaf; for (let k = 0; k < 5; k++) { x.beginPath(); x.ellipse(px + 1 + Math.cos(k * 1.3) * 8, 94 + Math.sin(k * 1.3) * 3, 10, 3, k * 1.3, 0, 7); x.fill(); } };
+  if (kind === 'egypt' || kind === 'nile') {
+    sky('#f0a050', '#f8e0b0'); sun('#fff4c0', 250, 40, 16);
+    for (const [px, pw, ph] of [[40, 70, 50], [110, 50, 36], [180, 90, 62]]) { x.fillStyle = '#d8a860'; x.beginPath(); x.moveTo(px, 120); x.lineTo(px + pw / 2, 120 - ph); x.lineTo(px + pw, 120); x.fill(); x.fillStyle = '#b88848'; x.beginPath(); x.moveTo(px + pw / 2, 120 - ph); x.lineTo(px + pw, 120); x.lineTo(px + pw * .6, 120); x.fill(); }
+    if (kind === 'nile') { water('#2a7aa8', '#7ac0e0', 112); return ['#a87a4a', '#c89a6a']; }
+    ground('#e8c888', '#f4dca8'); palm(290, '#7a5a30', '#3f8a3a'); palm(14, '#7a5a30', '#3f8a3a');
+    return ['#d8b878', '#ecd098'];
+  }
+  if (kind === 'stormsea') {
+    sky('#2a3a5a', '#7a8aa8');
+    for (let i = 0; i < 6; i++) { x.fillStyle = 'rgba(40,50,70,.7)'; const cx = r() * W, cy = 15 + r() * 40; x.beginPath(); x.ellipse(cx, cy, 30, 10, 0, 0, 7); x.fill(); }
+    water('#1a4a6a', '#9ac0e0', 104); return ['#c83a2a', '#e85a4a'];
+  }
+  if (kind === 'japan') {
+    sky('#9ac8f0', '#ffe8f0'); sun('#ffffff', 60, 36, 12);
+    x.fillStyle = '#8a98b8'; x.beginPath(); x.moveTo(140, 120); x.lineTo(210, 46); x.lineTo(280, 120); x.fill();
+    x.fillStyle = '#ffffff'; x.beginPath(); x.moveTo(196, 61); x.lineTo(210, 46); x.lineTo(224, 61); x.lineTo(214, 58); x.lineTo(206, 62); x.fill();
+    x.fillStyle = '#c83a2a'; x.fillRect(40, 84, 4, 44); x.fillRect(76, 84, 4, 44); x.fillRect(32, 84, 56, 5); x.fillRect(36, 94, 48, 3); x.fillStyle = '#2a2a2a'; x.fillRect(30, 81, 60, 3);
+    ground('#6aa84a', '#86c060');
+    for (const px of [300, 130]) { x.fillStyle = '#5a3a2a'; x.fillRect(px, 100, 3, 30); x.fillStyle = '#f4a8c0'; x.beginPath(); x.arc(px + 1, 96, 12, 0, 7); x.fill(); x.fillStyle = '#ffd0e0'; x.beginPath(); x.arc(px - 2, 93, 6, 0, 7); x.fill(); }
+    return ['#a8a8a0', '#c8c8c0'];
+  }
+  if (kind === 'celtic' || kind === 'celticsea') {
+    sky('#7aa0c8', '#e0ecf0');
+    for (let i = 0; i < 4; i++) { x.fillStyle = 'rgba(255,255,255,.6)'; const cx = r() * W, cy = 20 + r() * 40; x.beginPath(); x.ellipse(cx, cy, 26, 7, 0, 0, 7); x.fill(); }
+    x.fillStyle = '#5a8a5a'; x.beginPath(); x.moveTo(0, 116); x.quadraticCurveTo(80, 70, 170, 112); x.quadraticCurveTo(250, 80, W, 110); x.lineTo(W, 150); x.lineTo(0, 150); x.fill();
+    x.fillStyle = '#8a8a90'; for (let i = 0; i < 5; i++) x.fillRect(60 + i * 12, 86 - (i % 2) * 3, 6, 18); x.fillRect(58, 84, 60, 3);
+    if (kind === 'celticsea') { water('#2a5a7a', '#8ab0d0', 112); return ['#8a8a80', '#a8a8a0']; }
+    ground('#4a9a4a', '#68b85a'); return ['#6aa860', '#8ac870'];
+  }
+  if (kind === 'meso') {
+    sky('#e8a860', '#f8e8c8'); sun('#fff4c0', 60, 34, 13);
+    for (let t = 0; t < 4; t++) { x.fillStyle = t % 2 ? '#c8a070' : '#a88050'; x.fillRect(180 + t * 12, 110 - (t + 1) * 14, 110 - t * 24, 15); }
+    x.fillStyle = '#2a5aa8'; x.fillRect(222, 40, 26, 16);
+    ground('#c8b078', '#d8c490'); palm(24, '#6a4a28', '#4a7a32'); palm(130, '#6a4a28', '#4a7a32');
+    return ['#c8a878', '#e0c898'];
+  }
+  // slavic / slavicriver
+  sky('#8ab0d8', '#f0e0c0');
+  for (const [px, k] of [[40, 1], [250, 1.2]]) { x.fillStyle = '#f0e8d8'; x.fillRect(px, 80, 24 * k, 34); x.fillStyle = '#3a8ac8'; x.beginPath(); x.moveTo(px + 2, 80); x.bezierCurveTo(px - 6, 62, px + 10 * k, 58, px + 12 * k, 46); x.bezierCurveTo(px + 14 * k, 58, px + 30 * k, 62, px + 22 * k, 80); x.fill(); x.fillStyle = '#e8b030'; x.fillRect(px + 12 * k - .5, 38, 1, 8); }
+  if (kind === 'slavicriver') { water('#3a5a7a', '#8ab0c8', 112); return ['#8a6a48', '#a88a68']; }
+  ground('#7a9a4a', '#9ab85a');
+  for (const px of [140, 300, 196]) { x.fillStyle = '#f0f0e8'; x.fillRect(px, 96, 3, 34); x.fillStyle = '#3a3a3a'; x.fillRect(px, 104, 2, 1); x.fillRect(px + 1, 116, 2, 1); x.fillStyle = '#e8b840'; x.beginPath(); x.arc(px + 1, 92, 10, 0, 7); x.fill(); }
+  return ['#9a7a58', '#b89a78'];
 }
 
 const TYPE_FX = {
@@ -3547,7 +4110,7 @@ class TitleScene {
     drawCreature(ctx, STARTERS[Math.floor(Game.frames / 240) % 3], 60, 150, {});
     drawCreature(ctx, 'garudin', 262, 146, { flip: true });
     if (!this.ready && Math.floor(Game.frames / 30) % 2) Font.drawC(ctx, 'PRESS Z / ENTER', 160, 168, '#ffffff', '#1a0f2e');
-    Font.draw(ctx, 'Stage 3 (part 1) build', 4, H - 10, '#c8a8d8');
+    Font.draw(ctx, 'Stage 3 build', 4, H - 10, '#c8a8d8');
     Font.drawR(ctx, AI_ENDPOINT ? 'AI: server mode' : 'AI: offline mode', W - 4, H - 10, '#c8a8d8');
   }
 }
