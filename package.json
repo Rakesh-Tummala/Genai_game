@@ -1,0 +1,16 @@
+{
+  "name": "mythbound",
+  "version": "0.1.0",
+  "description": "MYTHBOUND - a browser-based 16-bit style creature-taming RPG with optional AI custom attacks",
+  "private": true,
+  "license": "MIT",
+  "scripts": {
+    "build": "node build.js",
+    "start": "node server.js",
+    "mock": "node -e \"process.env.MOCK='1';require('./server.js')\""
+  },
+  "engines": { "node": ">=18" },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^1.3.0"
+  }
+}
