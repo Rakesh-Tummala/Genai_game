@@ -49,7 +49,7 @@ class TitleScene {
     drawCreature(ctx, STARTERS[Math.floor(Game.frames / 240) % 3], 60, 150, {});
     drawCreature(ctx, 'garudin', 262, 146, { flip: true });
     if (!this.ready && Math.floor(Game.frames / 30) % 2) Font.drawC(ctx, 'PRESS Z / ENTER', 160, 168, '#ffffff', '#1a0f2e');
-    Font.draw(ctx, 'Stage 1 build', 4, H - 10, '#c8a8d8');
+    Font.draw(ctx, 'Stage 3 (part 1) build', 4, H - 10, '#c8a8d8');
     Font.drawR(ctx, AI_ENDPOINT ? 'AI: server mode' : 'AI: offline mode', W - 4, H - 10, '#c8a8d8');
   }
 }
@@ -151,13 +151,18 @@ async function openStartMenu() {
       drawWin(ctx, 4, 4, 150, 104);
       Font.draw(ctx, Game.player.name, 14, 12, UI.gold);
       Font.draw(ctx, `Coins   ${Game.player.money}`, 14, 26, UI.ink);
-      Font.draw(ctx, `Seals   ${badgeCount()} / 2`, 14, 38, UI.ink);
+      Font.draw(ctx, `Seals   ${badgeCount()} / 8`, 14, 38, UI.ink);
       Font.draw(ctx, `Tamed   ${Object.keys(Game.tamed).length} / ${SPECIES_ORDER.length}`, 14, 50, UI.ink);
       Font.draw(ctx, `Time    ${playTimeStr()}`, 14, 62, UI.ink);
       Font.draw(ctx, `Clock   ${clockStr()}`, 14, 74, UI.ink);
       Font.draw(ctx, 'AI: ' + (AI_ENDPOINT ? (AI.status === 'fallback' ? 'server unreachable' : 'server') : 'offline mode'), 14, 90, UI.dim);
     };
-    const i = await choose(['PARTY', 'BESTIARY', 'BAG', 'SAVE', 'OPTIONS', 'TITLE', 'CLOSE'], { x: 228, y: 4, w: 88, extra });
+    const canTravel = CITY_ORDER.filter(cityUnlocked).length > 1;
+    const labels = ['PARTY', 'BESTIARY', 'BAG', 'SAVE', 'OPTIONS', 'TITLE', 'CLOSE'];
+    if (canTravel) labels.splice(2, 0, 'TRAVEL');
+    const pickL = labels[await choose(labels, { x: 228, y: 4, w: 88, extra })];
+    if (pickL === 'TRAVEL') { if (!World.map.outdoor) { await say('Step outside to see the Mist Road.'); continue; } await openWorldMap(); return; }
+    const i = ['PARTY', 'BESTIARY', 'BAG', 'SAVE', 'OPTIONS', 'TITLE', 'CLOSE'].indexOf(pickL);
     if (i < 0 || i === 6) return;
     if (i === 0) await openParty();
     if (i === 1) await openBestiary();

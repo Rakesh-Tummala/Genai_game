@@ -208,7 +208,7 @@ const npcLineCache = {};
 async function npcLine(npc, fallback) {
   if (!AI_ENDPOINT || !npc.ai) return fallback;
   if (npcLineCache[npc.id]) return npcLineCache[npc.id];
-  const raw = coerceJSON(await askAI('npc_dialogue', { npc: { name: npc.name, role: npc.ai, city: 'Indrapuri (India)' }, player: Game.player.name, progress: { beatRohan: !!Game.flags.beatRohan, beatAgni: !!Game.flags.beatAgni, beatIndra: !!Game.flags.beatIndra } }));
+  const raw = coerceJSON(await askAI('npc_dialogue', { npc: { name: npc.name, role: npc.ai, city: (c => CITIES[c].name + ' (' + CITIES[c].culture + ')')(cityOf(Game.player.map)) }, player: Game.player.name, progress: { beatRohan: !!Game.flags.beatRohan, beatAgni: !!Game.flags.beatAgni, beatIndra: !!Game.flags.beatIndra } }));
   const line = raw && Font.sanitize(raw.line, 180);
   if (line && line.length > 4) { npcLineCache[npc.id] = line; return line; }
   return fallback;

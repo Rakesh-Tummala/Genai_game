@@ -1,7 +1,7 @@
 // =====================================================================
 //  WORLD: maps, NPCs, overworld scene
 // =====================================================================
-const SOLID = new Set(['T', '|', 'L', 'S', 'R', '~', 'o', 'w', 'C', 'F', 'P', 'K', 'A', 'X']);
+const SOLID = new Set(['T', '|', 'L', 'S', 'R', '~', 'o', 'i', 'w', 'C', 'F', 'P', 'K', 'A', 'X']);
 function blank(w, h, ch) { return Array.from({ length: h }, () => Array(w).fill(ch)); }
 function R(t, x, y, w, h, ch) { for (let j = y; j < y + h; j++) for (let i = x; i < x + w; i++) if (t[j] && t[j][i] !== undefined) t[j][i] = ch; }
 function fromRows(rows) { return rows.map(r => r.split('')); }
@@ -36,7 +36,7 @@ function buildMaps() {
     for (const [x, y] of [[2, 9], [27, 9], [10, 11], [19, 11]]) t[y][x] = 'L';
     t[22][16] = 'S'; t[10][13] = 'f';
     MAPS.city = {
-      id: 'city', name: 'Indrapuri', outdoor: true, music: 'city', t, w, h,
+      id: 'city', name: 'Indrapuri', outdoor: true, music: 'city', theme: 'india', bg: 'route', particles: 'petals', t, w, h,
       buildings: [
         { x: 11, y: 2, w: 8, h: 7, style: 'palace', door: 14, to: ['palace', 6, 12] },
         { x: 2, y: 3, w: 6, h: 5, style: 'hall', door: 4, to: ['hall', 5, 10] },
@@ -50,7 +50,7 @@ function buildMaps() {
       signs: { '16,22': 'SOUTH: Monsoon Trail. Wild creatures roam the tall grass. Pilgrims gather by the river.' },
       npcs: [
         { id: 'guard', name: 'Palace Guard', look: 'guard', x: 14, y: 9, dir: 'down', when: () => !Game.flags.beatAgni, lines: ['Halt! Only those who have passed through Agni\'s flame may enter Vaijayanta.', 'The Fire Hall stands on the west side of the plaza.'] },
-        { id: 'guard2', name: 'Palace Guard', look: 'guard', x: 13, y: 9, dir: 'right', when: () => !!Game.flags.beatAgni, lines: ['Agni\'s fire did not stop you. Enter - the King of the Heavens awaits.'] },
+        { id: 'guard2', name: 'Palace Guard', look: 'guard', x: 13, y: 9, dir: 'right', when: () => !!Game.flags.beatAgni, lines: ['Agni\'s fire did not stop you. Enter - Vayu, Varuna and the King of the Heavens await.'] },
         { id: 'acolyte', name: 'Fire Acolyte', look: 'acolyte', x: 4, y: 8, dir: 'down', when: () => !Game.flags.beatRohan, lines: ['Lord Agni receives only Tamers who have proven their bond on the road.', 'Pilgrim Rohan waits by the river on the Monsoon Trail. Defeat him first!'] },
         { id: 'acolyte2', name: 'Fire Acolyte', look: 'acolyte', x: 3, y: 9, dir: 'right', when: () => !!Game.flags.beatRohan, lines: ['Rohan spoke well of you. Lord Agni is ready.'] },
         { id: 'flower', name: 'Malini', look: 'flower', x: 13, y: 16, dir: 'left', ai: 'flower seller at the lotus pond who loves Nagling', wander: 1, lines: ['Marigolds for the temple, lotuses for the pond! Have you seen the Naglings? They guard pearls under the lotus leaves.'] },
@@ -78,9 +78,9 @@ function buildMaps() {
     R(t, 2, 43, 20, 1, 'R'); t[42][13] = 'S';
     for (const [x, y] of [[2, 16], [21, 16], [21, 26], [2, 30], [21, 30], [9, 26], [13, 26]]) t[y][x] = 'T';
     MAPS.route = {
-      id: 'route', name: 'Monsoon Trail', outdoor: true, music: 'route', t, w, h, buildings: [],
+      id: 'route', name: 'Monsoon Trail', outdoor: true, music: 'route', theme: 'india', bg: 'route', particles: 'petals', t, w, h, buildings: [],
       warps: [{ x: 11, y: 0, to: ['city', 14, 24, 'up'] }, { x: 12, y: 0, to: ['city', 15, 24, 'up'] }],
-      signs: { '10,31': 'SACRED GROVE ahead. The blue-green grass hides stronger creatures (Lv 10-16).', '13,42': 'The road beyond is sealed by a wall of monsoon mist. (Other cities arrive in a later stage of MYTHBOUND.)' },
+      signs: { '10,31': 'SACRED GROVE ahead. The blue-green grass hides stronger creatures (Lv 10-16).', '13,42': '@travel' },
       npcs: [
         { id: 'rohan', name: 'Pilgrim Rohan', look: 'pilgrim', x: 14, y: 17, dir: 'left', trainer: 'rohan', sight: 4, lines: ['May your road be gentle. The Fire Hall in Indrapuri is open to you now.'] },
         { id: 'sage', name: 'Wandering Sage', look: 'sage', x: 7, y: 30, dir: 'down', ai: 'wandering sage who gives advice about taming creatures', lines: ['Weaken a creature before you throw an orb. Sleep or Bind makes the Nagastra Orb sing.', 'A Varunastra Orb calms Ember creatures as water calms fire.'] },
@@ -99,10 +99,11 @@ function buildMaps() {
     npcs: [{ id: 'priest', name: 'Priestess Gauri', look: 'priest', x: 4, y: 2, dir: 'down', role: 'heal' }, { id: 'sanctum', name: 'Sanctum Stone', look: 'stone', x: 7, y: 2, dir: 'down', role: 'storage' }], exit: ['city', 24, 8, 'down'] };
   MAPS.house = { id: 'house', name: 'Elder\'s House', music: 'city', t: fromRows(['wwwwwwwwww', 'wKKwwwwKKw', 'pppppppppp', 'ppcccccppp', 'ppcccccppp', 'pppppppppp', 'pppppppppp', 'wwwwmwwwww']), buildings: [], signs: {}, items: [],
     npcs: [{ id: 'elder', name: 'Elder Bhaskar', look: 'elder', x: 4, y: 2, dir: 'down', role: 'elder', ai: 'kind village elder who gave the player their first creature' }], exit: ['city', 23, 17, 'down'] };
-  MAPS.hall = { id: 'hall', name: 'Fire Hall of Agni', music: 'boss', t: fromRows(['wwwwwwwwwwww', 'wwwwFAAFwwww', 'pFppcccppFpp', 'ppppcccppppp', 'pFppcccppFpp', 'ppppcccppppp', 'pFppcccppFpp', 'ppppcccppppp', 'pFppcccppFpp', 'ppppcccppppp', 'ppppcccppppp', 'wwwwwmwwwwww']), buildings: [], signs: {}, items: [],
+  MAPS.hall = { id: 'hall', name: 'Fire Hall of Agni', music: 'boss', bg: 'hall', t: fromRows(['wwwwwwwwwwww', 'wwwwFAAFwwww', 'pFppcccppFpp', 'ppppcccppppp', 'pFppcccppFpp', 'ppppcccppppp', 'pFppcccppFpp', 'ppppcccppppp', 'pFppcccppFpp', 'ppppcccppppp', 'ppppcccppppp', 'wwwwwmwwwwww']), buildings: [], signs: {}, items: [],
     npcs: [{ id: 'agni', name: 'Agni', look: 'agni', x: 5, y: 2, dir: 'down', trainer: 'agni', boss: true }], exit: ['city', 4, 8, 'down'] };
-  MAPS.palace = { id: 'palace', name: 'Vaijayanta Palace', music: 'boss', t: fromRows(['wwwwwwwwwwwwww', 'wwwwwwAAwwwwww', 'gPgggcccgggPgg', 'gggggcccgggggg', 'gPgggcccgggPgg', 'gggggcccgggggg', 'gPgggcccgggPgg', 'gggggcccgggggg', 'gPgggcccgggPgg', 'gggggcccgggggg', 'gPgggcccgggPgg', 'gggggcccgggggg', 'gggggcccgggggg', 'wwwwwwmwwwwwww']), buildings: [], signs: {}, items: [],
-    npcs: [{ id: 'indra', name: 'Indra', look: 'indra', x: 6, y: 2, dir: 'down', trainer: 'indra', boss: true }], exit: ['city', 14, 9, 'down'] };
+  MAPS.palace = { id: 'palace', name: 'Vaijayanta Palace', music: 'boss', bg: 'palace', t: fromRows(['wwwwwwwwwwwwww', 'wwwwwwAAwwwwww', 'gPgggcccgggPgg', 'gggggcccgggggg', 'gPgggcccgggPgg', 'gggggcccgggggg', 'gPgggcccgggPgg', 'gggggcccgggggg', 'gPgggcccgggPgg', 'gggggcccgggggg', 'gPgggcccgggPgg', 'gggggcccgggggg', 'gggggcccgggggg', 'wwwwwwmwwwwwww']), buildings: [], signs: {}, items: [],
+    npcs: [{ id: 'indra', name: 'Indra', look: 'indra', x: 6, y: 2, dir: 'down', trainer: 'indra', boss: true }, { id: 'vayu', name: 'Vayu', look: 'vayu', x: 3, y: 7, dir: 'right', trainer: 'vayu', boss: true }, { id: 'varuna', name: 'Varuna', look: 'varuna', x: 10, y: 7, dir: 'left', trainer: 'varuna', boss: true }], exit: ['city', 14, 9, 'down'] };
+  buildMoreCities();
   for (const id in MAPS) { const m = MAPS[id]; m.h = m.t.length; m.w = m.t[0].length; m.buildings.forEach(b => b.img = renderBuilding(b)); }
 }
 
@@ -159,6 +160,7 @@ class Overworld {
     const b = this.buildingAt(p.x, p.y);
     if (b && b.to) { Sound.sfx('door'); return this.run(() => this.warp(b.to[0], b.to[1], b.to[2], 'up')); }
     const wp = (m.warps || []).find(w => w.x === p.x && w.y === p.y);
+    if (wp && wp.to[0] === '@travel') return this.run(() => travelGate());
     if (wp) return this.run(() => this.warp(...wp.to));
     if (this.tileAt(p.x, p.y) === 'm' && m.exit) { Sound.sfx('door'); return this.run(() => this.warp(...m.exit)); }
     // item pickup
@@ -196,7 +198,7 @@ class Overworld {
   async trainerBattle(n) {
     const tr = TRAINERS[n.trainer];
     await say(tr.intro, { speaker: tr.name });
-    const res = await startBattle({ kind: 'trainer', trainerId: n.trainer, team: tr.team.map(([s, l]) => newCreature(s, l)) });
+    const res = await startBattle({ kind: 'trainer', trainerId: n.trainer, team: makeTeam(tr) });
     if (res === 'win') this.refreshNPCs();
   }
   run(fn) { this.busy = true; return Promise.resolve().then(fn).catch(e => console.error(e)).finally(() => { this.busy = false; Input.clear(); }); }
@@ -210,23 +212,25 @@ class Overworld {
     const n = this.npcs.find(q => q.x === fx && q.y === fy);
     if (n) { n.dir = OPP[this.p.dir]; return this.run(() => this.talk(n)); }
     const sign = this.map.signs[fx + ',' + fy];
+    if (sign === '@travel') return this.run(() => travelGate());
     if (sign) return this.run(() => say(sign));
   }
   async talk(n) {
     if (n.trainer) {
       const tr = TRAINERS[n.trainer];
       if (Game.flags[tr.flag] && n.trainer === 'indra' && !Game.flags.gotBrahmastra) { Game.flags.gotBrahmastra = true; addItem('brahmastra', 1); Sound.sfx('pickup'); await say(['INDRA: Before you go - take the Brahmastra Orb. It tames any wild creature without fail, but only once.', 'You received the BRAHMASTRA ORB!'], { speaker: 'Indra' }); return; }
-      if (Game.flags[tr.flag]) { await say(n.boss ? (n.trainer === 'indra' ? ['INDRA: The rains will follow you, Tamer.', 'Other gods watch from distant cities. Their roads are still sealed by mist - for now.'] : ['AGNI: Carry the flame with you. Vaijayanta awaits.']) : n.lines, { speaker: n.name }); return; }
+      if (Game.flags[tr.flag]) { await say(tr.after || n.lines || ['...'], { speaker: n.name }); return; }
+      if (tr.requires && !tr.requires.every(f => Game.flags[f])) { await say(tr.blocked, { speaker: n.name }); return; }
       if (n.boss) {
-        const c = await ask(n.trainer === 'indra' ? 'The air hums with thunder. Begin the Trial of the Heavens?' : 'The sacred fire roars. Challenge Agni, Lieutenant of Indra?');
+        const c = await ask(tr.confirm || `Challenge ${tr.name}?`);
         if (c !== 0) return;
       }
       return this.trainerBattle(n);
     }
-    if (n.role === 'shop') { await say('Welcome to the Bazaar! Orbs, herbs and holy water - all fairly priced.', { speaker: n.name }); await openShop(); return; }
+    if (n.role === 'shop') { await say(this.map.greet || 'Welcome to the Bazaar! Orbs, herbs and holy water - all fairly priced.', { speaker: n.name }); await openShop(); return; }
     if (n.role === 'heal') {
       const c = await ask('Shall I let your companions rest in the shrine\'s light?', ['Yes', 'No'], { speaker: n.name });
-      if (c === 0) { Game.flags.lastShrine = true; await fadeOut(10); healParty(); Sound.sfx('heal'); await wait(30); await fadeIn(10); await say('Your companions are fully restored. Return whenever you need.', { speaker: n.name }); }
+      if (c === 0) { Game.flags.shrine = [this.map.id, this.p.x, this.p.y, this.p.dir]; await fadeOut(10); healParty(); Sound.sfx('heal'); await wait(30); await fadeIn(10); await say('Your companions are fully restored. Return whenever you need.', { speaker: n.name }); }
       return;
     }
     if (n.role === 'storage') { await say('The Sanctum Stone glows. Creatures beyond your party of six rest here.'); await openSanctum(); return; }
@@ -265,10 +269,13 @@ class Overworld {
     if (!this.map.outdoor) return;
     const night = nightLevel();
     if (this.parts.length < 26 && chance(.2)) {
-      if (night > .5) this.parts.push({ k: 'fly', x: this.cam.x + Math.random() * W, y: this.cam.y + Math.random() * H, vx: 0, vy: 0, life: 300, ph: Math.random() * 6 });
+      const kind = this.map.particles || 'petals';
+      if (kind === 'snow') this.parts.push({ k: 'snow', x: this.cam.x + Math.random() * (W + 80) - 40, y: this.cam.y - 8, vx: -.1 + Math.random() * .3, vy: .4 + Math.random() * .5, life: 700, ph: Math.random() * 6, s: chance(.3) ? 2 : 1 });
+      else if (night > .5) this.parts.push({ k: 'fly', x: this.cam.x + Math.random() * W, y: this.cam.y + Math.random() * H, vx: 0, vy: 0, life: 300, ph: Math.random() * 6 });
+      else if (kind === 'leaves') this.parts.push({ k: 'petal', x: this.cam.x + Math.random() * (W + 80) - 40, y: this.cam.y - 8, vx: .4 + Math.random() * .4, vy: .25 + Math.random() * .25, life: 700, ph: Math.random() * 6, c: pick(['#7a9a4a', '#a8c070', '#5a7a3a']) });
       else this.parts.push({ k: 'petal', x: this.cam.x + Math.random() * (W + 80) - 40, y: this.cam.y - 8, vx: .2 + Math.random() * .3, vy: .35 + Math.random() * .3, life: 700, ph: Math.random() * 6, c: pick(['#ff9f1a', '#ffd23a', '#ff6a3a']) });
     }
-    for (const q of this.parts) { q.life--; q.ph += .05; if (q.k === 'petal') { q.x += q.vx + Math.sin(q.ph) * .4; q.y += q.vy; } else { q.x += Math.sin(q.ph * 1.3) * .3; q.y += Math.cos(q.ph) * .25; } }
+    for (const q of this.parts) { q.life--; q.ph += .05; if (q.k === 'petal' || q.k === 'snow') { q.x += q.vx + Math.sin(q.ph) * .4; q.y += q.vy; } else { q.x += Math.sin(q.ph * 1.3) * .3; q.y += Math.cos(q.ph) * .25; } }
     this.parts = this.parts.filter(q => q.life > 0 && q.y < this.cam.y + H + 10);
   }
   draw(ctx) {
@@ -279,7 +286,7 @@ class Overworld {
     const cx = Math.round(this.cam.x), cy = Math.round(this.cam.y);
     ctx.fillStyle = '#0b0714'; ctx.fillRect(0, 0, W, H);
     const x0 = Math.max(0, Math.floor(cx / 16)), y0 = Math.max(0, Math.floor(cy / 16)), x1 = Math.min(m.w - 1, x0 + 21), y1 = Math.min(m.h - 1, y0 + 16);
-    for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) ctx.drawImage(Tiles.get(m.t[y][x], Game.frames, x, y), x * 16 - cx, y * 16 - cy);
+    for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) ctx.drawImage(Tiles.get(m.t[y][x], Game.frames, x, y, m.theme), x * 16 - cx, y * 16 - cy);
     // buildings
     for (const b of m.buildings) ctx.drawImage(b.img.canvas, b.x * 16 - cx, b.y * 16 - cy - b.img.top);
     // items
@@ -301,7 +308,7 @@ class Overworld {
       ctx.fillStyle = 'rgba(0,0,0,.25)'; ctx.fillRect(ex - cx + 3, ey - cy + 13, 10, 3);
       ctx.drawImage(fr[dir][walkF], Math.round(ex - cx), Math.round(ey - cy - 3));
       if (en.e.alert) { drawWin(ctx, ex - cx + 3, ey - cy - 20, 11, 13); Font.draw(ctx, '!', ex - cx + 8, ey - cy - 17, UI.red); }
-      if (en.e.boss && !Game.flags[TRAINERS[en.e.trainer].flag]) { const a = .5 + .5 * Math.sin(Game.frames / 15); ctx.globalAlpha = a * .5; ctx.fillStyle = en.e.trainer === 'indra' ? '#9fe4ff' : '#ff7a1a'; ctx.beginPath(); ctx.arc(ex - cx + 8, ey - cy + 6, 11, 0, 7); ctx.fill(); ctx.globalAlpha = 1; ctx.drawImage(fr[dir][walkF], Math.round(ex - cx), Math.round(ey - cy - 3)); }
+      if (en.e.boss && !Game.flags[TRAINERS[en.e.trainer].flag]) { const a = .5 + .5 * Math.sin(Game.frames / 15); ctx.globalAlpha = a * .5; ctx.fillStyle = TRAINERS[en.e.trainer].god ? '#9fe4ff' : '#ff7a1a'; ctx.beginPath(); ctx.arc(ex - cx + 8, ey - cy + 6, 11, 0, 7); ctx.fill(); ctx.globalAlpha = 1; ctx.drawImage(fr[dir][walkF], Math.round(ex - cx), Math.round(ey - cy - 3)); }
     }
     // day / night tint + lamp glow
     if (m.outdoor) {
@@ -315,11 +322,15 @@ class Overworld {
           const g = ctx.createRadialGradient(gx, gy, 1, gx, gy, rr); g.addColorStop(0, `rgba(255,190,90,${.55 * n})`); g.addColorStop(1, 'rgba(255,150,50,0)');
           ctx.fillStyle = g; ctx.fillRect(gx - rr, gy - rr, rr * 2, rr * 2);
         }
+        if (m.theme === 'norse' && n > .4) { // aurora
+          for (let k = 0; k < 3; k++) { ctx.fillStyle = `rgba(${k === 1 ? '120,255,200' : '80,200,255'},${(n - .4) * .22})`; ctx.beginPath(); ctx.moveTo(0, 10 + k * 10); for (let xx = 0; xx <= W; xx += 16) ctx.lineTo(xx, 14 + k * 10 + Math.sin(xx / 40 + Game.frames / 90 + k) * 10); ctx.lineTo(W, 0); ctx.lineTo(0, 0); ctx.fill(); }
+        }
         ctx.globalCompositeOperation = 'source-over';
       }
       for (const q of this.parts) {
         const qx = Math.round(q.x - cx), qy = Math.round(q.y - cy);
-        if (q.k === 'petal') { ctx.fillStyle = q.c; ctx.fillRect(qx, qy, 2, 1); ctx.fillRect(qx + (Math.sin(q.ph) > 0 ? 1 : 0), qy + 1, 1, 1); }
+        if (q.k === 'snow') { ctx.fillStyle = '#ffffff'; ctx.fillRect(qx, qy, q.s, q.s); }
+        else if (q.k === 'petal') { ctx.fillStyle = q.c; ctx.fillRect(qx, qy, 2, 1); ctx.fillRect(qx + (Math.sin(q.ph) > 0 ? 1 : 0), qy + 1, 1, 1); }
         else { const a = .5 + .5 * Math.sin(q.ph * 3); ctx.fillStyle = `rgba(220,255,140,${a})`; ctx.fillRect(qx, qy, 1, 1); ctx.fillStyle = `rgba(220,255,140,${a * .3})`; ctx.fillRect(qx - 1, qy - 1, 3, 3); }
       }
     }

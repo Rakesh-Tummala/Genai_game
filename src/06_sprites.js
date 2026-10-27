@@ -438,117 +438,193 @@ function personFrames(look) {
 }
 
 // =====================================================================
-//  TILES (16x16, procedurally painted; water, tall grass, fire animate)
+//  TILES (16x16, procedurally painted per city theme; water, grass, fire animate)
 // =====================================================================
+const THEMES = {
+  india: {
+    grass: ['#5aa84a', '#4a9440', '#6cbc58'], tall: ['#2f7a34', '#3f9a40', '#7fd060'], deep: ['#245f3a', '#2e7f52', '#9be0a0'],
+    path: ['#d9b27a', '#c49a62', '#ead0a0'], plaza: ['#cdbd9f', '#ad9d80', '#ddd0b4'], water: ['#2f6fbf', '#5f9fe8'],
+    tree: 'round', treeC: ['#5a3a20', '#1f5a2c', '#2f7a3a', '#48a24c', '#7cc860'], flowers: ['#ff9f1a', '#ffd23a', '#c84a10'],
+    floor: ['#a8784a', '#8f643c'], wall: ['#e8d8b8', '#c8b090', '#9a7a50', '#b8402a', '#e8b030'], carpet: ['#a8283a', '#e8b030', '#c8485a'],
+    pillar: ['#f2ead8', '#d0c4a8', '#e8b030'], lamp: ['#5a4030', '#e8b030'], rock: ['#6a6a72', '#8f8f98', '#c0c0c8'], gold: ['#d8b048', '#b89030', '#f0d070'], fence: ['#8a5a32', '#6a4224', '#b07a48'],
+  },
+  greece: {
+    grass: ['#9ab45a', '#84a04a', '#b4c86e'], tall: ['#5a7a32', '#6e9040', '#c8d880'], deep: ['#3a6a4a', '#4a805a', '#a8d8a0'],
+    path: ['#e4d8b8', '#cfc09a', '#f2ead2'], plaza: ['#eeece6', '#c8c6bc', '#ffffff'], water: ['#1e78d0', '#6ab4ff'],
+    tree: 'cypress', treeC: ['#5a4a30', '#1e4a2a', '#2a5e34', '#3a7a42', '#6aa060'], flowers: ['#e8384a', '#b070e0', '#40202a'],
+    floor: ['#e8e4dc', '#c8c4b8'], wall: ['#f4f2ea', '#d8d4c8', '#a8a49a', '#2a5ab0', '#e8e8f0'], carpet: ['#2a4a98', '#e8c040', '#3a6ac0'],
+    pillar: ['#ffffff', '#d8d8d0', '#c8b878'], lamp: ['#a8a090', '#d8d0c0'], rock: ['#b8b0a0', '#d8d0c0', '#f0ece0'], gold: ['#e8d8a0', '#c8b878', '#fff4c8'], fence: ['#e8e4d8', '#c8c4b8', '#ffffff'],
+  },
+  norse: {
+    grass: ['#e6edf3', '#cdd8e2', '#ffffff'], tall: ['#6a8a8a', '#86a6a0', '#e8f4f4'], deep: ['#4a6a7a', '#5a8090', '#d8f0ff'],
+    path: ['#a0948a', '#887c70', '#c0b6aa'], plaza: ['#8a6a48', '#6a4e32', '#a8845c'], water: ['#2a4a6a', '#5a80a8'],
+    tree: 'pine', treeC: ['#4a3a2a', '#1a3a2e', '#244a3a', '#2f5e48', '#ffffff'], flowers: ['#ffffff', '#9fc8ff', '#4a6a8a'],
+    floor: ['#7a5a3a', '#5e4430'], wall: ['#7a5434', '#5e3e24', '#3a2614', '#c8a040', '#e8d8b0'], carpet: ['#2a3a6a', '#c8a040', '#3a5a9a'],
+    pillar: ['#8a6a48', '#5e4430', '#c8a040'], lamp: ['#3a2a1a', '#c8a040'], rock: ['#5a6470', '#7a8490', '#d8e4ee'], gold: ['#b8a060', '#8a7440', '#d8c080'], fence: ['#6a4e32', '#4a3420', '#8a6a48'],
+  },
+};
 const Tiles = (() => {
   const cache = {};
-  function make(key, frame, painter) {
-    const c = mkCanvas(16, 16), x = c.getContext('2d'), r = mulberry32(hashStr(key) + frame * 977);
-    painter(x, r, frame); return c;
-  }
   const px = (x, a, b, col) => { x.fillStyle = col; x.fillRect(a, b, 1, 1); };
   const fill = (x, col) => { x.fillStyle = col; x.fillRect(0, 0, 16, 16); };
-  function grass(x, r) { fill(x, '#5aa84a'); for (let i = 0; i < 14; i++) { const a = r() * 16 | 0, b = r() * 16 | 0; px(x, a, b, '#4a9440'); px(x, a, b - 1, '#6cbc58'); } }
-  function plaza(x) { fill(x, '#cdbd9f'); x.fillStyle = '#ad9d80'; x.fillRect(0, 0, 16, 1); x.fillRect(0, 8, 16, 1); x.fillRect(0, 0, 1, 8); x.fillRect(8, 8, 1, 8); x.fillStyle = '#ddd0b4'; x.fillRect(1, 1, 6, 1); x.fillRect(9, 9, 6, 1); }
-  function floor(x) { fill(x, '#a8784a'); x.fillStyle = '#8f643c'; for (let y = 3; y < 16; y += 4) x.fillRect(0, y, 16, 1); x.fillRect(5, 0, 1, 3); x.fillRect(11, 4, 1, 3); x.fillRect(3, 8, 1, 3); x.fillRect(9, 12, 1, 3); }
+  let T = THEMES.india;
+  function grass(x, r) { fill(x, T.grass[0]); for (let i = 0; i < 14; i++) { const a = r() * 16 | 0, b = r() * 16 | 0; px(x, a, b, T.grass[1]); px(x, a, b - 1, T.grass[2]); } }
+  function plaza(x) { const c = T.plaza; fill(x, c[0]); x.fillStyle = c[1]; x.fillRect(0, 0, 16, 1); x.fillRect(0, 8, 16, 1); x.fillRect(0, 0, 1, 8); x.fillRect(8, 8, 1, 8); x.fillStyle = c[2]; x.fillRect(1, 1, 6, 1); x.fillRect(9, 9, 6, 1); }
+  function floor(x) { fill(x, T.floor[0]); x.fillStyle = T.floor[1]; for (let y = 3; y < 16; y += 4) x.fillRect(0, y, 16, 1); x.fillRect(5, 0, 1, 3); x.fillRect(11, 4, 1, 3); x.fillRect(3, 8, 1, 3); x.fillRect(9, 12, 1, 3); }
+  function tuft(x, r, f, c) { grass(x, r); for (let i = 0; i < 4; i++) { const bx = (i % 2) * 8 + 1, by = (i >> 1) * 8 + 2; x.fillStyle = c[0]; x.fillRect(bx, by + 2, 6, 4); for (let k = 0; k < 3; k++) { const sx = bx + k * 2 + (f ? 1 : 0); x.fillStyle = c[1]; x.fillRect(sx, by - 1, 1, 4); px(x, sx, by - 2, c[2]); } } }
+  function water(x, f) { fill(x, T.water[0]); x.fillStyle = T.water[1]; for (let y = 2; y < 16; y += 5) { const o = (f * 2 + y) % 8; x.fillRect(o, y, 4, 1); x.fillRect((o + 9) % 16, y + 2, 3, 1); } }
+  function tree(x, r) {
+    grass(x, r); const c = T.treeC;
+    if (T.tree === 'cypress') { x.fillStyle = c[0]; x.fillRect(7, 12, 2, 4); x.fillStyle = c[1]; x.beginPath(); x.ellipse(8, 7.5, 5, 7.5, 0, 0, 7); x.fill(); x.fillStyle = c[2]; x.beginPath(); x.ellipse(7.5, 7, 3.6, 6.4, 0, 0, 7); x.fill(); x.fillStyle = c[3]; x.fillRect(6, 3, 2, 6); px(x, 6, 2, c[4]); px(x, 7, 6, c[4]); }
+    else if (T.tree === 'pine') { x.fillStyle = c[0]; x.fillRect(7, 12, 2, 4); for (let k = 0; k < 3; k++) { const y = 2 + k * 4, hw = 3 + k * 2; x.fillStyle = c[1 + (k % 2)]; x.beginPath(); x.moveTo(8, y); x.lineTo(8 + hw, y + 6); x.lineTo(8 - hw, y + 6); x.fill(); x.fillStyle = c[4]; x.fillRect(8 - hw + 1, y + 5, hw, 1); px(x, 8, y, c[4]); } }
+    else { x.fillStyle = c[0]; x.fillRect(6, 10, 4, 6); x.fillStyle = c[1]; x.beginPath(); x.arc(8, 7, 7.5, 0, 7); x.fill(); x.fillStyle = c[2]; x.beginPath(); x.arc(7, 6, 6, 0, 7); x.fill(); x.fillStyle = c[3]; x.beginPath(); x.arc(6, 4, 3.5, 0, 7); x.fill(); px(x, 5, 3, c[4]); px(x, 10, 6, c[4]); }
+  }
   const P = {
     '.': (x, r) => grass(x, r),
-    ',': (x, r, f) => { grass(x, r); for (let i = 0; i < 4; i++) { const bx = (i % 2) * 8 + 1, by = (i >> 1) * 8 + 2; x.fillStyle = '#2f7a34'; x.fillRect(bx, by + 2, 6, 4); for (let k = 0; k < 3; k++) { const sx = bx + k * 2 + (f ? 1 : 0); x.fillStyle = '#3f9a40'; x.fillRect(sx, by - 1, 1, 4); px(x, sx, by - 2, '#7fd060'); } } },
-    ':': (x, r, f) => { grass(x, r); for (let i = 0; i < 4; i++) { const bx = (i % 2) * 8 + 1, by = (i >> 1) * 8 + 2; x.fillStyle = '#245f3a'; x.fillRect(bx, by + 2, 6, 4); for (let k = 0; k < 3; k++) { const sx = bx + k * 2 + (f ? 1 : 0); x.fillStyle = '#2e7f52'; x.fillRect(sx, by - 1, 1, 4); px(x, sx, by - 2, '#9be0a0'); } } },
-    '_': (x, r) => { fill(x, '#d9b27a'); for (let i = 0; i < 8; i++) px(x, r() * 16 | 0, r() * 16 | 0, r() < .5 ? '#c49a62' : '#ead0a0'); },
+    ',': (x, r, f) => tuft(x, r, f, T.tall),
+    ':': (x, r, f) => tuft(x, r, f, T.deep),
+    '_': (x, r) => { fill(x, T.path[0]); for (let i = 0; i < 8; i++) px(x, r() * 16 | 0, r() * 16 | 0, r() < .5 ? T.path[1] : T.path[2]); },
     '=': x => plaza(x),
-    '~': (x, r, f) => { fill(x, '#2f6fbf'); x.fillStyle = '#5f9fe8'; for (let y = 2; y < 16; y += 5) { const o = (f * 2 + y) % 8; x.fillRect(o, y, 4, 1); x.fillRect((o + 9) % 16, y + 2, 3, 1); } },
-    'o': (x, r, f) => { P['~'](x, r, f); x.fillStyle = '#3fae5a'; x.beginPath(); x.arc(7, 9, 4, 0, Math.PI * 2); x.fill(); x.fillStyle = '#ff8fb8'; x.fillRect(6, 6, 3, 3); px(x, 7, 5, '#ffd0e0'); px(x, 5, 7, '#ffd0e0'); px(x, 9, 7, '#ffd0e0'); px(x, 7, 7, '#ffe36a'); },
-    'T': (x, r) => { grass(x, r); x.fillStyle = '#5a3a20'; x.fillRect(6, 10, 4, 6); x.fillStyle = '#1f5a2c'; x.beginPath(); x.arc(8, 7, 7.5, 0, Math.PI * 2); x.fill(); x.fillStyle = '#2f7a3a'; x.beginPath(); x.arc(7, 6, 6, 0, Math.PI * 2); x.fill(); x.fillStyle = '#48a24c'; x.beginPath(); x.arc(6, 4, 3.5, 0, Math.PI * 2); x.fill(); px(x, 5, 3, '#7cc860'); px(x, 10, 6, '#7cc860'); },
-    'f': (x, r) => { grass(x, r); for (let i = 0; i < 5; i++) { const a = 2 + r() * 12 | 0, b = 2 + r() * 12 | 0; x.fillStyle = r() < .5 ? '#ff9f1a' : '#ffd23a'; x.fillRect(a - 1, b, 3, 1); x.fillRect(a, b - 1, 1, 3); px(x, a, b, '#c84a10'); } },
-    '|': (x, r) => { grass(x, r); x.fillStyle = '#8a5a32'; x.fillRect(0, 6, 16, 2); x.fillRect(0, 10, 16, 2); x.fillStyle = '#6a4224'; x.fillRect(2, 4, 3, 11); x.fillRect(11, 4, 3, 11); x.fillStyle = '#b07a48'; x.fillRect(2, 4, 3, 1); x.fillRect(11, 4, 3, 1); },
-    'L': (x, r, f) => { plaza(x); x.fillStyle = '#5a4030'; x.fillRect(7, 5, 2, 10); x.fillRect(5, 14, 6, 2); x.fillStyle = '#e8b030'; x.fillRect(4, 4, 8, 2); x.fillStyle = f ? '#ffd040' : '#ff8a20'; x.fillRect(7, 1, 2, 3); px(x, 7 + f, 0, '#fff0a0'); },
+    '~': (x, r, f) => water(x, f),
+    'o': (x, r, f) => { water(x, f); x.fillStyle = '#3fae5a'; x.beginPath(); x.arc(7, 9, 4, 0, 7); x.fill(); x.fillStyle = '#ff8fb8'; x.fillRect(6, 6, 3, 3); px(x, 7, 5, '#ffd0e0'); px(x, 5, 7, '#ffd0e0'); px(x, 9, 7, '#ffd0e0'); px(x, 7, 7, '#ffe36a'); },
+    'i': (x, r, f) => { water(x, f); x.fillStyle = '#d8eaf8'; x.beginPath(); x.ellipse(8, 9, 6, 4, 0, 0, 7); x.fill(); x.fillStyle = '#ffffff'; x.fillRect(5, 7, 4, 1); },   // ice floe
+    'T': (x, r) => tree(x, r),
+    'f': (x, r) => { grass(x, r); for (let i = 0; i < 5; i++) { const a = 2 + r() * 12 | 0, b = 2 + r() * 12 | 0; x.fillStyle = r() < .5 ? T.flowers[0] : T.flowers[1]; x.fillRect(a - 1, b, 3, 1); x.fillRect(a, b - 1, 1, 3); px(x, a, b, T.flowers[2]); } },
+    '|': (x, r) => { grass(x, r); const c = T.fence; x.fillStyle = c[0]; x.fillRect(0, 6, 16, 2); x.fillRect(0, 10, 16, 2); x.fillStyle = c[1]; x.fillRect(2, 4, 3, 11); x.fillRect(11, 4, 3, 11); x.fillStyle = c[2]; x.fillRect(2, 4, 3, 1); x.fillRect(11, 4, 3, 1); },
+    'L': (x, r, f) => { plaza(x); x.fillStyle = T.lamp[0]; x.fillRect(7, 5, 2, 10); x.fillRect(5, 14, 6, 2); x.fillStyle = T.lamp[1]; x.fillRect(4, 4, 8, 2); x.fillStyle = f ? '#ffd040' : '#ff8a20'; x.fillRect(7, 1, 2, 3); px(x, 7 + f, 0, '#fff0a0'); },
     'S': (x, r) => { grass(x, r); x.fillStyle = '#6a4224'; x.fillRect(7, 9, 2, 7); x.fillStyle = '#b07a48'; x.fillRect(2, 2, 12, 8); x.fillStyle = '#8a5a32'; x.fillRect(2, 9, 12, 1); x.fillStyle = '#5a3a20'; x.fillRect(4, 4, 8, 1); x.fillRect(4, 6, 6, 1); },
-    'R': (x, r) => { grass(x, r); x.fillStyle = '#6a6a72'; x.beginPath(); x.ellipse(8, 10, 7, 5.5, 0, 0, Math.PI * 2); x.fill(); x.fillStyle = '#8f8f98'; x.beginPath(); x.ellipse(7, 9, 5, 4, 0, 0, Math.PI * 2); x.fill(); px(x, 5, 7, '#c0c0c8'); px(x, 6, 7, '#c0c0c8'); },
-    'B': (x, r, f) => { P['~'](x, r, f); x.fillStyle = '#a87a4a'; x.fillRect(0, 0, 16, 16); x.fillStyle = '#7a5430'; for (let i = 0; i < 16; i += 4) x.fillRect(i, 0, 1, 16); x.fillStyle = '#5a3a20'; x.fillRect(0, 0, 16, 1); x.fillRect(0, 15, 16, 1); },
+    'R': (x, r) => { grass(x, r); const c = T.rock; x.fillStyle = c[0]; x.beginPath(); x.ellipse(8, 10, 7, 5.5, 0, 0, 7); x.fill(); x.fillStyle = c[1]; x.beginPath(); x.ellipse(7, 9, 5, 4, 0, 0, 7); x.fill(); px(x, 5, 7, c[2]); px(x, 6, 7, c[2]); },
+    'B': x => { x.fillStyle = '#a87a4a'; x.fillRect(0, 0, 16, 16); x.fillStyle = '#7a5430'; for (let i = 0; i < 16; i += 4) x.fillRect(i, 0, 1, 16); x.fillStyle = '#5a3a20'; x.fillRect(0, 0, 16, 1); x.fillRect(0, 15, 16, 1); },
+    'Y': (x, r, f) => { const c = ['#ff5a5a', '#ffa040', '#ffe060', '#60d070', '#50a0ff', '#a070ff']; c.forEach((col, i) => { x.fillStyle = col; x.fillRect(0, i * 2 + 2, 16, 2); }); x.fillStyle = 'rgba(255,255,255,' + (f ? .35 : .15) + ')'; x.fillRect((f * 5) % 16, 2, 3, 12); x.fillStyle = '#e8e8f8'; x.fillRect(0, 0, 16, 2); x.fillRect(0, 14, 16, 2); },  // rainbow bridge
     'X': x => fill(x, '#0b0714'),
     'p': x => floor(x),
-    'w': x => { fill(x, '#e8d8b8'); x.fillStyle = '#c8b090'; x.fillRect(0, 12, 16, 4); x.fillStyle = '#9a7a50'; x.fillRect(0, 11, 16, 1); x.fillStyle = '#b8402a'; x.fillRect(0, 2, 16, 2); x.fillStyle = '#e8b030'; for (let i = 1; i < 16; i += 4) x.fillRect(i, 2, 2, 2); },
-    'c': x => { fill(x, '#a8283a'); x.fillStyle = '#e8b030'; x.fillRect(0, 0, 16, 1); x.fillRect(0, 15, 16, 1); x.fillStyle = '#c8485a'; x.fillRect(6, 6, 4, 4); x.fillStyle = '#e8b030'; x.fillRect(7, 7, 2, 2); },
+    'w': x => { const c = T.wall; fill(x, c[0]); x.fillStyle = c[1]; x.fillRect(0, 12, 16, 4); x.fillStyle = c[2]; x.fillRect(0, 11, 16, 1); x.fillStyle = c[3]; x.fillRect(0, 2, 16, 2); x.fillStyle = c[4]; for (let i = 1; i < 16; i += 4) x.fillRect(i, 2, 2, 2); },
+    'c': x => { const c = T.carpet; fill(x, c[0]); x.fillStyle = c[1]; x.fillRect(0, 0, 16, 1); x.fillRect(0, 15, 16, 1); x.fillStyle = c[2]; x.fillRect(6, 6, 4, 4); x.fillStyle = c[1]; x.fillRect(7, 7, 2, 2); },
     'C': x => { floor(x); x.fillStyle = '#6a3a1a'; x.fillRect(0, 2, 16, 14); x.fillStyle = '#9a6234'; x.fillRect(0, 2, 16, 4); x.fillStyle = '#e8b030'; x.fillRect(0, 9, 16, 1); },
     'F': (x, r, f) => { floor(x); x.fillStyle = '#5a4a3a'; x.fillRect(3, 10, 10, 5); x.fillStyle = '#8a7a6a'; x.fillRect(2, 9, 12, 2); x.fillStyle = '#ff5a1f'; x.beginPath(); x.moveTo(3, 9); x.lineTo(8 + (f ? 1 : -1), 0); x.lineTo(13, 9); x.fill(); x.fillStyle = '#ffd040'; x.beginPath(); x.moveTo(5, 9); x.lineTo(8 + (f ? -1 : 1), 3); x.lineTo(11, 9); x.fill(); },
-    'P': x => { floor(x); x.fillStyle = '#f2ead8'; x.fillRect(4, 0, 8, 16); x.fillStyle = '#d0c4a8'; x.fillRect(10, 0, 2, 16); x.fillStyle = '#e8b030'; x.fillRect(3, 0, 10, 2); x.fillRect(3, 14, 10, 2); },
-    'g': x => { fill(x, '#d8b048'); x.fillStyle = '#b89030'; x.fillRect(0, 0, 16, 1); x.fillRect(0, 0, 1, 16); x.fillStyle = '#f0d070'; x.fillRect(2, 2, 3, 1); x.fillRect(9, 9, 3, 1); },
+    'P': x => { floor(x); const c = T.pillar; x.fillStyle = c[0]; x.fillRect(4, 0, 8, 16); x.fillStyle = c[1]; x.fillRect(10, 0, 2, 16); x.fillRect(6, 2, 1, 12); x.fillStyle = c[2]; x.fillRect(3, 0, 10, 2); x.fillRect(3, 14, 10, 2); },
+    'g': x => { const c = T.gold; fill(x, c[0]); x.fillStyle = c[1]; x.fillRect(0, 0, 16, 1); x.fillRect(0, 0, 1, 16); x.fillStyle = c[2]; x.fillRect(2, 2, 3, 1); x.fillRect(9, 9, 3, 1); },
     'm': x => { floor(x); x.fillStyle = '#c84a3a'; x.fillRect(1, 3, 14, 11); x.fillStyle = '#e8b030'; x.fillRect(2, 4, 12, 1); x.fillRect(2, 12, 12, 1); },
     'K': x => { P.w(x); x.fillStyle = '#7a4a2a'; x.fillRect(1, 5, 14, 11); x.fillStyle = '#c87a3a'; x.fillRect(3, 7, 3, 3); x.fillRect(10, 7, 3, 3); x.fillStyle = '#3a8a6a'; x.fillRect(6, 11, 4, 4); },
-    'A': (x, r, f) => { floor(x); x.fillStyle = '#9a9aa2'; x.fillRect(1, 6, 14, 10); x.fillStyle = '#c8c8d0'; x.fillRect(1, 6, 14, 2); x.fillStyle = '#ff9f1a'; x.fillRect(3, 3, 2, 3); x.fillRect(11, 3, 2, 3); x.fillStyle = f ? '#ffd040' : '#ff7a1a'; x.fillRect(7, 2, 2, 4); },
+    'A': (x, r, f) => { floor(x); const c = T.rock; x.fillStyle = c[0]; x.fillRect(1, 6, 14, 10); x.fillStyle = c[1]; x.fillRect(1, 6, 14, 2); x.fillStyle = '#ff9f1a'; x.fillRect(3, 3, 2, 3); x.fillRect(11, 3, 2, 3); x.fillStyle = f ? '#ffd040' : '#ff7a1a'; x.fillRect(7, 2, 2, 4); },
   };
-  const ANIM = { ',': 2, ':': 2, '~': 4, 'o': 4, 'B': 1, 'L': 2, 'F': 2, 'A': 2 };
-  function get(ch, t, x, y) {
+  const ANIM = { ',': 2, ':': 2, '~': 4, 'o': 4, 'i': 4, 'L': 2, 'F': 2, 'A': 2, 'Y': 2 };
+  function get(ch, t, x, y, theme = 'india') {
     const n = ANIM[ch] || 1;
-    // grass variety: pick from 3 variants by position
-    const variant = (ch === '.' || ch === '_') ? ((x * 7 + y * 13) % 3) : 0;
-    const f = n > 1 ? (ch === '~' || ch === 'o' ? ((t >> 4) + x) % n : ((t >> 5) + ((x + y) & 1)) % n) : 0;
-    const key = ch + variant + ':' + f;
-    if (!cache[key]) cache[key] = make(ch + variant, f, P[ch] || P['X']);
-    return cache[key];
+    const variant = (ch === '.' || ch === '_' || ch === 'T') ? ((x * 7 + y * 13) % 3) : 0;
+    const f = n > 1 ? (ch === '~' || ch === 'o' || ch === 'i' ? ((t >> 4) + x) % n : ((t >> 5) + ((x + y) & 1)) % n) : 0;
+    const key = theme + ch + variant + ':' + f;
+    let c = cache[key];
+    if (!c) { T = THEMES[theme] || THEMES.india; c = mkCanvas(16, 16); (P[ch] || P.X)(c.getContext('2d'), mulberry32(hashStr(ch + variant) + f * 977), f); cache[key] = c; }
+    return c;
   }
   return { get };
 })();
 
 // ---- Buildings: pre-rendered composite sprites -----------------------
+// roof: gable | tiered | pediment | turf | dragon ;  win: jali | arched | shutter
 const BUILD_STYLE = {
   house: { wall: '#f0dcb0', band: '#c89860', roof: '#b8502a', roof2: '#8a3a1e' },
   house2: { wall: '#e8e0c8', band: '#a8906a', roof: '#3f8a6a', roof2: '#2a5a48' },
-  shop: { wall: '#f0e6d0', band: '#7a9ac8', roof: '#2a6fb0', roof2: '#1a4a80', sign: 'SHOP' },
-  shrine: { wall: '#fbf6ea', band: '#e8b030', roof: '#f4a261', roof2: '#c8702a', sign: 'SHRINE' },
-  hall: { wall: '#c8603a', band: '#7a2a1a', roof: '#7a2a1a', roof2: '#4a1a10', sign: 'FIRE HALL' },
-  palace: { wall: '#fbf2dc', band: '#e8b030', roof: '#e0b040', roof2: '#a87a20', sign: 'VAIJAYANTA' },
+  shop: { wall: '#f0e6d0', band: '#7a9ac8', roof: '#2a6fb0', roof2: '#1a4a80', sign: 'SHOP', awning: '#2a6fb0' },
+  shrine: { wall: '#fbf6ea', band: '#e8b030', roof: '#f4a261', roof2: '#c8702a', sign: 'SHRINE', roofType: 'tiered', top: 18, flag: true },
+  hall: { wall: '#c8603a', band: '#7a2a1a', roof: '#7a2a1a', roof2: '#4a1a10', sign: 'FIRE HALL', flame: true },
+  palace: { wall: '#fbf2dc', band: '#e8b030', roof: '#e0b040', roof2: '#a87a20', sign: 'VAIJAYANTA', roofType: 'tiered', top: 40, pillars: true },
+  // Greece
+  gr_house: { wall: '#f6f4ec', band: '#2a5ab0', roof: '#c8683a', roof2: '#8a4224', win: 'arched' },
+  gr_house2: { wall: '#f6f4ec', band: '#2a5ab0', roof: '#3a6ab8', roof2: '#1a3a80', win: 'arched' },
+  gr_shop: { wall: '#f6f4ec', band: '#2a5ab0', roof: '#2a6fb0', roof2: '#1a4a80', sign: 'SHOP', win: 'arched', awning: '#2a5ab0' },
+  gr_shrine: { wall: '#ffffff', band: '#e8c040', roof: '#eeeae0', roof2: '#c8c4b8', sign: 'SHRINE', roofType: 'pediment', top: 14, columns: '#ffffff' },
+  arena: { wall: '#f0e4d0', band: '#8a2a1a', roof: '#c84a3a', roof2: '#8a2a1a', sign: 'ARENA OF ARES', roofType: 'pediment', top: 14, columns: '#f8f0e0' },
+  hadesgate: { wall: '#4a3a5a', band: '#2a1a3a', roof: '#3a2a4a', roof2: '#1a1028', sign: 'GATE OF HADES', roofType: 'pediment', top: 14, columns: '#6a5a7a', signCol: '#c8a0ff' },
+  seatemple: { wall: '#e8f0f8', band: '#1e78d0', roof: '#2a8ac0', roof2: '#1a5a8a', sign: 'SEA TEMPLE', roofType: 'pediment', top: 14, columns: '#f0f8ff' },
+  zeustemple: { wall: '#ffffff', band: '#e8c040', roof: '#f4f0e6', roof2: '#c8b878', sign: 'TEMPLE OF ZEUS', roofType: 'pediment', top: 30, columns: '#ffffff', bolt: true },
+  // Norse
+  no_house: { wall: '#7a5434', band: '#5e3e24', roof: '#5a8a4a', roof2: '#3a5a2a', roofType: 'turf', win: 'shutter', logs: true, snow: true },
+  no_house2: { wall: '#6a4a30', band: '#4e3420', roof: '#6a9a5a', roof2: '#3a5a2a', roofType: 'turf', win: 'shutter', logs: true, snow: true },
+  no_shop: { wall: '#7a5434', band: '#5e3e24', roof: '#2a5a8a', roof2: '#1a3a5a', sign: 'SHOP', win: 'shutter', logs: true, snow: true, awning: '#2a5a8a' },
+  no_shrine: { wall: '#8a6444', band: '#5e3e24', roof: '#4a3020', roof2: '#2a1a10', sign: 'SHRINE', roofType: 'dragon', top: 14, win: 'shutter', logs: true, snow: true },
+  forge: { wall: '#5a4a40', band: '#3a2a20', roof: '#4a3a30', roof2: '#2a1a14', sign: 'THUNDER FORGE', win: 'shutter', snow: true, chimney: true },
+  oathhall: { wall: '#7a5434', band: '#5e3e24', roof: '#4a3020', roof2: '#2a1a10', sign: 'HALL OF OATHS', roofType: 'dragon', top: 14, win: 'shutter', logs: true, snow: true },
+  valgrind: { wall: '#7a5434', band: '#c8a040', roof: '#c8a040', roof2: '#8a6a20', sign: 'VALGRIND', roofType: 'dragon', top: 26, win: 'shutter', logs: true, shields: true },
 };
 function renderBuilding(b) {
-  const st = BUILD_STYLE[b.style], w = b.w * 16, h = b.h * 16, top = b.style === 'palace' ? 40 : (b.style === 'shrine' ? 18 : 0);
+  const st = BUILD_STYLE[b.style], w = b.w * 16, h = b.h * 16, top = st.top || 0;
   const c = mkCanvas(w, h + top), x = c.getContext('2d');
-  const wallY = top + (b.h - 2) * 16;
+  const wallY = top + (b.h - 2) * 16, roofH = wallY, rt = st.roofType || 'gable';
   // walls
   x.fillStyle = st.wall; x.fillRect(2, wallY, w - 4, 32);
+  if (st.logs) { x.fillStyle = shade(st.wall, -.25); for (let y = wallY + 3; y < wallY + 26; y += 4) x.fillRect(2, y, w - 4, 1); }
   x.fillStyle = st.band; x.fillRect(2, wallY + 26, w - 4, 6); x.fillRect(2, wallY, w - 4, 2);
-  // windows (jali screens)
-  for (let i = 0; i < b.w; i++) {
-    if (i === b.door - b.x || i === 0 || i === b.w - 1) continue;
-    x.fillStyle = '#4a2a14'; x.fillRect(i * 16 + 3, wallY + 6, 10, 12);
-    x.fillStyle = '#e8c890'; for (let a = 0; a < 3; a++) for (let q = 0; q < 3; q++) x.fillRect(i * 16 + 4 + a * 3, wallY + 7 + q * 4, 2, 2);
+  const doorI = b.door - b.x;
+  // windows
+  if (!st.columns) for (let i = 0; i < b.w; i++) {
+    if (i === doorI || i === 0 || i === b.w - 1) continue;
+    const wx = i * 16 + 3, wy = wallY + 6;
+    if (st.win === 'arched') { x.fillStyle = '#1a2a50'; x.fillRect(wx + 1, wy + 2, 8, 10); x.beginPath(); x.arc(wx + 5, wy + 3, 4, Math.PI, 0); x.fill(); x.fillStyle = st.band; x.fillRect(wx, wy + 12, 10, 2); }
+    else if (st.win === 'shutter') { x.fillStyle = '#2a1a0a'; x.fillRect(wx + 2, wy + 2, 6, 7); x.fillStyle = '#ffd890'; x.fillRect(wx + 3, wy + 3, 4, 5); x.fillStyle = shade(st.wall, -.4); x.fillRect(wx - 1, wy + 1, 3, 9); x.fillRect(wx + 8, wy + 1, 3, 9); }
+    else { x.fillStyle = '#4a2a14'; x.fillRect(wx, wy, 10, 12); x.fillStyle = '#e8c890'; for (let a = 0; a < 3; a++) for (let q = 0; q < 3; q++) x.fillRect(wx + 1 + a * 3, wy + 1 + q * 4, 2, 2); }
   }
+  if (st.columns) { for (let i = 0; i < b.w; i++) { if (i === doorI) continue; const cx0 = i * 16 + 5; x.fillStyle = st.columns; x.fillRect(cx0, wallY + 1, 6, 26); x.fillStyle = shade(st.columns, -.18); x.fillRect(cx0 + 4, wallY + 1, 2, 26); x.fillRect(cx0 + 2, wallY + 4, 1, 20); x.fillStyle = shade(st.columns, .1); x.fillRect(cx0 - 1, wallY, 8, 2); x.fillRect(cx0 - 1, wallY + 25, 8, 2); } x.fillStyle = shade(st.wall, -.12); x.fillRect(0, wallY + 29, w, 3); }
+  if (st.shields) for (let i = 0; i < b.w; i++) { if (i === doorI) continue; const sx = i * 16 + 8, sy = wallY + 12; x.fillStyle = i % 2 ? '#c84a3a' : '#2a5a9a'; x.beginPath(); x.arc(sx, sy, 5, 0, 7); x.fill(); x.fillStyle = '#c8a040'; x.beginPath(); x.arc(sx, sy, 1.5, 0, 7); x.fill(); }
   // door
-  const dx = (b.door - b.x) * 16;
+  const dx = doorI * 16;
   x.fillStyle = '#3a1a08'; x.fillRect(dx + 2, wallY + 8, 12, 24);
-  x.fillStyle = '#6a3a1a'; x.fillRect(dx + 3, wallY + 10, 10, 22);
+  x.fillStyle = b.style === 'hadesgate' ? '#1a0a20' : '#6a3a1a'; x.fillRect(dx + 3, wallY + 10, 10, 22);
   x.fillStyle = st.band; x.beginPath(); x.arc(dx + 8, wallY + 10, 6, Math.PI, 0); x.fill();
   x.fillStyle = '#3a1a08'; x.beginPath(); x.arc(dx + 8, wallY + 11, 4.5, Math.PI, 0); x.fill();
   x.fillStyle = '#e8b030'; x.fillRect(dx + 10, wallY + 20, 2, 2);
   // roof
-  const roofH = wallY - 0;
-  if (b.style === 'palace' || b.style === 'shrine') {
-    // tiered temple roof with a curved spire (shikhara)
+  if (rt === 'tiered') {
     x.fillStyle = st.roof2; x.fillRect(0, wallY - 6, w, 6);
-    const tiers = b.style === 'palace' ? 4 : 3;
+    const tiers = top > 30 ? 4 : 3;
     for (let t = 0; t < tiers; t++) {
-      const tw = w * (1 - t * .2) - 8, ty = wallY - 6 - (t + 1) * (roofH - 10) / (tiers + .6);
-      const th = (roofH - 10) / (tiers + .6) + 1;
+      const tw = w * (1 - t * .2) - 8, ty = wallY - 6 - (t + 1) * (roofH - 10) / (tiers + .6), th = (roofH - 10) / (tiers + .6) + 1;
       x.fillStyle = t % 2 ? st.roof : st.roof2; x.fillRect((w - tw) / 2, ty, tw, th);
       x.fillStyle = shade(st.roof, .35); x.fillRect((w - tw) / 2, ty, tw, 2);
       x.fillStyle = shade(st.roof, -.35); for (let k = (w - tw) / 2 + 3; k < (w + tw) / 2 - 2; k += 6) x.fillRect(k, ty + 4, 2, th - 5);
     }
-    // finial (kalasha)
-    x.fillStyle = '#ffd040'; x.beginPath(); x.ellipse(w / 2, 6, 4, 5, 0, 0, Math.PI * 2); x.fill(); x.fillRect(w / 2 - 1, 0, 2, 4);
-    if (b.style === 'shrine') { x.fillStyle = '#ff7a1a'; x.beginPath(); x.moveTo(w / 2 + 1, 0); x.lineTo(w / 2 + 12, 4); x.lineTo(w / 2 + 1, 8); x.fill(); }
-    if (b.style === 'palace') { x.fillStyle = '#fbf2dc'; for (let i = 0; i < b.w; i += 2) { x.fillRect(i * 16 + 2, wallY - 2, 4, 30); x.fillStyle = '#e8b030'; x.fillRect(i * 16 + 1, wallY - 3, 6, 2); x.fillStyle = '#fbf2dc'; } }
+    x.fillStyle = '#ffd040'; x.beginPath(); x.ellipse(w / 2, 6, 4, 5, 0, 0, 7); x.fill(); x.fillRect(w / 2 - 1, 0, 2, 4);
+    if (st.flag) { x.fillStyle = '#ff7a1a'; x.beginPath(); x.moveTo(w / 2 + 1, 0); x.lineTo(w / 2 + 12, 4); x.lineTo(w / 2 + 1, 8); x.fill(); }
+    if (st.pillars) { for (let i = 0; i < b.w; i += 2) { x.fillStyle = '#fbf2dc'; x.fillRect(i * 16 + 2, wallY - 2, 4, 30); x.fillStyle = '#e8b030'; x.fillRect(i * 16 + 1, wallY - 3, 6, 2); } }
+  } else if (rt === 'pediment') {
+    // entablature, frieze and a low triangular pediment, Greek-temple style
+    const eY = wallY - 10;
+    x.fillStyle = st.roof2; x.fillRect(0, eY, w, 10);
+    x.fillStyle = st.band; for (let i = 2; i < w - 2; i += 8) { x.fillRect(i, eY + 3, 4, 1); x.fillRect(i + 3, eY + 3, 1, 4); x.fillRect(i, eY + 6, 4, 1); }
+    x.fillStyle = shade(st.roof2, .3); x.fillRect(0, eY, w, 1);
+    x.fillStyle = st.roof; x.beginPath(); x.moveTo(-2, eY + 1); x.lineTo(w / 2, Math.max(1, top - 2)); x.lineTo(w + 2, eY + 1); x.fill();
+    x.fillStyle = shade(st.roof, -.2); x.beginPath(); x.moveTo(10, eY - 1); x.lineTo(w / 2, Math.max(4, top + 3)); x.lineTo(w - 10, eY - 1); x.fill();
+    x.fillStyle = shade(st.roof, .3); x.fillRect(0, eY, w, 2);
+    if (st.bolt) { x.fillStyle = '#ffd040'; x.beginPath(); x.moveTo(w / 2 + 2, eY - 26); x.lineTo(w / 2 - 4, eY - 13); x.lineTo(w / 2 + 1, eY - 13); x.lineTo(w / 2 - 3, eY - 3); x.lineTo(w / 2 + 6, eY - 17); x.lineTo(w / 2 + 1, eY - 17); x.fill(); }
+    // fill the space between pediment and wall with the entablature if the roof is taller than the pediment
+    if (eY + 10 < wallY) { x.fillStyle = st.wall; x.fillRect(2, eY + 10, w - 4, wallY - eY - 10); }
+  } else if (rt === 'turf') {
+    x.fillStyle = st.roof2; x.beginPath(); x.moveTo(-1, roofH + 1); x.quadraticCurveTo(w / 2, -4, w + 1, roofH + 1); x.fill();
+    x.fillStyle = st.roof; x.beginPath(); x.moveTo(3, roofH - 2); x.quadraticCurveTo(w / 2, 0, w - 3, roofH - 2); x.fill();
+    x.fillStyle = shade(st.roof, .25); for (let i = 6; i < w - 6; i += 5) x.fillRect(i, Math.max(3, roofH - 4 - Math.sin(i / w * Math.PI) * (roofH - 8)), 1, 3);
+  } else if (rt === 'dragon') {
+    const peak = Math.max(2, top - 4);
+    x.fillStyle = st.roof2; x.beginPath(); x.moveTo(-2, roofH + 1); x.lineTo(w / 2, peak); x.lineTo(w + 2, roofH + 1); x.fill();
+    x.fillStyle = st.roof; x.beginPath(); x.moveTo(3, roofH - 1); x.lineTo(w / 2, peak + 4); x.lineTo(w - 3, roofH - 1); x.fill();
+    x.fillStyle = shade(st.roof, -.3); for (let y = peak + 8; y < roofH - 2; y += 4) { const hw = (y - peak) / (roofH - peak) * (w / 2 - 4); for (let k = w / 2 - hw; k < w / 2 + hw; k += 5) x.fillRect(k, y, 3, 1); }
+    // crossed carved gable beams with curled dragon heads
+    x.strokeStyle = '#2a1a0a'; x.lineWidth = 2; x.beginPath(); x.moveTo(w / 2 - 10, peak + 10); x.lineTo(w / 2 + 6, peak - 8); x.moveTo(w / 2 + 10, peak + 10); x.lineTo(w / 2 - 6, peak - 8); x.stroke();
+    x.fillStyle = '#c8a040'; x.fillRect(w / 2 + 5, peak - 10, 3, 3); x.fillRect(w / 2 - 8, peak - 10, 3, 3);
   } else {
     x.fillStyle = st.roof2; x.fillRect(0, roofH - 6, w, 8);
     x.fillStyle = st.roof; x.beginPath(); x.moveTo(0, roofH - 2); x.lineTo(10, 2); x.lineTo(w - 10, 2); x.lineTo(w, roofH - 2); x.fill();
     x.fillStyle = shade(st.roof, -.25); for (let y = 8; y < roofH - 4; y += 5) x.fillRect(4, y, w - 8, 1);
     x.fillStyle = shade(st.roof, .35); x.fillRect(10, 2, w - 20, 2);
-    if (b.style === 'shop') { for (let i = 0; i < w; i += 8) { x.fillStyle = (i / 8) % 2 ? '#ffffff' : '#2a6fb0'; x.fillRect(i, roofH - 6, 8, 6); } }
-    if (b.style === 'hall') { x.fillStyle = '#ff7a1a'; x.beginPath(); x.moveTo(w / 2 - 6, roofH - 10); x.lineTo(w / 2, roofH - 26); x.lineTo(w / 2 + 6, roofH - 10); x.fill(); x.fillStyle = '#ffd040'; x.beginPath(); x.moveTo(w / 2 - 3, roofH - 10); x.lineTo(w / 2, roofH - 19); x.lineTo(w / 2 + 3, roofH - 10); x.fill(); }
+    if (st.flame) { x.fillStyle = '#ff7a1a'; x.beginPath(); x.moveTo(w / 2 - 6, roofH - 10); x.lineTo(w / 2, roofH - 26); x.lineTo(w / 2 + 6, roofH - 10); x.fill(); x.fillStyle = '#ffd040'; x.beginPath(); x.moveTo(w / 2 - 3, roofH - 10); x.lineTo(w / 2, roofH - 19); x.lineTo(w / 2 + 3, roofH - 10); x.fill(); }
+    if (st.chimney) { x.fillStyle = '#3a3a40'; x.fillRect(w - 22, 0, 8, 14); x.fillStyle = '#ff7a1a'; x.fillRect(w - 20, 1, 4, 2); }
   }
+  if (st.awning) { for (let i = 0; i < w; i += 8) { x.fillStyle = (i / 8) % 2 ? '#ffffff' : st.awning; x.fillRect(i, wallY - 6, 8, 6); } }
+  if (st.snow) { x.fillStyle = '#f4f8fc'; if (rt === 'gable') { x.fillRect(8, 0, w - 16, 3); } else if (rt === 'dragon') { const peak = Math.max(2, top - 4); x.beginPath(); x.moveTo(w / 2 - 14, peak + 14); x.lineTo(w / 2, peak + 2); x.lineTo(w / 2 + 14, peak + 14); x.fill(); } else { x.beginPath(); x.moveTo(8, roofH * .45); x.quadraticCurveTo(w / 2, -2, w - 8, roofH * .45); x.lineTo(w - 12, roofH * .5); x.quadraticCurveTo(w / 2, 5, 12, roofH * .5); x.fill(); } }
   if (st.sign) {
-    const tw = Font.measure(st.sign) + 6, sx = (w - tw) / 2 | 0, sy = wallY - 12;
-    x.fillStyle = '#3a1a08'; x.fillRect(sx - 1, sy - 1, tw + 2, 11); x.fillStyle = '#6a3a1a'; x.fillRect(sx, sy, tw, 9);
-    Font.draw(x, st.sign, sx + 3, sy + 1, '#ffd040');
+    const tw = Font.measure(st.sign) + 6, sx = (w - tw) / 2 | 0, sy = wallY - (rt === 'pediment' ? 9 : 12);
+    x.fillStyle = '#3a1a08'; x.fillRect(sx - 1, sy - 1, tw + 2, 11); x.fillStyle = rt === 'pediment' ? shade(st.roof2, -.2) : '#6a3a1a'; x.fillRect(sx, sy, tw, 9);
+    Font.draw(x, st.sign, sx + 3, sy + 1, st.signCol || '#ffd040');
   }
   return { canvas: c, top };
 }

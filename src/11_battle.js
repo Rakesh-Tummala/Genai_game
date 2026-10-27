@@ -7,27 +7,55 @@ function initB(c) { c.b = { st: { atk: 0, def: 0, spd: 0 }, shield: null, bind: 
 function spd(c) { return stat(c, 'spd') * stageMult(c.b.st.spd); }
 
 const BG_CACHE = {};
+// indoor halls: [top colour, bottom colour, trim colour, pillar style]
+const HALL_BG = {
+  hall: ['#3a0e08', '#8a2a10', '#ff7a1a'], palace: ['#1a1450', '#4a3a9a', '#ffd040'],
+  arena: ['#5a1a10', '#c8a070', '#e8c040'], underworld: ['#0e0818', '#3a2a4a', '#c8a0ff'], olympos: ['#7aaae8', '#f4f0e6', '#e8c040'],
+  forge: ['#1a1010', '#5a3a2a', '#ff7a1a'], oaths: ['#2a1a10', '#6a4a30', '#c8a040'], valgrind: ['#3a2a10', '#a87a30', '#ffd860'],
+};
 function battleBG(kind) {
   if (BG_CACHE[kind]) return BG_CACHE[kind];
   const c = mkCanvas(W, H), x = c.getContext('2d'), r = mulberry32(hashStr(kind));
-  if (kind === 'hall' || kind === 'palace') {
-    const pal = kind === 'hall' ? ['#3a0e08', '#8a2a10', '#ff7a1a'] : ['#1a1450', '#4a3a9a', '#ffd040'];
-    const g = x.createLinearGradient(0, 0, 0, H); g.addColorStop(0, pal[0]); g.addColorStop(1, pal[1]); x.fillStyle = g; x.fillRect(0, 0, W, H);
-    for (let i = 0; i < 6; i++) { const px = 10 + i * 60; x.fillStyle = 'rgba(0,0,0,.25)'; x.fillRect(px, 0, 22, 140); x.fillStyle = pal[2]; x.globalAlpha = .35; x.fillRect(px, 0, 22, 4); x.fillRect(px, 130, 22, 6); x.globalAlpha = 1; }
+  const sky = (a, b, h = 150) => { const g = x.createLinearGradient(0, 0, 0, h); g.addColorStop(0, a); g.addColorStop(1, b); x.fillStyle = g; x.fillRect(0, 0, W, h); };
+  const clouds = (n, col) => { for (let i = 0; i < n; i++) { x.fillStyle = col; const cx = r() * W, cy = 20 + r() * 50; x.beginPath(); x.ellipse(cx, cy, 22, 6, 0, 0, 7); x.ellipse(cx + 12, cy - 4, 14, 6, 0, 0, 7); x.fill(); } };
+  const hills = (col, y0, amp) => { x.fillStyle = col; x.beginPath(); x.moveTo(0, y0); for (let i = 0; i <= W; i += 20) x.lineTo(i, y0 - 12 + r() * amp); x.lineTo(W, 150); x.lineTo(0, 150); x.fill(); };
+  let platCol = ['#c8a868', '#e8c888'];
+  if (HALL_BG[kind]) {
+    const pal = HALL_BG[kind];
+    sky(pal[0], pal[1], H);
+    if (kind === 'olympos') { clouds(6, 'rgba(255,255,255,.8)'); }
+    for (let i = 0; i < 6; i++) { const px = 10 + i * 60; x.fillStyle = kind === 'olympos' || kind === 'arena' ? 'rgba(255,255,255,.55)' : 'rgba(0,0,0,.25)'; x.fillRect(px, 0, 22, 140); x.fillStyle = pal[2]; x.globalAlpha = .35; x.fillRect(px, 0, 22, 4); x.fillRect(px, 130, 22, 6); x.globalAlpha = 1; }
+    if (kind === 'forge' || kind === 'hall' || kind === 'valgrind') for (let i = 0; i < 5; i++) { const px = 40 + i * 60; x.fillStyle = 'rgba(255,140,40,.5)'; x.beginPath(); x.arc(px, 30, 6, 0, 7); x.fill(); }
+    if (kind === 'underworld') for (let i = 0; i < 30; i++) { x.fillStyle = 'rgba(200,160,255,.4)'; x.fillRect(r() * W, r() * 140, 1, 1); }
     x.fillStyle = 'rgba(0,0,0,.3)'; x.fillRect(0, 140, W, 100);
+    if (kind === 'olympos') platCol = ['#e8e4dc', '#ffffff']; if (kind === 'underworld') platCol = ['#4a3a5a', '#6a5a7a']; if (kind === 'forge' || kind === 'oaths') platCol = ['#5a4a3a', '#7a6a5a'];
+  } else if (kind === 'greece' || kind === 'sea') {
+    sky('#3a8ae8', '#cfe8ff'); clouds(4, 'rgba(255,255,255,.8)');
+    x.fillStyle = '#ffffff'; x.beginPath(); x.arc(276, 30, 12, 0, 7); x.fill();
+    x.fillStyle = '#1e6ab8'; x.fillRect(0, 106, W, 30); x.fillStyle = '#6ab4ff'; for (let i = 0; i < 30; i++) x.fillRect(r() * W, 108 + r() * 26, 6, 1);
+    // white temple on a hill
+    x.fillStyle = '#a8b880'; x.beginPath(); x.moveTo(20, 112); x.quadraticCurveTo(70, 70, 130, 112); x.fill();
+    x.fillStyle = '#f4f2ea'; x.fillRect(50, 78, 44, 4); x.beginPath(); x.moveTo(48, 78); x.lineTo(72, 66); x.lineTo(96, 78); x.fill(); for (let k = 0; k < 5; k++) x.fillRect(52 + k * 9, 82, 4, 16); x.fillRect(48, 98, 48, 3);
+    if (kind === 'sea') { x.fillStyle = '#1e5ab0'; x.fillRect(0, 128, W, 112); x.fillStyle = '#6ab4ff'; for (let i = 0; i < 80; i++) x.fillRect(r() * W, 130 + r() * 110, 5, 1); platCol = ['#a87a4a', '#c89a6a']; }
+    else { x.fillStyle = '#9ab45a'; x.fillRect(0, 128, W, 112); x.fillStyle = '#b4c86e'; for (let i = 0; i < 60; i++) x.fillRect(r() * W, 130 + r() * 110, 3, 1); for (const px of [170, 300, 228]) { x.fillStyle = '#5a4a30'; x.fillRect(px, 112, 2, 18); x.fillStyle = '#1e4a2a'; x.beginPath(); x.ellipse(px + 1, 104, 5, 16, 0, 0, 7); x.fill(); } platCol = ['#c8c6bc', '#eeece6']; }
+  } else if (kind === 'norse' || kind === 'bifrost') {
+    sky(kind === 'bifrost' ? '#1a2a5a' : '#8aa8c8', kind === 'bifrost' ? '#6a8ac8' : '#e8f0f8');
+    if (kind === 'bifrost') { ['#ff5a5a', '#ffa040', '#ffe060', '#60d070', '#50a0ff', '#a070ff'].forEach((col, i) => { x.strokeStyle = col; x.lineWidth = 3; x.beginPath(); x.arc(160, 170, 130 - i * 3, Math.PI, 0); x.stroke(); }); }
+    x.fillStyle = '#c8d4e4'; x.beginPath(); x.moveTo(0, 120); x.lineTo(50, 60); x.lineTo(100, 110); x.lineTo(150, 50); x.lineTo(220, 115); x.lineTo(270, 70); x.lineTo(W, 110); x.lineTo(W, 150); x.lineTo(0, 150); x.fill();
+    x.fillStyle = '#ffffff'; for (const [px, py] of [[50, 60], [150, 50], [270, 70]]) { x.beginPath(); x.moveTo(px - 12, py + 14); x.lineTo(px, py); x.lineTo(px + 12, py + 14); x.fill(); }
+    x.fillStyle = '#e6edf3'; x.fillRect(0, 128, W, 112); x.fillStyle = '#ffffff'; for (let i = 0; i < 60; i++) x.fillRect(r() * W, 130 + r() * 110, 3, 1);
+    for (const px of [20, 190, 300]) { x.fillStyle = '#1a3a2e'; for (let k = 0; k < 3; k++) { x.beginPath(); x.moveTo(px, 92 + k * 9); x.lineTo(px + 9 + k * 3, 106 + k * 9); x.lineTo(px - 9 - k * 3, 106 + k * 9); x.fill(); } x.fillStyle = '#ffffff'; x.fillRect(px - 2, 93, 4, 2); }
+    platCol = ['#c8d4e0', '#f4f8fc'];
   } else {
-    const g = x.createLinearGradient(0, 0, 0, 150); g.addColorStop(0, '#5fa8e8'); g.addColorStop(1, '#f8dcb0'); x.fillStyle = g; x.fillRect(0, 0, W, 150);
-    x.fillStyle = '#fff4d0'; x.beginPath(); x.arc(270, 34, 14, 0, 7); x.fill();
-    for (let i = 0; i < 5; i++) { x.fillStyle = 'rgba(255,255,255,.7)'; const cx = r() * W, cy = 20 + r() * 50; x.beginPath(); x.ellipse(cx, cy, 22, 6, 0, 0, 7); x.ellipse(cx + 12, cy - 4, 14, 6, 0, 0, 7); x.fill(); }
-    // distant temple and palms
-    x.fillStyle = '#8aa0b8'; x.beginPath(); x.moveTo(0, 120); for (let i = 0; i <= W; i += 20) x.lineTo(i, 108 + r() * 14); x.lineTo(W, 150); x.lineTo(0, 150); x.fill();
+    sky('#5fa8e8', '#f8dcb0'); x.fillStyle = '#fff4d0'; x.beginPath(); x.arc(270, 34, 14, 0, 7); x.fill(); clouds(5, 'rgba(255,255,255,.7)');
+    hills('#8aa0b8', 120, 14);
     x.fillStyle = '#6a7f98'; x.fillRect(40, 92, 26, 30); x.beginPath(); x.moveTo(36, 94); x.quadraticCurveTo(53, 60, 70, 94); x.fill(); x.fillRect(51, 58, 4, 8);
     x.fillStyle = '#4a8a4a'; x.fillRect(0, 128, W, 112);
     x.fillStyle = '#5aa04a'; for (let i = 0; i < 60; i++) x.fillRect(r() * W, 130 + r() * 110, 3, 1);
     for (const px of [150, 300, 12]) { x.fillStyle = '#4a3a24'; x.fillRect(px, 96, 3, 34); x.fillStyle = '#2f6a34'; for (let k = 0; k < 5; k++) { x.beginPath(); x.ellipse(px + 1 + Math.cos(k * 1.3) * 8, 96 + Math.sin(k * 1.3) * 3, 10, 3, k * 1.3, 0, 7); x.fill(); } }
+    platCol = ['#7ab858', '#9ad070'];
   }
-  // platforms
-  const plat = (cx, cy, rx, ry) => { x.fillStyle = 'rgba(0,0,0,.25)'; x.beginPath(); x.ellipse(cx, cy + 3, rx, ry, 0, 0, 7); x.fill(); x.fillStyle = kind === 'route' ? '#7ab858' : '#c8a868'; x.beginPath(); x.ellipse(cx, cy, rx, ry, 0, 0, 7); x.fill(); x.fillStyle = kind === 'route' ? '#9ad070' : '#e8c888'; x.beginPath(); x.ellipse(cx, cy - 2, rx - 6, ry - 3, 0, 0, 7); x.fill(); };
+  const plat = (cx, cy, rx, ry) => { x.fillStyle = 'rgba(0,0,0,.25)'; x.beginPath(); x.ellipse(cx, cy + 3, rx, ry, 0, 0, 7); x.fill(); x.fillStyle = platCol[0]; x.beginPath(); x.ellipse(cx, cy, rx, ry, 0, 0, 7); x.fill(); x.fillStyle = platCol[1]; x.beginPath(); x.ellipse(cx, cy - 2, rx - 6, ry - 3, 0, 0, 7); x.fill(); };
   plat(POS.e.x, POS.e.y - 4, 48, 11); plat(POS.p.x, POS.p.y - 4, 54, 12);
   return BG_CACHE[kind] = c;
 }
@@ -176,7 +204,7 @@ class BattleScene {
   async intro() {
     const E = this.E; markSeen(E.sp);
     if (this.tr) {
-      const look = LOOKS[this.cfg.trainerId === 'rohan' ? 'pilgrim' : this.cfg.trainerId];
+      const look = LOOKS[this.tr.look || this.cfg.trainerId];
       this.trainerSprite = { look, x: 400, aura: this.tr.god ? '#9fe4ff' : this.tr.lieutenant ? '#ff7a1a' : null };
       this.anim.e.hide = true;
       tween(this.anim.p, 'dx', 0, 30); await tween(this.trainerSprite, 'x', 236, 30);
@@ -201,7 +229,7 @@ class BattleScene {
     a.hide = false; a.dx = 0; a.dy = 0; a.alpha = 1; a.sil = 1; a.scale = 1;
     Sound.sfx('magic'); this.emit(side, 'Light', 14);
     await tween(a, 'sil', 0, 20);
-    if (side === 'e' && c.sp === 'airavat' && this.tr && this.tr.sigLine) { Sound.sfx('thunder'); flash('#ffffff', 14); shake(18); await this.msg(this.tr.sigLine, 70); }
+    if (side === 'e' && this.tr && this.tr.sigLine && c.sp === this.tr.sigSp && !this.sigShown && (this.sigShown = true)) { Sound.sfx('thunder'); flash('#ffffff', 14); shake(18); await this.msg(this.tr.sigLine, 70); }
   }
   async chooseAction() {
     const P = this.P;
@@ -347,7 +375,7 @@ class BattleScene {
     if (mv.custom) return this.execCustom(u, uSide, t, tSide, mv);
     const fx = mv.fx || {};
     const selfOnly = mv.cat === 'status' && !fx.foe && !fx.status && !fx.stun && !fx.bind;
-    if (!selfOnly && Math.random() * 100 >= mv.acc) { await this.msg('But it missed!', 35); return; }
+    if (!selfOnly && !mv.sure && Math.random() * 100 >= mv.acc) { await this.msg('But it missed!', 35); return; }
     if (mv.pow) {
       if (mv.sig) { shake(20); flash('#ffffff', 20); }
       await this.attackFX(mv.type, uSide, tSide);
@@ -545,7 +573,7 @@ class BattleScene {
   }
   async awardXP(E, mul) {
     const sp = SPECIES[E.sp];
-    const base = Math.floor(sp.xp * E.lv / 5 * (this.tr ? 1.5 : 1) * (perk() === 'xp' ? 1.1 : 1) * mul);
+    const base = Math.floor(sp.xp * E.lv / 4 * (this.tr ? 1.5 : 1) * (perk() === 'xp' ? 1.1 : 1) * mul);
     const got = Game.party.filter(c => c.hp > 0 && this.parts4.has(c.uid));
     if (!got.length) return;
     const each = Math.max(1, Math.floor(base / got.length));
@@ -645,7 +673,7 @@ function previewCard(mv, P) {
 async function startBattle(cfg) {
   Sound.sfx('encounter');
   const mapId = Game.player.map;
-  cfg.bg = mapId === 'hall' ? 'hall' : mapId === 'palace' ? 'palace' : 'route';
+  cfg.bg = (cfg.trainerId && TRAINERS[cfg.trainerId].bg) || (MAPS[mapId] && MAPS[mapId].bg) || 'route';
   await tween(Overlay, 'swirl', 1, 36);
   const B = new BattleScene(cfg);
   Scenes.push(B);
@@ -656,7 +684,7 @@ async function startBattle(cfg) {
   if (res === 'win' && B.tr) {
     const tr = B.tr, money = tr.reward * Math.max(...B.foes.map(c => c.lv));
     Sound.play('victory');
-    B.trainerSprite = { look: LOOKS[cfg.trainerId === 'rohan' ? 'pilgrim' : cfg.trainerId], x: 400, aura: null };
+    B.trainerSprite = { look: LOOKS[tr.look || cfg.trainerId], x: 400, aura: null };
     await tween(B.trainerSprite, 'x', 236, 24);
     await say(tr.lose, { speaker: tr.name });
     Game.player.money += money; Game.flags[tr.flag] = true;
@@ -670,13 +698,14 @@ async function startBattle(cfg) {
   Game.party.forEach(c => { delete c.b; }); B.foes.forEach(c => { delete c.b; });
   if (res === 'lose') {
     Game.player.money = Math.floor(Game.player.money / 2);
-    healParty(); World.load('shrine', 4, 4, 'up');
+    healParty(); const sh = Game.flags.shrine || ['shrine', 4, 4, 'up']; World.load(sh[0], sh[1], sh[2], sh[3] || 'up');
     await fadeIn(16);
     await say(['You blacked out and were carried back to the shrine...', 'Priestess Gauri tended your companions. Half of your coins were spent on offerings.'], { speaker: 'Priestess Gauri' });
   } else {
     Sound.play(World.map.music);
     await fadeIn(16);
     if (res === 'win' && cfg.trainerId === 'indra') await indraEnding();
+    else if (res === 'win' && TRAINERS[cfg.trainerId] && TRAINERS[cfg.trainerId].ending) await godEnding(TRAINERS[cfg.trainerId]);
   }
   return res;
 }
@@ -708,6 +737,11 @@ async function indraEnding() {
     Game.flags.gotBrahmastra = true; addItem('brahmastra', 1); Sound.sfx('pickup');
     await say(['INDRA: Take this as well - the Brahmastra Orb. It tames any wild creature without fail, but it can never be made again.', 'You received the BRAHMASTRA ORB! (Only one exists.)'], { speaker: 'Indra' });
   }
-  await say(['TRIAL OF INDRAPURI COMPLETE.', 'This build (Stage 1) contains only the first city. The roads to Hellas, Asgard and the other mythic cities are still sealed by mist and arrive in later stages.', 'You can keep exploring, taming and levelling your companions. Remember to SAVE from the menu!']);
+  await say(['TRIAL OF INDRAPURI COMPLETE.', 'The mist on the road to OLYMPOS has lifted. Use TRAVEL in the menu, or the sealed rocks at the end of the Monsoon Trail, to open the world map.', 'Remember to SAVE from the menu!']);
+  Sound.play(World.map.music);
+}
+async function godEnding(tr) {
+  Sound.play('title');
+  await say(tr.ending, { speaker: tr.name });
   Sound.play(World.map.music);
 }

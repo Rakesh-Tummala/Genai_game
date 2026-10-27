@@ -13,7 +13,7 @@ const AI_ENDPOINT = "";
 const W = 320, H = 240, TILE = 16;
 const SAVE_KEY = 'mythbound_save_v1';
 const SETTINGS_KEY = 'mythbound_settings_v1';
-const BUILD_STAGE = 1;
+const BUILD_STAGE = 3;
 
 // ---- small utils -----------------------------------------------------
 const clamp = (v, a, b) => v < a ? a : v > b ? b : v;

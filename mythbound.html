@@ -60,7 +60,7 @@ const AI_ENDPOINT = "";
 const W = 320, H = 240, TILE = 16;
 const SAVE_KEY = 'mythbound_save_v1';
 const SETTINGS_KEY = 'mythbound_settings_v1';
-const BUILD_STAGE = 1;
+const BUILD_STAGE = 3;
 
 // ---- small utils -----------------------------------------------------
 const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
@@ -243,6 +243,8 @@ const Sound = (() => {
     route: { bpm: 132, lead: 'G4 - C5 - E5 - F5 E5 D5 - C5 - Bb4 - C5 - | E5 - G5 - A5 G5 F5 E5 D5 - Bb4 - C5 - - -', bass: 'C3 . C3 G2 Bb2 . C3 . F2 . F2 C3 G2 . C3 . C3 . C3 G2 Bb2 . C3 . F2 . G2 . C3 . . .', drums: 'k.hkh.s.k.hkh.sh' },
     battle: { bpm: 160, lead: 'C5 Eb5 G5 Eb5 C5 Eb5 G5 Ab5 G5 F5 Eb5 Db5 C5 - Bb4 - | C5 Eb5 G5 Bb5 Ab5 G5 F5 Eb5 F5 - Db5 - C5 - - -', bass: 'C3 C3 C4 C3 C3 C3 Bb2 C3 Ab2 Ab2 Ab3 Ab2 Bb2 Bb2 Bb3 Bb2 C3 C3 C4 C3 C3 C3 Bb2 C3 Db3 Db3 Db4 Db3 C3 C3 C4 C3', drums: 'k.hsk.hsk.hsk.ss' },
     boss: { bpm: 168, drone: [36], lead: 'C5 Db5 E5 C5 F5 E5 Db5 C5 G5 - Ab5 G5 F5 E5 Db5 - | C6 B5 Ab5 G5 F5 E5 F5 G5 Ab5 G5 F5 E5 Db5 - C5 -', bass: 'C2 C3 C2 C3 C2 C3 Db2 Db3 C2 C3 C2 C3 C2 C3 Db2 Db3 F2 F3 F2 F3 G2 G3 G2 G3 Ab2 Ab3 G2 G3 Db2 Db3 C2 C3', drums: 'kkhsk.hskkhsk.ss' },
+    greece: { bpm: 116, lead: 'D5 - A4 - D5 E5 F5 - E5 D5 C5 - D5 - - - | F5 - G5 A5 - G5 F5 E5 D5 - E5 F5 E5 - - -', bass: 'D3 . A2 . D3 . A2 . C3 . G2 . D3 . . . F2 . C3 . G2 . D3 . A2 . E3 . A2 . . .', drums: 'k.h.k.h.s.h.k.hh' },
+    norse: { bpm: 92, drone: [33, 40], lead: 'A4 - - C5 E5 - D5 C5 B4 - - - G4 - A4 - | C5 - D5 E5 - - G5 E5 D5 - C5 B4 A4 - - -', bass: 'A2 - - - - - - - G2 - - - - - - - F2 - - - - - - - E2 - - - G2 - - -', drums: 'k.......k...s...' },
     victory: { bpm: 150, once: true, lead: 'C5 E5 G5 C6 - - G5 C6 - - - - . . . .', bass: 'C3 - - - - - G2 C3 - - - - . . . .', drums: 'k...k...k.s.k...' },
   };
   for (const k in T) { T[k].L = parseLine(T[k].lead); T[k].B = parseLine(T[k].bass); }
@@ -778,6 +780,141 @@ SHOP_STOCK.splice(0, SHOP_STOCK.length, 'bana', 'agneyastra', 'varunastra', 'vay
   if (errs.length) console.warn('MYTHBOUND data problems:', errs);
 })();
 
+// ---- 05_data_z_cities.js ----
+// =====================================================================
+//  STAGE 3 DATA (part 1): Greece (Olympos) and Norse (Asgard)
+//  Trainers, lieutenants and god trials. Gods are portrayed respectfully,
+//  as fictional ceremonial trials, using traditional depictions only.
+// =====================================================================
+// which cities exist in this build, how to unlock them, and where you arrive
+const CITY_INFO = {
+  india: { built: true, unlock: () => true, arrive: ['route', 12, 42, 'up'], god: 'Indra' },
+  greece: { built: true, unlock: () => !!Game.flags.beatIndra, arrive: ['greece', 15, 27, 'up'], god: 'Zeus', needs: 'Pass Indra\'s trial in Indrapuri' },
+  norse: { built: true, unlock: () => !!Game.flags.beatZeus, arrive: ['norse', 15, 27, 'up'], god: 'Odin', needs: 'Pass Zeus\'s trial in Olympos' },
+  egypt: { built: false, unlock: () => false, god: 'Ra', needs: 'Pass Odin\'s trial in Asgard' },
+  japan: { built: false, unlock: () => false, god: 'Amaterasu' },
+  celtic: { built: false, unlock: () => false, god: 'The Dagda' },
+  meso: { built: false, unlock: () => false, god: 'Marduk' },
+  slavic: { built: false, unlock: () => false, god: 'Perun' },
+};
+function cityUnlocked(id) { const c = CITY_INFO[id]; return !!(c && c.built && c.unlock()); }
+
+Object.assign(MOVES, {
+  keraunos: { name: 'Keraunos Bolt', type: 'Storm', pow: 115, acc: 95, pp: 5, sig: true, fx: { stun: .3, breakShield: true } },
+  gungnir: { name: 'Gungnir Cast', type: 'Sky', pow: 110, acc: 100, pp: 5, sig: true, sure: true, fx: { foe: { def: -1 }, foeCh: .3 } },
+});
+defSp('aetonyx', 'greece', 'Aetonyx', ['Sky', 'Storm'], [86, 96, 78, 98], 'mythic', 250, ['avian', 1.06, ['#f0e8d0', '#e8c040', '#ffffff', '#1a1a2a', '#ffff80', '#ffd84a'], 'bolts', ['crestTall', 'crown', 'tailFan']],
+  'The great eagle that perches beside the king of the gods and carries his thunderbolts across the sky.', [[1, 'gust'], [1, 'thunderclap'], [1, 'garudadive'], [1, 'keraunos']], { bossOnly: true });
+// keep the Bestiary order grouped by city
+SPECIES_ORDER.splice(SPECIES_ORDER.indexOf('cyclite') + 1, 0, SPECIES_ORDER.pop());
+
+Object.assign(TRAINERS, {
+  // ---------- India: the remaining lieutenants of Indra ----------
+  vayu: {
+    name: 'Vayu', title: 'Lieutenant of Indra', look: 'vayu', team: [['kinnarel', 14], ['garudin', 15], ['gandharin', 15], ['kinnarel', 16]], reward: 70, music: 'boss', lieutenant: true, flag: 'beatVayu',
+    confirm: 'A sudden wind fills the hall. Accept Vayu\'s challenge?',
+    intro: ['VAYU: I am the wind that carries every breath and every prayer.', 'VAYU: The wind cannot be held - only met. Show me how your companions move with it!'],
+    lose: 'VAYU: You bent like grass in the gale, and did not break. Well done.', after: ['VAYU: Breathe steady, Tamer. Varuna and the King await.'],
+  },
+  varuna: {
+    name: 'Varuna', title: 'Lieutenant of Indra', look: 'varuna', team: [['makarin', 14], ['nagling', 15], ['makaraja', 16], ['nagaraja', 16]], reward: 70, music: 'boss', lieutenant: true, flag: 'beatVaruna',
+    confirm: 'The floor ripples like a river. Accept Varuna\'s challenge?',
+    intro: ['VARUNA: The cosmic waters remember every oath ever spoken.', 'VARUNA: Let the tide test whether your bond with your companions is true.'],
+    lose: 'VARUNA: The waters run clear around you. Your oath holds.', after: ['VARUNA: Go with the current, Tamer.'],
+  },
+  // ---------- Greece (Olympos) ----------
+  nikos: {
+    name: 'Hoplite Nikos', title: 'Trainer', look: 'hoplite', team: [['minotot', 22], ['gorgling', 22], ['pegafoal', 23], ['chimerant', 23]], reward: 45, music: 'battle', flag: 'beatNikos',
+    intro: ['Shields up! Every visitor to Olympos is tested at the gate.', 'My phalanx of four will not break so easily!'], lose: 'You broke my line fair and square. The lieutenants will want to meet you.',
+  },
+  kallisto: {
+    name: 'Oracle Kallisto', title: 'Trainer', look: 'oracle', team: [['hydrelle', 23], ['gorgling', 23], ['pegafoal', 24], ['cerbepup', 24]], reward: 45, music: 'battle', flag: 'beatKallisto',
+    intro: ['I foresaw a stranger arriving from the mist today.', 'The vapours did not say who would win. Let us find out!'], lose: 'Ah. That part of the prophecy was blurry. Congratulations!',
+  },
+  ares: {
+    name: 'Ares', title: 'Lieutenant of Zeus', look: 'ares', team: [['minotot', 26], ['cerbepup', 26], ['chimerant', 27], ['cyclite', 28]], reward: 80, music: 'boss', lieutenant: true, flag: 'beatAres', bg: 'arena',
+    requires: ['beatNikos', 'beatKallisto'], blocked: 'ARES: Come back when you have beaten the city\'s trainers, Hoplite Nikos and Oracle Kallisto.',
+    confirm: 'The arena sand trembles. Accept the challenge of Ares?',
+    intro: ['ARES: So, a challenger walks into my arena!', 'ARES: I test courage, not cruelty. Stand your ground and fight with all your heart!'],
+    lose: 'ARES: Ha! You have the courage of a true champion. I salute you.', after: ['ARES: Courage is a fire. Keep it fed, Tamer.'],
+  },
+  poseidon: {
+    name: 'Poseidon', title: 'Lieutenant of Zeus', look: 'poseidon', team: [['hydrelle', 26], ['pegafoal', 26], ['minotot', 27], ['hydrelle', 27], ['pegasorn', 28]], reward: 80, music: 'boss', lieutenant: true, flag: 'beatPoseidon', bg: 'sea',
+    requires: ['beatNikos', 'beatKallisto'], blocked: 'POSEIDON: The sea is patient. Beat the city\'s trainers first, then return to my pier.',
+    confirm: 'Waves crash against the pier. Accept the challenge of Poseidon?',
+    intro: ['POSEIDON: The sea gives and the sea takes, little Tamer.', 'POSEIDON: My horses were born from the foam. Ride the waves with them, if you can!'],
+    lose: 'POSEIDON: The tide turns in your favour. Sail on, with my blessing.', after: ['POSEIDON: When the sea is calm, remember who calmed it.'],
+  },
+  hades: {
+    name: 'Hades', title: 'Lieutenant of Zeus', look: 'hades', team: [['gorgling', 26], ['hydrelle', 27], ['chimerant', 27], ['cerbepup', 29]], reward: 80, music: 'boss', lieutenant: true, flag: 'beatHades', bg: 'underworld',
+    requires: ['beatNikos', 'beatKallisto'], blocked: 'HADES: Even the dead wait their turn. Beat the city\'s trainers, then knock again.',
+    confirm: 'A cold, quiet wind blows from below. Accept the challenge of Hades?',
+    intro: ['HADES: Few walk through my gate willingly. Fewer walk back out.', 'HADES: I keep the order of the deep places. Show me that you understand balance.'],
+    lose: 'HADES: Balanced and fair. You may leave my halls whenever you wish.', after: ['HADES: Treat endings with respect, Tamer. They are also beginnings.'],
+  },
+  zeus: {
+    name: 'Zeus', title: 'King of Olympos', look: 'zeus', team: [['pegasorn', 30], ['cyclite', 30], ['chimerant', 30], ['hydrelle', 31], ['cerbepup', 31], ['aetonyx', 33]], reward: 130, music: 'boss', god: true, flag: 'beatZeus', bg: 'olympos', sigSp: 'aetonyx',
+    requires: ['beatAres', 'beatPoseidon', 'beatHades'], blocked: 'ZEUS: Prove yourself to my brothers and my son first - Ares, Poseidon and Hades.',
+    confirm: 'Thunder rolls across the marble sky. Begin the Trial of Olympos?',
+    intro: ['Lightning splits the clouds above the temple. The air smells of rain.', 'ZEUS: Traveller from the land of the monsoon. Indra speaks well of you.', 'ZEUS: On Olympos we honour hospitality, honesty and courage. Let your companions show all three.', 'ZEUS: Begin the trial of the sky!'],
+    lose: 'ZEUS: The thunder bows to you today. You have earned the respect of Olympos.', after: ['ZEUS: The road north is open. Odin waits in Asgard, where the snow never melts.'],
+    sigLine: 'Aetonyx spreads its wings. The Keraunos thunderbolt crackles in its talons!',
+    ending: ['The storm clouds part and sunlight pours over the marble city.', 'ZEUS: Take the Aegis Seal, mark of Olympos.', 'You received the AEGIS SEAL!', 'The mist on the northern road thins. ASGARD can now be reached from the world map (Menu > TRAVEL).'],
+  },
+  // ---------- Norse (Asgard) ----------
+  sigrun: {
+    name: 'Shieldmaiden Sigrun', title: 'Trainer', look: 'shieldmaiden', team: [['fenrisk', 28], ['draugrim', 28], ['tanngrit', 29], ['huginix', 29]], reward: 50, music: 'battle', flag: 'beatSigrun',
+    intro: ['Ho, traveller! Cold hands make strong shields.', 'Face my shield wall of four!'], lose: 'You fight like a winter storm. Go see the lieutenants!',
+  },
+  bjorn: {
+    name: 'Skald Bjorn', title: 'Trainer', look: 'skald', team: [['ratatusk', 28], ['jormlet', 29], ['huginix', 29], ['tanngrit', 30]], reward: 50, music: 'battle', flag: 'beatBjorn',
+    intro: ['Every battle deserves a song, and I need new verses!', 'Give me a battle worth singing about!'], lose: 'What a saga! I will sing of this for three winters.',
+  },
+  thor: {
+    name: 'Thor', title: 'Lieutenant of Odin', look: 'thor', team: [['tanngrit', 31], ['ratatusk', 31], ['tanngrit', 32], ['draugrim', 32], ['fenrimaw', 33]], reward: 90, music: 'boss', lieutenant: true, flag: 'beatThor', bg: 'forge',
+    requires: ['beatSigrun', 'beatBjorn'], blocked: 'THOR: Ha! Beat Sigrun and Bjorn first. Then my hammer will be warm.',
+    confirm: 'Sparks leap from the anvil. Accept Thor\'s challenge?',
+    intro: ['THOR: Welcome to my forge, small one! Mind the sparks.', 'THOR: I protect the people of Midgard from the cold and the giants. Show me you can protect your companions!'],
+    lose: 'THOR: Ha ha! A mighty bout! You have the strength of a whole village.', after: ['THOR: My goats will be jealous. Go on, Tyr and Heimdall are waiting.'],
+  },
+  tyr: {
+    name: 'Tyr', title: 'Lieutenant of Odin', look: 'tyr', team: [['fenrisk', 31], ['draugrim', 32], ['fenrisk', 32], ['fenrimaw', 34]], reward: 90, music: 'boss', lieutenant: true, flag: 'beatTyr', bg: 'oaths',
+    requires: ['beatSigrun', 'beatBjorn'], blocked: 'TYR: An oath first: beat Sigrun and Bjorn. Then we fight.',
+    confirm: 'The hall falls silent, as if waiting for a promise. Accept Tyr\'s challenge?',
+    intro: ['TYR: In this hall, every word is an oath and every oath is kept.', 'TYR: Swear to battle fairly, and I will do the same.'],
+    lose: 'TYR: You kept your word in every move. That is the rarest courage.', after: ['TYR: A promise kept is stronger than any wolf.'],
+  },
+  heimdall: {
+    name: 'Heimdall', title: 'Lieutenant of Odin', look: 'heimdall', team: [['huginix', 32], ['ratatusk', 32], ['jormlet', 33], ['sleipra', 33]], reward: 90, music: 'boss', lieutenant: true, flag: 'beatHeimdall', bg: 'bifrost',
+    requires: ['beatSigrun', 'beatBjorn'], blocked: 'HEIMDALL: I heard you coming a mile away. Beat Sigrun and Bjorn, then return to the bridge.',
+    confirm: 'The rainbow bridge hums underfoot. Accept Heimdall\'s challenge?',
+    intro: ['HEIMDALL: I can hear the grass growing and the snow settling.', 'HEIMDALL: Nothing crosses the bridge unwatched. Show me you are worthy to pass!'],
+    lose: 'HEIMDALL: I saw that victory coming - and I am still impressed.', after: ['HEIMDALL: The bridge will always be open to you.'],
+  },
+  odin: {
+    name: 'Odin', title: 'All-Father of Asgard', look: 'odin', team: [['huginix', 35], ['huginix', 35], ['fenrimaw', 36], ['draugrim', 36], ['jormlet', 36], ['sleipra', 38, ['gungnir', 'tempest', 'wingslash', 'tailwind']]], reward: 140, music: 'boss', god: true, flag: 'beatOdin', bg: 'valgrind', sigSp: 'sleipra',
+    requires: ['beatThor', 'beatTyr', 'beatHeimdall'], blocked: 'ODIN: Wisdom has an order. Face Thor, Tyr and Heimdall first.',
+    confirm: 'Two ravens circle the high seat. Begin the Trial of Asgard?',
+    intro: ['Torches flicker in the great hall. Two ravens land on the high seat.', 'ODIN: I gave much to gain wisdom, young Tamer. My ravens told me of your journey.', 'ODIN: Here we test wisdom - knowing when to strike, and when to wait.', 'ODIN: Let the trial of the All-Father begin!'],
+    lose: 'ODIN: Wise, and brave besides. My ravens will carry your name across all nine worlds.', after: ['ODIN: The road south to the desert is still veiled. Its trial will open in time.'],
+    sigLine: 'Sleipra paws the floor with eight hooves. Gungnir, the spear that never misses, is raised!',
+    ending: ['The torches flare gold and the ravens cry out together.', 'ODIN: Take the Raven Seal, sign of Asgard\'s respect.', 'You received the RAVEN SEAL!', 'The next road leads to HELIOPOLIS, the city of Ra. It is still sealed in this build (Stage 3, part 1) and opens in a later update.'],
+  },
+});
+TRAINERS.rohan.look = 'pilgrim';
+TRAINERS.agni.look = 'agni';
+TRAINERS.indra.look = 'indra';
+TRAINERS.indra.requires = ['beatVayu', 'beatVaruna'];
+TRAINERS.indra.blocked = 'INDRA: First stand before Vayu and Varuna, who wait in this hall. Then the heavens will answer.';
+TRAINERS.indra.sigSp = 'airavat';
+TRAINERS.indra.confirm = 'The air hums with thunder. Begin the Trial of the Heavens?';
+TRAINERS.agni.confirm = 'The sacred fire roars. Challenge Agni, Lieutenant of Indra?';
+TRAINERS.agni.after = ['AGNI: Carry the flame with you. Vayu and Varuna wait inside Vaijayanta.'];
+TRAINERS.indra.after = ['INDRA: The rains will follow you, Tamer.', 'Your seal opens the Mist Road. Use TRAVEL in the menu to visit other cities.'];
+function makeTeam(tr) {
+  return tr.team.map(([s, l, moves]) => { const c = newCreature(s, l); if (moves) c.moves = moves.map(id => ({ id, pp: MOVES[id].pp })); return c; });
+}
+
 // ---- 06_sprites.js ----
 // =====================================================================
 //  PROCEDURAL PIXEL ART
@@ -1219,117 +1356,193 @@ function personFrames(look) {
 }
 
 // =====================================================================
-//  TILES (16x16, procedurally painted; water, tall grass, fire animate)
+//  TILES (16x16, procedurally painted per city theme; water, grass, fire animate)
 // =====================================================================
+const THEMES = {
+  india: {
+    grass: ['#5aa84a', '#4a9440', '#6cbc58'], tall: ['#2f7a34', '#3f9a40', '#7fd060'], deep: ['#245f3a', '#2e7f52', '#9be0a0'],
+    path: ['#d9b27a', '#c49a62', '#ead0a0'], plaza: ['#cdbd9f', '#ad9d80', '#ddd0b4'], water: ['#2f6fbf', '#5f9fe8'],
+    tree: 'round', treeC: ['#5a3a20', '#1f5a2c', '#2f7a3a', '#48a24c', '#7cc860'], flowers: ['#ff9f1a', '#ffd23a', '#c84a10'],
+    floor: ['#a8784a', '#8f643c'], wall: ['#e8d8b8', '#c8b090', '#9a7a50', '#b8402a', '#e8b030'], carpet: ['#a8283a', '#e8b030', '#c8485a'],
+    pillar: ['#f2ead8', '#d0c4a8', '#e8b030'], lamp: ['#5a4030', '#e8b030'], rock: ['#6a6a72', '#8f8f98', '#c0c0c8'], gold: ['#d8b048', '#b89030', '#f0d070'], fence: ['#8a5a32', '#6a4224', '#b07a48'],
+  },
+  greece: {
+    grass: ['#9ab45a', '#84a04a', '#b4c86e'], tall: ['#5a7a32', '#6e9040', '#c8d880'], deep: ['#3a6a4a', '#4a805a', '#a8d8a0'],
+    path: ['#e4d8b8', '#cfc09a', '#f2ead2'], plaza: ['#eeece6', '#c8c6bc', '#ffffff'], water: ['#1e78d0', '#6ab4ff'],
+    tree: 'cypress', treeC: ['#5a4a30', '#1e4a2a', '#2a5e34', '#3a7a42', '#6aa060'], flowers: ['#e8384a', '#b070e0', '#40202a'],
+    floor: ['#e8e4dc', '#c8c4b8'], wall: ['#f4f2ea', '#d8d4c8', '#a8a49a', '#2a5ab0', '#e8e8f0'], carpet: ['#2a4a98', '#e8c040', '#3a6ac0'],
+    pillar: ['#ffffff', '#d8d8d0', '#c8b878'], lamp: ['#a8a090', '#d8d0c0'], rock: ['#b8b0a0', '#d8d0c0', '#f0ece0'], gold: ['#e8d8a0', '#c8b878', '#fff4c8'], fence: ['#e8e4d8', '#c8c4b8', '#ffffff'],
+  },
+  norse: {
+    grass: ['#e6edf3', '#cdd8e2', '#ffffff'], tall: ['#6a8a8a', '#86a6a0', '#e8f4f4'], deep: ['#4a6a7a', '#5a8090', '#d8f0ff'],
+    path: ['#a0948a', '#887c70', '#c0b6aa'], plaza: ['#8a6a48', '#6a4e32', '#a8845c'], water: ['#2a4a6a', '#5a80a8'],
+    tree: 'pine', treeC: ['#4a3a2a', '#1a3a2e', '#244a3a', '#2f5e48', '#ffffff'], flowers: ['#ffffff', '#9fc8ff', '#4a6a8a'],
+    floor: ['#7a5a3a', '#5e4430'], wall: ['#7a5434', '#5e3e24', '#3a2614', '#c8a040', '#e8d8b0'], carpet: ['#2a3a6a', '#c8a040', '#3a5a9a'],
+    pillar: ['#8a6a48', '#5e4430', '#c8a040'], lamp: ['#3a2a1a', '#c8a040'], rock: ['#5a6470', '#7a8490', '#d8e4ee'], gold: ['#b8a060', '#8a7440', '#d8c080'], fence: ['#6a4e32', '#4a3420', '#8a6a48'],
+  },
+};
 const Tiles = (() => {
   const cache = {};
-  function make(key, frame, painter) {
-    const c = mkCanvas(16, 16), x = c.getContext('2d'), r = mulberry32(hashStr(key) + frame * 977);
-    painter(x, r, frame); return c;
-  }
   const px = (x, a, b, col) => { x.fillStyle = col; x.fillRect(a, b, 1, 1); };
   const fill = (x, col) => { x.fillStyle = col; x.fillRect(0, 0, 16, 16); };
-  function grass(x, r) { fill(x, '#5aa84a'); for (let i = 0; i < 14; i++) { const a = r() * 16 | 0, b = r() * 16 | 0; px(x, a, b, '#4a9440'); px(x, a, b - 1, '#6cbc58'); } }
-  function plaza(x) { fill(x, '#cdbd9f'); x.fillStyle = '#ad9d80'; x.fillRect(0, 0, 16, 1); x.fillRect(0, 8, 16, 1); x.fillRect(0, 0, 1, 8); x.fillRect(8, 8, 1, 8); x.fillStyle = '#ddd0b4'; x.fillRect(1, 1, 6, 1); x.fillRect(9, 9, 6, 1); }
-  function floor(x) { fill(x, '#a8784a'); x.fillStyle = '#8f643c'; for (let y = 3; y < 16; y += 4) x.fillRect(0, y, 16, 1); x.fillRect(5, 0, 1, 3); x.fillRect(11, 4, 1, 3); x.fillRect(3, 8, 1, 3); x.fillRect(9, 12, 1, 3); }
+  let T = THEMES.india;
+  function grass(x, r) { fill(x, T.grass[0]); for (let i = 0; i < 14; i++) { const a = r() * 16 | 0, b = r() * 16 | 0; px(x, a, b, T.grass[1]); px(x, a, b - 1, T.grass[2]); } }
+  function plaza(x) { const c = T.plaza; fill(x, c[0]); x.fillStyle = c[1]; x.fillRect(0, 0, 16, 1); x.fillRect(0, 8, 16, 1); x.fillRect(0, 0, 1, 8); x.fillRect(8, 8, 1, 8); x.fillStyle = c[2]; x.fillRect(1, 1, 6, 1); x.fillRect(9, 9, 6, 1); }
+  function floor(x) { fill(x, T.floor[0]); x.fillStyle = T.floor[1]; for (let y = 3; y < 16; y += 4) x.fillRect(0, y, 16, 1); x.fillRect(5, 0, 1, 3); x.fillRect(11, 4, 1, 3); x.fillRect(3, 8, 1, 3); x.fillRect(9, 12, 1, 3); }
+  function tuft(x, r, f, c) { grass(x, r); for (let i = 0; i < 4; i++) { const bx = (i % 2) * 8 + 1, by = (i >> 1) * 8 + 2; x.fillStyle = c[0]; x.fillRect(bx, by + 2, 6, 4); for (let k = 0; k < 3; k++) { const sx = bx + k * 2 + (f ? 1 : 0); x.fillStyle = c[1]; x.fillRect(sx, by - 1, 1, 4); px(x, sx, by - 2, c[2]); } } }
+  function water(x, f) { fill(x, T.water[0]); x.fillStyle = T.water[1]; for (let y = 2; y < 16; y += 5) { const o = (f * 2 + y) % 8; x.fillRect(o, y, 4, 1); x.fillRect((o + 9) % 16, y + 2, 3, 1); } }
+  function tree(x, r) {
+    grass(x, r); const c = T.treeC;
+    if (T.tree === 'cypress') { x.fillStyle = c[0]; x.fillRect(7, 12, 2, 4); x.fillStyle = c[1]; x.beginPath(); x.ellipse(8, 7.5, 5, 7.5, 0, 0, 7); x.fill(); x.fillStyle = c[2]; x.beginPath(); x.ellipse(7.5, 7, 3.6, 6.4, 0, 0, 7); x.fill(); x.fillStyle = c[3]; x.fillRect(6, 3, 2, 6); px(x, 6, 2, c[4]); px(x, 7, 6, c[4]); }
+    else if (T.tree === 'pine') { x.fillStyle = c[0]; x.fillRect(7, 12, 2, 4); for (let k = 0; k < 3; k++) { const y = 2 + k * 4, hw = 3 + k * 2; x.fillStyle = c[1 + (k % 2)]; x.beginPath(); x.moveTo(8, y); x.lineTo(8 + hw, y + 6); x.lineTo(8 - hw, y + 6); x.fill(); x.fillStyle = c[4]; x.fillRect(8 - hw + 1, y + 5, hw, 1); px(x, 8, y, c[4]); } }
+    else { x.fillStyle = c[0]; x.fillRect(6, 10, 4, 6); x.fillStyle = c[1]; x.beginPath(); x.arc(8, 7, 7.5, 0, 7); x.fill(); x.fillStyle = c[2]; x.beginPath(); x.arc(7, 6, 6, 0, 7); x.fill(); x.fillStyle = c[3]; x.beginPath(); x.arc(6, 4, 3.5, 0, 7); x.fill(); px(x, 5, 3, c[4]); px(x, 10, 6, c[4]); }
+  }
   const P = {
     '.': (x, r) => grass(x, r),
-    ',': (x, r, f) => { grass(x, r); for (let i = 0; i < 4; i++) { const bx = (i % 2) * 8 + 1, by = (i >> 1) * 8 + 2; x.fillStyle = '#2f7a34'; x.fillRect(bx, by + 2, 6, 4); for (let k = 0; k < 3; k++) { const sx = bx + k * 2 + (f ? 1 : 0); x.fillStyle = '#3f9a40'; x.fillRect(sx, by - 1, 1, 4); px(x, sx, by - 2, '#7fd060'); } } },
-    ':': (x, r, f) => { grass(x, r); for (let i = 0; i < 4; i++) { const bx = (i % 2) * 8 + 1, by = (i >> 1) * 8 + 2; x.fillStyle = '#245f3a'; x.fillRect(bx, by + 2, 6, 4); for (let k = 0; k < 3; k++) { const sx = bx + k * 2 + (f ? 1 : 0); x.fillStyle = '#2e7f52'; x.fillRect(sx, by - 1, 1, 4); px(x, sx, by - 2, '#9be0a0'); } } },
-    '_': (x, r) => { fill(x, '#d9b27a'); for (let i = 0; i < 8; i++) px(x, r() * 16 | 0, r() * 16 | 0, r() < .5 ? '#c49a62' : '#ead0a0'); },
+    ',': (x, r, f) => tuft(x, r, f, T.tall),
+    ':': (x, r, f) => tuft(x, r, f, T.deep),
+    '_': (x, r) => { fill(x, T.path[0]); for (let i = 0; i < 8; i++) px(x, r() * 16 | 0, r() * 16 | 0, r() < .5 ? T.path[1] : T.path[2]); },
     '=': x => plaza(x),
-    '~': (x, r, f) => { fill(x, '#2f6fbf'); x.fillStyle = '#5f9fe8'; for (let y = 2; y < 16; y += 5) { const o = (f * 2 + y) % 8; x.fillRect(o, y, 4, 1); x.fillRect((o + 9) % 16, y + 2, 3, 1); } },
-    'o': (x, r, f) => { P['~'](x, r, f); x.fillStyle = '#3fae5a'; x.beginPath(); x.arc(7, 9, 4, 0, Math.PI * 2); x.fill(); x.fillStyle = '#ff8fb8'; x.fillRect(6, 6, 3, 3); px(x, 7, 5, '#ffd0e0'); px(x, 5, 7, '#ffd0e0'); px(x, 9, 7, '#ffd0e0'); px(x, 7, 7, '#ffe36a'); },
-    'T': (x, r) => { grass(x, r); x.fillStyle = '#5a3a20'; x.fillRect(6, 10, 4, 6); x.fillStyle = '#1f5a2c'; x.beginPath(); x.arc(8, 7, 7.5, 0, Math.PI * 2); x.fill(); x.fillStyle = '#2f7a3a'; x.beginPath(); x.arc(7, 6, 6, 0, Math.PI * 2); x.fill(); x.fillStyle = '#48a24c'; x.beginPath(); x.arc(6, 4, 3.5, 0, Math.PI * 2); x.fill(); px(x, 5, 3, '#7cc860'); px(x, 10, 6, '#7cc860'); },
-    'f': (x, r) => { grass(x, r); for (let i = 0; i < 5; i++) { const a = 2 + r() * 12 | 0, b = 2 + r() * 12 | 0; x.fillStyle = r() < .5 ? '#ff9f1a' : '#ffd23a'; x.fillRect(a - 1, b, 3, 1); x.fillRect(a, b - 1, 1, 3); px(x, a, b, '#c84a10'); } },
-    '|': (x, r) => { grass(x, r); x.fillStyle = '#8a5a32'; x.fillRect(0, 6, 16, 2); x.fillRect(0, 10, 16, 2); x.fillStyle = '#6a4224'; x.fillRect(2, 4, 3, 11); x.fillRect(11, 4, 3, 11); x.fillStyle = '#b07a48'; x.fillRect(2, 4, 3, 1); x.fillRect(11, 4, 3, 1); },
-    'L': (x, r, f) => { plaza(x); x.fillStyle = '#5a4030'; x.fillRect(7, 5, 2, 10); x.fillRect(5, 14, 6, 2); x.fillStyle = '#e8b030'; x.fillRect(4, 4, 8, 2); x.fillStyle = f ? '#ffd040' : '#ff8a20'; x.fillRect(7, 1, 2, 3); px(x, 7 + f, 0, '#fff0a0'); },
+    '~': (x, r, f) => water(x, f),
+    'o': (x, r, f) => { water(x, f); x.fillStyle = '#3fae5a'; x.beginPath(); x.arc(7, 9, 4, 0, 7); x.fill(); x.fillStyle = '#ff8fb8'; x.fillRect(6, 6, 3, 3); px(x, 7, 5, '#ffd0e0'); px(x, 5, 7, '#ffd0e0'); px(x, 9, 7, '#ffd0e0'); px(x, 7, 7, '#ffe36a'); },
+    'i': (x, r, f) => { water(x, f); x.fillStyle = '#d8eaf8'; x.beginPath(); x.ellipse(8, 9, 6, 4, 0, 0, 7); x.fill(); x.fillStyle = '#ffffff'; x.fillRect(5, 7, 4, 1); },   // ice floe
+    'T': (x, r) => tree(x, r),
+    'f': (x, r) => { grass(x, r); for (let i = 0; i < 5; i++) { const a = 2 + r() * 12 | 0, b = 2 + r() * 12 | 0; x.fillStyle = r() < .5 ? T.flowers[0] : T.flowers[1]; x.fillRect(a - 1, b, 3, 1); x.fillRect(a, b - 1, 1, 3); px(x, a, b, T.flowers[2]); } },
+    '|': (x, r) => { grass(x, r); const c = T.fence; x.fillStyle = c[0]; x.fillRect(0, 6, 16, 2); x.fillRect(0, 10, 16, 2); x.fillStyle = c[1]; x.fillRect(2, 4, 3, 11); x.fillRect(11, 4, 3, 11); x.fillStyle = c[2]; x.fillRect(2, 4, 3, 1); x.fillRect(11, 4, 3, 1); },
+    'L': (x, r, f) => { plaza(x); x.fillStyle = T.lamp[0]; x.fillRect(7, 5, 2, 10); x.fillRect(5, 14, 6, 2); x.fillStyle = T.lamp[1]; x.fillRect(4, 4, 8, 2); x.fillStyle = f ? '#ffd040' : '#ff8a20'; x.fillRect(7, 1, 2, 3); px(x, 7 + f, 0, '#fff0a0'); },
     'S': (x, r) => { grass(x, r); x.fillStyle = '#6a4224'; x.fillRect(7, 9, 2, 7); x.fillStyle = '#b07a48'; x.fillRect(2, 2, 12, 8); x.fillStyle = '#8a5a32'; x.fillRect(2, 9, 12, 1); x.fillStyle = '#5a3a20'; x.fillRect(4, 4, 8, 1); x.fillRect(4, 6, 6, 1); },
-    'R': (x, r) => { grass(x, r); x.fillStyle = '#6a6a72'; x.beginPath(); x.ellipse(8, 10, 7, 5.5, 0, 0, Math.PI * 2); x.fill(); x.fillStyle = '#8f8f98'; x.beginPath(); x.ellipse(7, 9, 5, 4, 0, 0, Math.PI * 2); x.fill(); px(x, 5, 7, '#c0c0c8'); px(x, 6, 7, '#c0c0c8'); },
-    'B': (x, r, f) => { P['~'](x, r, f); x.fillStyle = '#a87a4a'; x.fillRect(0, 0, 16, 16); x.fillStyle = '#7a5430'; for (let i = 0; i < 16; i += 4) x.fillRect(i, 0, 1, 16); x.fillStyle = '#5a3a20'; x.fillRect(0, 0, 16, 1); x.fillRect(0, 15, 16, 1); },
+    'R': (x, r) => { grass(x, r); const c = T.rock; x.fillStyle = c[0]; x.beginPath(); x.ellipse(8, 10, 7, 5.5, 0, 0, 7); x.fill(); x.fillStyle = c[1]; x.beginPath(); x.ellipse(7, 9, 5, 4, 0, 0, 7); x.fill(); px(x, 5, 7, c[2]); px(x, 6, 7, c[2]); },
+    'B': x => { x.fillStyle = '#a87a4a'; x.fillRect(0, 0, 16, 16); x.fillStyle = '#7a5430'; for (let i = 0; i < 16; i += 4) x.fillRect(i, 0, 1, 16); x.fillStyle = '#5a3a20'; x.fillRect(0, 0, 16, 1); x.fillRect(0, 15, 16, 1); },
+    'Y': (x, r, f) => { const c = ['#ff5a5a', '#ffa040', '#ffe060', '#60d070', '#50a0ff', '#a070ff']; c.forEach((col, i) => { x.fillStyle = col; x.fillRect(0, i * 2 + 2, 16, 2); }); x.fillStyle = 'rgba(255,255,255,' + (f ? .35 : .15) + ')'; x.fillRect((f * 5) % 16, 2, 3, 12); x.fillStyle = '#e8e8f8'; x.fillRect(0, 0, 16, 2); x.fillRect(0, 14, 16, 2); },  // rainbow bridge
     'X': x => fill(x, '#0b0714'),
     'p': x => floor(x),
-    'w': x => { fill(x, '#e8d8b8'); x.fillStyle = '#c8b090'; x.fillRect(0, 12, 16, 4); x.fillStyle = '#9a7a50'; x.fillRect(0, 11, 16, 1); x.fillStyle = '#b8402a'; x.fillRect(0, 2, 16, 2); x.fillStyle = '#e8b030'; for (let i = 1; i < 16; i += 4) x.fillRect(i, 2, 2, 2); },
-    'c': x => { fill(x, '#a8283a'); x.fillStyle = '#e8b030'; x.fillRect(0, 0, 16, 1); x.fillRect(0, 15, 16, 1); x.fillStyle = '#c8485a'; x.fillRect(6, 6, 4, 4); x.fillStyle = '#e8b030'; x.fillRect(7, 7, 2, 2); },
+    'w': x => { const c = T.wall; fill(x, c[0]); x.fillStyle = c[1]; x.fillRect(0, 12, 16, 4); x.fillStyle = c[2]; x.fillRect(0, 11, 16, 1); x.fillStyle = c[3]; x.fillRect(0, 2, 16, 2); x.fillStyle = c[4]; for (let i = 1; i < 16; i += 4) x.fillRect(i, 2, 2, 2); },
+    'c': x => { const c = T.carpet; fill(x, c[0]); x.fillStyle = c[1]; x.fillRect(0, 0, 16, 1); x.fillRect(0, 15, 16, 1); x.fillStyle = c[2]; x.fillRect(6, 6, 4, 4); x.fillStyle = c[1]; x.fillRect(7, 7, 2, 2); },
     'C': x => { floor(x); x.fillStyle = '#6a3a1a'; x.fillRect(0, 2, 16, 14); x.fillStyle = '#9a6234'; x.fillRect(0, 2, 16, 4); x.fillStyle = '#e8b030'; x.fillRect(0, 9, 16, 1); },
     'F': (x, r, f) => { floor(x); x.fillStyle = '#5a4a3a'; x.fillRect(3, 10, 10, 5); x.fillStyle = '#8a7a6a'; x.fillRect(2, 9, 12, 2); x.fillStyle = '#ff5a1f'; x.beginPath(); x.moveTo(3, 9); x.lineTo(8 + (f ? 1 : -1), 0); x.lineTo(13, 9); x.fill(); x.fillStyle = '#ffd040'; x.beginPath(); x.moveTo(5, 9); x.lineTo(8 + (f ? -1 : 1), 3); x.lineTo(11, 9); x.fill(); },
-    'P': x => { floor(x); x.fillStyle = '#f2ead8'; x.fillRect(4, 0, 8, 16); x.fillStyle = '#d0c4a8'; x.fillRect(10, 0, 2, 16); x.fillStyle = '#e8b030'; x.fillRect(3, 0, 10, 2); x.fillRect(3, 14, 10, 2); },
-    'g': x => { fill(x, '#d8b048'); x.fillStyle = '#b89030'; x.fillRect(0, 0, 16, 1); x.fillRect(0, 0, 1, 16); x.fillStyle = '#f0d070'; x.fillRect(2, 2, 3, 1); x.fillRect(9, 9, 3, 1); },
+    'P': x => { floor(x); const c = T.pillar; x.fillStyle = c[0]; x.fillRect(4, 0, 8, 16); x.fillStyle = c[1]; x.fillRect(10, 0, 2, 16); x.fillRect(6, 2, 1, 12); x.fillStyle = c[2]; x.fillRect(3, 0, 10, 2); x.fillRect(3, 14, 10, 2); },
+    'g': x => { const c = T.gold; fill(x, c[0]); x.fillStyle = c[1]; x.fillRect(0, 0, 16, 1); x.fillRect(0, 0, 1, 16); x.fillStyle = c[2]; x.fillRect(2, 2, 3, 1); x.fillRect(9, 9, 3, 1); },
     'm': x => { floor(x); x.fillStyle = '#c84a3a'; x.fillRect(1, 3, 14, 11); x.fillStyle = '#e8b030'; x.fillRect(2, 4, 12, 1); x.fillRect(2, 12, 12, 1); },
     'K': x => { P.w(x); x.fillStyle = '#7a4a2a'; x.fillRect(1, 5, 14, 11); x.fillStyle = '#c87a3a'; x.fillRect(3, 7, 3, 3); x.fillRect(10, 7, 3, 3); x.fillStyle = '#3a8a6a'; x.fillRect(6, 11, 4, 4); },
-    'A': (x, r, f) => { floor(x); x.fillStyle = '#9a9aa2'; x.fillRect(1, 6, 14, 10); x.fillStyle = '#c8c8d0'; x.fillRect(1, 6, 14, 2); x.fillStyle = '#ff9f1a'; x.fillRect(3, 3, 2, 3); x.fillRect(11, 3, 2, 3); x.fillStyle = f ? '#ffd040' : '#ff7a1a'; x.fillRect(7, 2, 2, 4); },
+    'A': (x, r, f) => { floor(x); const c = T.rock; x.fillStyle = c[0]; x.fillRect(1, 6, 14, 10); x.fillStyle = c[1]; x.fillRect(1, 6, 14, 2); x.fillStyle = '#ff9f1a'; x.fillRect(3, 3, 2, 3); x.fillRect(11, 3, 2, 3); x.fillStyle = f ? '#ffd040' : '#ff7a1a'; x.fillRect(7, 2, 2, 4); },
   };
-  const ANIM = { ',': 2, ':': 2, '~': 4, 'o': 4, 'B': 1, 'L': 2, 'F': 2, 'A': 2 };
-  function get(ch, t, x, y) {
+  const ANIM = { ',': 2, ':': 2, '~': 4, 'o': 4, 'i': 4, 'L': 2, 'F': 2, 'A': 2, 'Y': 2 };
+  function get(ch, t, x, y, theme = 'india') {
     const n = ANIM[ch] || 1;
-    // grass variety: pick from 3 variants by position
-    const variant = (ch === '.' || ch === '_') ? ((x * 7 + y * 13) % 3) : 0;
-    const f = n > 1 ? (ch === '~' || ch === 'o' ? ((t >> 4) + x) % n : ((t >> 5) + ((x + y) & 1)) % n) : 0;
-    const key = ch + variant + ':' + f;
-    if (!cache[key]) cache[key] = make(ch + variant, f, P[ch] || P['X']);
-    return cache[key];
+    const variant = (ch === '.' || ch === '_' || ch === 'T') ? ((x * 7 + y * 13) % 3) : 0;
+    const f = n > 1 ? (ch === '~' || ch === 'o' || ch === 'i' ? ((t >> 4) + x) % n : ((t >> 5) + ((x + y) & 1)) % n) : 0;
+    const key = theme + ch + variant + ':' + f;
+    let c = cache[key];
+    if (!c) { T = THEMES[theme] || THEMES.india; c = mkCanvas(16, 16); (P[ch] || P.X)(c.getContext('2d'), mulberry32(hashStr(ch + variant) + f * 977), f); cache[key] = c; }
+    return c;
   }
   return { get };
 })();
 
 // ---- Buildings: pre-rendered composite sprites -----------------------
+// roof: gable | tiered | pediment | turf | dragon ;  win: jali | arched | shutter
 const BUILD_STYLE = {
   house: { wall: '#f0dcb0', band: '#c89860', roof: '#b8502a', roof2: '#8a3a1e' },
   house2: { wall: '#e8e0c8', band: '#a8906a', roof: '#3f8a6a', roof2: '#2a5a48' },
-  shop: { wall: '#f0e6d0', band: '#7a9ac8', roof: '#2a6fb0', roof2: '#1a4a80', sign: 'SHOP' },
-  shrine: { wall: '#fbf6ea', band: '#e8b030', roof: '#f4a261', roof2: '#c8702a', sign: 'SHRINE' },
-  hall: { wall: '#c8603a', band: '#7a2a1a', roof: '#7a2a1a', roof2: '#4a1a10', sign: 'FIRE HALL' },
-  palace: { wall: '#fbf2dc', band: '#e8b030', roof: '#e0b040', roof2: '#a87a20', sign: 'VAIJAYANTA' },
+  shop: { wall: '#f0e6d0', band: '#7a9ac8', roof: '#2a6fb0', roof2: '#1a4a80', sign: 'SHOP', awning: '#2a6fb0' },
+  shrine: { wall: '#fbf6ea', band: '#e8b030', roof: '#f4a261', roof2: '#c8702a', sign: 'SHRINE', roofType: 'tiered', top: 18, flag: true },
+  hall: { wall: '#c8603a', band: '#7a2a1a', roof: '#7a2a1a', roof2: '#4a1a10', sign: 'FIRE HALL', flame: true },
+  palace: { wall: '#fbf2dc', band: '#e8b030', roof: '#e0b040', roof2: '#a87a20', sign: 'VAIJAYANTA', roofType: 'tiered', top: 40, pillars: true },
+  // Greece
+  gr_house: { wall: '#f6f4ec', band: '#2a5ab0', roof: '#c8683a', roof2: '#8a4224', win: 'arched' },
+  gr_house2: { wall: '#f6f4ec', band: '#2a5ab0', roof: '#3a6ab8', roof2: '#1a3a80', win: 'arched' },
+  gr_shop: { wall: '#f6f4ec', band: '#2a5ab0', roof: '#2a6fb0', roof2: '#1a4a80', sign: 'SHOP', win: 'arched', awning: '#2a5ab0' },
+  gr_shrine: { wall: '#ffffff', band: '#e8c040', roof: '#eeeae0', roof2: '#c8c4b8', sign: 'SHRINE', roofType: 'pediment', top: 14, columns: '#ffffff' },
+  arena: { wall: '#f0e4d0', band: '#8a2a1a', roof: '#c84a3a', roof2: '#8a2a1a', sign: 'ARENA OF ARES', roofType: 'pediment', top: 14, columns: '#f8f0e0' },
+  hadesgate: { wall: '#4a3a5a', band: '#2a1a3a', roof: '#3a2a4a', roof2: '#1a1028', sign: 'GATE OF HADES', roofType: 'pediment', top: 14, columns: '#6a5a7a', signCol: '#c8a0ff' },
+  seatemple: { wall: '#e8f0f8', band: '#1e78d0', roof: '#2a8ac0', roof2: '#1a5a8a', sign: 'SEA TEMPLE', roofType: 'pediment', top: 14, columns: '#f0f8ff' },
+  zeustemple: { wall: '#ffffff', band: '#e8c040', roof: '#f4f0e6', roof2: '#c8b878', sign: 'TEMPLE OF ZEUS', roofType: 'pediment', top: 30, columns: '#ffffff', bolt: true },
+  // Norse
+  no_house: { wall: '#7a5434', band: '#5e3e24', roof: '#5a8a4a', roof2: '#3a5a2a', roofType: 'turf', win: 'shutter', logs: true, snow: true },
+  no_house2: { wall: '#6a4a30', band: '#4e3420', roof: '#6a9a5a', roof2: '#3a5a2a', roofType: 'turf', win: 'shutter', logs: true, snow: true },
+  no_shop: { wall: '#7a5434', band: '#5e3e24', roof: '#2a5a8a', roof2: '#1a3a5a', sign: 'SHOP', win: 'shutter', logs: true, snow: true, awning: '#2a5a8a' },
+  no_shrine: { wall: '#8a6444', band: '#5e3e24', roof: '#4a3020', roof2: '#2a1a10', sign: 'SHRINE', roofType: 'dragon', top: 14, win: 'shutter', logs: true, snow: true },
+  forge: { wall: '#5a4a40', band: '#3a2a20', roof: '#4a3a30', roof2: '#2a1a14', sign: 'THUNDER FORGE', win: 'shutter', snow: true, chimney: true },
+  oathhall: { wall: '#7a5434', band: '#5e3e24', roof: '#4a3020', roof2: '#2a1a10', sign: 'HALL OF OATHS', roofType: 'dragon', top: 14, win: 'shutter', logs: true, snow: true },
+  valgrind: { wall: '#7a5434', band: '#c8a040', roof: '#c8a040', roof2: '#8a6a20', sign: 'VALGRIND', roofType: 'dragon', top: 26, win: 'shutter', logs: true, shields: true },
 };
 function renderBuilding(b) {
-  const st = BUILD_STYLE[b.style], w = b.w * 16, h = b.h * 16, top = b.style === 'palace' ? 40 : (b.style === 'shrine' ? 18 : 0);
+  const st = BUILD_STYLE[b.style], w = b.w * 16, h = b.h * 16, top = st.top || 0;
   const c = mkCanvas(w, h + top), x = c.getContext('2d');
-  const wallY = top + (b.h - 2) * 16;
+  const wallY = top + (b.h - 2) * 16, roofH = wallY, rt = st.roofType || 'gable';
   // walls
   x.fillStyle = st.wall; x.fillRect(2, wallY, w - 4, 32);
+  if (st.logs) { x.fillStyle = shade(st.wall, -.25); for (let y = wallY + 3; y < wallY + 26; y += 4) x.fillRect(2, y, w - 4, 1); }
   x.fillStyle = st.band; x.fillRect(2, wallY + 26, w - 4, 6); x.fillRect(2, wallY, w - 4, 2);
-  // windows (jali screens)
-  for (let i = 0; i < b.w; i++) {
-    if (i === b.door - b.x || i === 0 || i === b.w - 1) continue;
-    x.fillStyle = '#4a2a14'; x.fillRect(i * 16 + 3, wallY + 6, 10, 12);
-    x.fillStyle = '#e8c890'; for (let a = 0; a < 3; a++) for (let q = 0; q < 3; q++) x.fillRect(i * 16 + 4 + a * 3, wallY + 7 + q * 4, 2, 2);
+  const doorI = b.door - b.x;
+  // windows
+  if (!st.columns) for (let i = 0; i < b.w; i++) {
+    if (i === doorI || i === 0 || i === b.w - 1) continue;
+    const wx = i * 16 + 3, wy = wallY + 6;
+    if (st.win === 'arched') { x.fillStyle = '#1a2a50'; x.fillRect(wx + 1, wy + 2, 8, 10); x.beginPath(); x.arc(wx + 5, wy + 3, 4, Math.PI, 0); x.fill(); x.fillStyle = st.band; x.fillRect(wx, wy + 12, 10, 2); }
+    else if (st.win === 'shutter') { x.fillStyle = '#2a1a0a'; x.fillRect(wx + 2, wy + 2, 6, 7); x.fillStyle = '#ffd890'; x.fillRect(wx + 3, wy + 3, 4, 5); x.fillStyle = shade(st.wall, -.4); x.fillRect(wx - 1, wy + 1, 3, 9); x.fillRect(wx + 8, wy + 1, 3, 9); }
+    else { x.fillStyle = '#4a2a14'; x.fillRect(wx, wy, 10, 12); x.fillStyle = '#e8c890'; for (let a = 0; a < 3; a++) for (let q = 0; q < 3; q++) x.fillRect(wx + 1 + a * 3, wy + 1 + q * 4, 2, 2); }
   }
+  if (st.columns) { for (let i = 0; i < b.w; i++) { if (i === doorI) continue; const cx0 = i * 16 + 5; x.fillStyle = st.columns; x.fillRect(cx0, wallY + 1, 6, 26); x.fillStyle = shade(st.columns, -.18); x.fillRect(cx0 + 4, wallY + 1, 2, 26); x.fillRect(cx0 + 2, wallY + 4, 1, 20); x.fillStyle = shade(st.columns, .1); x.fillRect(cx0 - 1, wallY, 8, 2); x.fillRect(cx0 - 1, wallY + 25, 8, 2); } x.fillStyle = shade(st.wall, -.12); x.fillRect(0, wallY + 29, w, 3); }
+  if (st.shields) for (let i = 0; i < b.w; i++) { if (i === doorI) continue; const sx = i * 16 + 8, sy = wallY + 12; x.fillStyle = i % 2 ? '#c84a3a' : '#2a5a9a'; x.beginPath(); x.arc(sx, sy, 5, 0, 7); x.fill(); x.fillStyle = '#c8a040'; x.beginPath(); x.arc(sx, sy, 1.5, 0, 7); x.fill(); }
   // door
-  const dx = (b.door - b.x) * 16;
+  const dx = doorI * 16;
   x.fillStyle = '#3a1a08'; x.fillRect(dx + 2, wallY + 8, 12, 24);
-  x.fillStyle = '#6a3a1a'; x.fillRect(dx + 3, wallY + 10, 10, 22);
+  x.fillStyle = b.style === 'hadesgate' ? '#1a0a20' : '#6a3a1a'; x.fillRect(dx + 3, wallY + 10, 10, 22);
   x.fillStyle = st.band; x.beginPath(); x.arc(dx + 8, wallY + 10, 6, Math.PI, 0); x.fill();
   x.fillStyle = '#3a1a08'; x.beginPath(); x.arc(dx + 8, wallY + 11, 4.5, Math.PI, 0); x.fill();
   x.fillStyle = '#e8b030'; x.fillRect(dx + 10, wallY + 20, 2, 2);
   // roof
-  const roofH = wallY - 0;
-  if (b.style === 'palace' || b.style === 'shrine') {
-    // tiered temple roof with a curved spire (shikhara)
+  if (rt === 'tiered') {
     x.fillStyle = st.roof2; x.fillRect(0, wallY - 6, w, 6);
-    const tiers = b.style === 'palace' ? 4 : 3;
+    const tiers = top > 30 ? 4 : 3;
     for (let t = 0; t < tiers; t++) {
-      const tw = w * (1 - t * .2) - 8, ty = wallY - 6 - (t + 1) * (roofH - 10) / (tiers + .6);
-      const th = (roofH - 10) / (tiers + .6) + 1;
+      const tw = w * (1 - t * .2) - 8, ty = wallY - 6 - (t + 1) * (roofH - 10) / (tiers + .6), th = (roofH - 10) / (tiers + .6) + 1;
       x.fillStyle = t % 2 ? st.roof : st.roof2; x.fillRect((w - tw) / 2, ty, tw, th);
       x.fillStyle = shade(st.roof, .35); x.fillRect((w - tw) / 2, ty, tw, 2);
       x.fillStyle = shade(st.roof, -.35); for (let k = (w - tw) / 2 + 3; k < (w + tw) / 2 - 2; k += 6) x.fillRect(k, ty + 4, 2, th - 5);
     }
-    // finial (kalasha)
-    x.fillStyle = '#ffd040'; x.beginPath(); x.ellipse(w / 2, 6, 4, 5, 0, 0, Math.PI * 2); x.fill(); x.fillRect(w / 2 - 1, 0, 2, 4);
-    if (b.style === 'shrine') { x.fillStyle = '#ff7a1a'; x.beginPath(); x.moveTo(w / 2 + 1, 0); x.lineTo(w / 2 + 12, 4); x.lineTo(w / 2 + 1, 8); x.fill(); }
-    if (b.style === 'palace') { x.fillStyle = '#fbf2dc'; for (let i = 0; i < b.w; i += 2) { x.fillRect(i * 16 + 2, wallY - 2, 4, 30); x.fillStyle = '#e8b030'; x.fillRect(i * 16 + 1, wallY - 3, 6, 2); x.fillStyle = '#fbf2dc'; } }
+    x.fillStyle = '#ffd040'; x.beginPath(); x.ellipse(w / 2, 6, 4, 5, 0, 0, 7); x.fill(); x.fillRect(w / 2 - 1, 0, 2, 4);
+    if (st.flag) { x.fillStyle = '#ff7a1a'; x.beginPath(); x.moveTo(w / 2 + 1, 0); x.lineTo(w / 2 + 12, 4); x.lineTo(w / 2 + 1, 8); x.fill(); }
+    if (st.pillars) { for (let i = 0; i < b.w; i += 2) { x.fillStyle = '#fbf2dc'; x.fillRect(i * 16 + 2, wallY - 2, 4, 30); x.fillStyle = '#e8b030'; x.fillRect(i * 16 + 1, wallY - 3, 6, 2); } }
+  } else if (rt === 'pediment') {
+    // entablature, frieze and a low triangular pediment, Greek-temple style
+    const eY = wallY - 10;
+    x.fillStyle = st.roof2; x.fillRect(0, eY, w, 10);
+    x.fillStyle = st.band; for (let i = 2; i < w - 2; i += 8) { x.fillRect(i, eY + 3, 4, 1); x.fillRect(i + 3, eY + 3, 1, 4); x.fillRect(i, eY + 6, 4, 1); }
+    x.fillStyle = shade(st.roof2, .3); x.fillRect(0, eY, w, 1);
+    x.fillStyle = st.roof; x.beginPath(); x.moveTo(-2, eY + 1); x.lineTo(w / 2, Math.max(1, top - 2)); x.lineTo(w + 2, eY + 1); x.fill();
+    x.fillStyle = shade(st.roof, -.2); x.beginPath(); x.moveTo(10, eY - 1); x.lineTo(w / 2, Math.max(4, top + 3)); x.lineTo(w - 10, eY - 1); x.fill();
+    x.fillStyle = shade(st.roof, .3); x.fillRect(0, eY, w, 2);
+    if (st.bolt) { x.fillStyle = '#ffd040'; x.beginPath(); x.moveTo(w / 2 + 2, eY - 26); x.lineTo(w / 2 - 4, eY - 13); x.lineTo(w / 2 + 1, eY - 13); x.lineTo(w / 2 - 3, eY - 3); x.lineTo(w / 2 + 6, eY - 17); x.lineTo(w / 2 + 1, eY - 17); x.fill(); }
+    // fill the space between pediment and wall with the entablature if the roof is taller than the pediment
+    if (eY + 10 < wallY) { x.fillStyle = st.wall; x.fillRect(2, eY + 10, w - 4, wallY - eY - 10); }
+  } else if (rt === 'turf') {
+    x.fillStyle = st.roof2; x.beginPath(); x.moveTo(-1, roofH + 1); x.quadraticCurveTo(w / 2, -4, w + 1, roofH + 1); x.fill();
+    x.fillStyle = st.roof; x.beginPath(); x.moveTo(3, roofH - 2); x.quadraticCurveTo(w / 2, 0, w - 3, roofH - 2); x.fill();
+    x.fillStyle = shade(st.roof, .25); for (let i = 6; i < w - 6; i += 5) x.fillRect(i, Math.max(3, roofH - 4 - Math.sin(i / w * Math.PI) * (roofH - 8)), 1, 3);
+  } else if (rt === 'dragon') {
+    const peak = Math.max(2, top - 4);
+    x.fillStyle = st.roof2; x.beginPath(); x.moveTo(-2, roofH + 1); x.lineTo(w / 2, peak); x.lineTo(w + 2, roofH + 1); x.fill();
+    x.fillStyle = st.roof; x.beginPath(); x.moveTo(3, roofH - 1); x.lineTo(w / 2, peak + 4); x.lineTo(w - 3, roofH - 1); x.fill();
+    x.fillStyle = shade(st.roof, -.3); for (let y = peak + 8; y < roofH - 2; y += 4) { const hw = (y - peak) / (roofH - peak) * (w / 2 - 4); for (let k = w / 2 - hw; k < w / 2 + hw; k += 5) x.fillRect(k, y, 3, 1); }
+    // crossed carved gable beams with curled dragon heads
+    x.strokeStyle = '#2a1a0a'; x.lineWidth = 2; x.beginPath(); x.moveTo(w / 2 - 10, peak + 10); x.lineTo(w / 2 + 6, peak - 8); x.moveTo(w / 2 + 10, peak + 10); x.lineTo(w / 2 - 6, peak - 8); x.stroke();
+    x.fillStyle = '#c8a040'; x.fillRect(w / 2 + 5, peak - 10, 3, 3); x.fillRect(w / 2 - 8, peak - 10, 3, 3);
   } else {
     x.fillStyle = st.roof2; x.fillRect(0, roofH - 6, w, 8);
     x.fillStyle = st.roof; x.beginPath(); x.moveTo(0, roofH - 2); x.lineTo(10, 2); x.lineTo(w - 10, 2); x.lineTo(w, roofH - 2); x.fill();
     x.fillStyle = shade(st.roof, -.25); for (let y = 8; y < roofH - 4; y += 5) x.fillRect(4, y, w - 8, 1);
     x.fillStyle = shade(st.roof, .35); x.fillRect(10, 2, w - 20, 2);
-    if (b.style === 'shop') { for (let i = 0; i < w; i += 8) { x.fillStyle = (i / 8) % 2 ? '#ffffff' : '#2a6fb0'; x.fillRect(i, roofH - 6, 8, 6); } }
-    if (b.style === 'hall') { x.fillStyle = '#ff7a1a'; x.beginPath(); x.moveTo(w / 2 - 6, roofH - 10); x.lineTo(w / 2, roofH - 26); x.lineTo(w / 2 + 6, roofH - 10); x.fill(); x.fillStyle = '#ffd040'; x.beginPath(); x.moveTo(w / 2 - 3, roofH - 10); x.lineTo(w / 2, roofH - 19); x.lineTo(w / 2 + 3, roofH - 10); x.fill(); }
+    if (st.flame) { x.fillStyle = '#ff7a1a'; x.beginPath(); x.moveTo(w / 2 - 6, roofH - 10); x.lineTo(w / 2, roofH - 26); x.lineTo(w / 2 + 6, roofH - 10); x.fill(); x.fillStyle = '#ffd040'; x.beginPath(); x.moveTo(w / 2 - 3, roofH - 10); x.lineTo(w / 2, roofH - 19); x.lineTo(w / 2 + 3, roofH - 10); x.fill(); }
+    if (st.chimney) { x.fillStyle = '#3a3a40'; x.fillRect(w - 22, 0, 8, 14); x.fillStyle = '#ff7a1a'; x.fillRect(w - 20, 1, 4, 2); }
   }
+  if (st.awning) { for (let i = 0; i < w; i += 8) { x.fillStyle = (i / 8) % 2 ? '#ffffff' : st.awning; x.fillRect(i, wallY - 6, 8, 6); } }
+  if (st.snow) { x.fillStyle = '#f4f8fc'; if (rt === 'gable') { x.fillRect(8, 0, w - 16, 3); } else if (rt === 'dragon') { const peak = Math.max(2, top - 4); x.beginPath(); x.moveTo(w / 2 - 14, peak + 14); x.lineTo(w / 2, peak + 2); x.lineTo(w / 2 + 14, peak + 14); x.fill(); } else { x.beginPath(); x.moveTo(8, roofH * .45); x.quadraticCurveTo(w / 2, -2, w - 8, roofH * .45); x.lineTo(w - 12, roofH * .5); x.quadraticCurveTo(w / 2, 5, 12, roofH * .5); x.fill(); } }
   if (st.sign) {
-    const tw = Font.measure(st.sign) + 6, sx = (w - tw) / 2 | 0, sy = wallY - 12;
-    x.fillStyle = '#3a1a08'; x.fillRect(sx - 1, sy - 1, tw + 2, 11); x.fillStyle = '#6a3a1a'; x.fillRect(sx, sy, tw, 9);
-    Font.draw(x, st.sign, sx + 3, sy + 1, '#ffd040');
+    const tw = Font.measure(st.sign) + 6, sx = (w - tw) / 2 | 0, sy = wallY - (rt === 'pediment' ? 9 : 12);
+    x.fillStyle = '#3a1a08'; x.fillRect(sx - 1, sy - 1, tw + 2, 11); x.fillStyle = rt === 'pediment' ? shade(st.roof2, -.2) : '#6a3a1a'; x.fillRect(sx, sy, tw, 9);
+    Font.draw(x, st.sign, sx + 3, sy + 1, st.signCol || '#ffd040');
   }
   return { canvas: c, top };
 }
@@ -1709,7 +1922,7 @@ const npcLineCache = {};
 async function npcLine(npc, fallback) {
   if (!AI_ENDPOINT || !npc.ai) return fallback;
   if (npcLineCache[npc.id]) return npcLineCache[npc.id];
-  const raw = coerceJSON(await askAI('npc_dialogue', { npc: { name: npc.name, role: npc.ai, city: 'Indrapuri (India)' }, player: Game.player.name, progress: { beatRohan: !!Game.flags.beatRohan, beatAgni: !!Game.flags.beatAgni, beatIndra: !!Game.flags.beatIndra } }));
+  const raw = coerceJSON(await askAI('npc_dialogue', { npc: { name: npc.name, role: npc.ai, city: (c => CITIES[c].name + ' (' + CITIES[c].culture + ')')(cityOf(Game.player.map)) }, player: Game.player.name, progress: { beatRohan: !!Game.flags.beatRohan, beatAgni: !!Game.flags.beatAgni, beatIndra: !!Game.flags.beatIndra } }));
   const line = raw && Font.sanitize(raw.line, 180);
   if (line && line.length > 4) { npcLineCache[npc.id] = line; return line; }
   return fallback;
@@ -1767,7 +1980,7 @@ function addCreature(c) {
   if (Game.party.length < 6) { Game.party.push(c); return 'party'; }
   Game.storage.push(c); return 'storage';
 }
-function badgeCount() { return ['beatAgni', 'beatIndra'].filter(f => Game.flags[f]).length; }
+function badgeCount() { return ['beatIndra', 'beatZeus', 'beatOdin'].filter(f => Game.flags[f]).length; }
 function playTimeStr() { const s = Math.floor(Game.frames / 60), h = Math.floor(s / 3600), m = Math.floor(s / 60) % 60; return h + ':' + String(m).padStart(2, '0'); }
 function clockStr() { const m = Math.floor(Game.clock) % 1440; return String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0'); }
 // 0 = day, 1 = deep night
@@ -1987,7 +2200,7 @@ function promptIdea() {
 // =====================================================================
 //  WORLD: maps, NPCs, overworld scene
 // =====================================================================
-const SOLID = new Set(['T', '|', 'L', 'S', 'R', '~', 'o', 'w', 'C', 'F', 'P', 'K', 'A', 'X']);
+const SOLID = new Set(['T', '|', 'L', 'S', 'R', '~', 'o', 'i', 'w', 'C', 'F', 'P', 'K', 'A', 'X']);
 function blank(w, h, ch) { return Array.from({ length: h }, () => Array(w).fill(ch)); }
 function R(t, x, y, w, h, ch) { for (let j = y; j < y + h; j++) for (let i = x; i < x + w; i++) if (t[j] && t[j][i] !== undefined) t[j][i] = ch; }
 function fromRows(rows) { return rows.map(r => r.split('')); }
@@ -2022,7 +2235,7 @@ function buildMaps() {
     for (const [x, y] of [[2, 9], [27, 9], [10, 11], [19, 11]]) t[y][x] = 'L';
     t[22][16] = 'S'; t[10][13] = 'f';
     MAPS.city = {
-      id: 'city', name: 'Indrapuri', outdoor: true, music: 'city', t, w, h,
+      id: 'city', name: 'Indrapuri', outdoor: true, music: 'city', theme: 'india', bg: 'route', particles: 'petals', t, w, h,
       buildings: [
         { x: 11, y: 2, w: 8, h: 7, style: 'palace', door: 14, to: ['palace', 6, 12] },
         { x: 2, y: 3, w: 6, h: 5, style: 'hall', door: 4, to: ['hall', 5, 10] },
@@ -2036,7 +2249,7 @@ function buildMaps() {
       signs: { '16,22': 'SOUTH: Monsoon Trail. Wild creatures roam the tall grass. Pilgrims gather by the river.' },
       npcs: [
         { id: 'guard', name: 'Palace Guard', look: 'guard', x: 14, y: 9, dir: 'down', when: () => !Game.flags.beatAgni, lines: ['Halt! Only those who have passed through Agni\'s flame may enter Vaijayanta.', 'The Fire Hall stands on the west side of the plaza.'] },
-        { id: 'guard2', name: 'Palace Guard', look: 'guard', x: 13, y: 9, dir: 'right', when: () => !!Game.flags.beatAgni, lines: ['Agni\'s fire did not stop you. Enter - the King of the Heavens awaits.'] },
+        { id: 'guard2', name: 'Palace Guard', look: 'guard', x: 13, y: 9, dir: 'right', when: () => !!Game.flags.beatAgni, lines: ['Agni\'s fire did not stop you. Enter - Vayu, Varuna and the King of the Heavens await.'] },
         { id: 'acolyte', name: 'Fire Acolyte', look: 'acolyte', x: 4, y: 8, dir: 'down', when: () => !Game.flags.beatRohan, lines: ['Lord Agni receives only Tamers who have proven their bond on the road.', 'Pilgrim Rohan waits by the river on the Monsoon Trail. Defeat him first!'] },
         { id: 'acolyte2', name: 'Fire Acolyte', look: 'acolyte', x: 3, y: 9, dir: 'right', when: () => !!Game.flags.beatRohan, lines: ['Rohan spoke well of you. Lord Agni is ready.'] },
         { id: 'flower', name: 'Malini', look: 'flower', x: 13, y: 16, dir: 'left', ai: 'flower seller at the lotus pond who loves Nagling', wander: 1, lines: ['Marigolds for the temple, lotuses for the pond! Have you seen the Naglings? They guard pearls under the lotus leaves.'] },
@@ -2064,9 +2277,9 @@ function buildMaps() {
     R(t, 2, 43, 20, 1, 'R'); t[42][13] = 'S';
     for (const [x, y] of [[2, 16], [21, 16], [21, 26], [2, 30], [21, 30], [9, 26], [13, 26]]) t[y][x] = 'T';
     MAPS.route = {
-      id: 'route', name: 'Monsoon Trail', outdoor: true, music: 'route', t, w, h, buildings: [],
+      id: 'route', name: 'Monsoon Trail', outdoor: true, music: 'route', theme: 'india', bg: 'route', particles: 'petals', t, w, h, buildings: [],
       warps: [{ x: 11, y: 0, to: ['city', 14, 24, 'up'] }, { x: 12, y: 0, to: ['city', 15, 24, 'up'] }],
-      signs: { '10,31': 'SACRED GROVE ahead. The blue-green grass hides stronger creatures (Lv 10-16).', '13,42': 'The road beyond is sealed by a wall of monsoon mist. (Other cities arrive in a later stage of MYTHBOUND.)' },
+      signs: { '10,31': 'SACRED GROVE ahead. The blue-green grass hides stronger creatures (Lv 10-16).', '13,42': '@travel' },
       npcs: [
         { id: 'rohan', name: 'Pilgrim Rohan', look: 'pilgrim', x: 14, y: 17, dir: 'left', trainer: 'rohan', sight: 4, lines: ['May your road be gentle. The Fire Hall in Indrapuri is open to you now.'] },
         { id: 'sage', name: 'Wandering Sage', look: 'sage', x: 7, y: 30, dir: 'down', ai: 'wandering sage who gives advice about taming creatures', lines: ['Weaken a creature before you throw an orb. Sleep or Bind makes the Nagastra Orb sing.', 'A Varunastra Orb calms Ember creatures as water calms fire.'] },
@@ -2085,10 +2298,11 @@ function buildMaps() {
     npcs: [{ id: 'priest', name: 'Priestess Gauri', look: 'priest', x: 4, y: 2, dir: 'down', role: 'heal' }, { id: 'sanctum', name: 'Sanctum Stone', look: 'stone', x: 7, y: 2, dir: 'down', role: 'storage' }], exit: ['city', 24, 8, 'down'] };
   MAPS.house = { id: 'house', name: 'Elder\'s House', music: 'city', t: fromRows(['wwwwwwwwww', 'wKKwwwwKKw', 'pppppppppp', 'ppcccccppp', 'ppcccccppp', 'pppppppppp', 'pppppppppp', 'wwwwmwwwww']), buildings: [], signs: {}, items: [],
     npcs: [{ id: 'elder', name: 'Elder Bhaskar', look: 'elder', x: 4, y: 2, dir: 'down', role: 'elder', ai: 'kind village elder who gave the player their first creature' }], exit: ['city', 23, 17, 'down'] };
-  MAPS.hall = { id: 'hall', name: 'Fire Hall of Agni', music: 'boss', t: fromRows(['wwwwwwwwwwww', 'wwwwFAAFwwww', 'pFppcccppFpp', 'ppppcccppppp', 'pFppcccppFpp', 'ppppcccppppp', 'pFppcccppFpp', 'ppppcccppppp', 'pFppcccppFpp', 'ppppcccppppp', 'ppppcccppppp', 'wwwwwmwwwwww']), buildings: [], signs: {}, items: [],
+  MAPS.hall = { id: 'hall', name: 'Fire Hall of Agni', music: 'boss', bg: 'hall', t: fromRows(['wwwwwwwwwwww', 'wwwwFAAFwwww', 'pFppcccppFpp', 'ppppcccppppp', 'pFppcccppFpp', 'ppppcccppppp', 'pFppcccppFpp', 'ppppcccppppp', 'pFppcccppFpp', 'ppppcccppppp', 'ppppcccppppp', 'wwwwwmwwwwww']), buildings: [], signs: {}, items: [],
     npcs: [{ id: 'agni', name: 'Agni', look: 'agni', x: 5, y: 2, dir: 'down', trainer: 'agni', boss: true }], exit: ['city', 4, 8, 'down'] };
-  MAPS.palace = { id: 'palace', name: 'Vaijayanta Palace', music: 'boss', t: fromRows(['wwwwwwwwwwwwww', 'wwwwwwAAwwwwww', 'gPgggcccgggPgg', 'gggggcccgggggg', 'gPgggcccgggPgg', 'gggggcccgggggg', 'gPgggcccgggPgg', 'gggggcccgggggg', 'gPgggcccgggPgg', 'gggggcccgggggg', 'gPgggcccgggPgg', 'gggggcccgggggg', 'gggggcccgggggg', 'wwwwwwmwwwwwww']), buildings: [], signs: {}, items: [],
-    npcs: [{ id: 'indra', name: 'Indra', look: 'indra', x: 6, y: 2, dir: 'down', trainer: 'indra', boss: true }], exit: ['city', 14, 9, 'down'] };
+  MAPS.palace = { id: 'palace', name: 'Vaijayanta Palace', music: 'boss', bg: 'palace', t: fromRows(['wwwwwwwwwwwwww', 'wwwwwwAAwwwwww', 'gPgggcccgggPgg', 'gggggcccgggggg', 'gPgggcccgggPgg', 'gggggcccgggggg', 'gPgggcccgggPgg', 'gggggcccgggggg', 'gPgggcccgggPgg', 'gggggcccgggggg', 'gPgggcccgggPgg', 'gggggcccgggggg', 'gggggcccgggggg', 'wwwwwwmwwwwwww']), buildings: [], signs: {}, items: [],
+    npcs: [{ id: 'indra', name: 'Indra', look: 'indra', x: 6, y: 2, dir: 'down', trainer: 'indra', boss: true }, { id: 'vayu', name: 'Vayu', look: 'vayu', x: 3, y: 7, dir: 'right', trainer: 'vayu', boss: true }, { id: 'varuna', name: 'Varuna', look: 'varuna', x: 10, y: 7, dir: 'left', trainer: 'varuna', boss: true }], exit: ['city', 14, 9, 'down'] };
+  buildMoreCities();
   for (const id in MAPS) { const m = MAPS[id]; m.h = m.t.length; m.w = m.t[0].length; m.buildings.forEach(b => b.img = renderBuilding(b)); }
 }
 
@@ -2145,6 +2359,7 @@ class Overworld {
     const b = this.buildingAt(p.x, p.y);
     if (b && b.to) { Sound.sfx('door'); return this.run(() => this.warp(b.to[0], b.to[1], b.to[2], 'up')); }
     const wp = (m.warps || []).find(w => w.x === p.x && w.y === p.y);
+    if (wp && wp.to[0] === '@travel') return this.run(() => travelGate());
     if (wp) return this.run(() => this.warp(...wp.to));
     if (this.tileAt(p.x, p.y) === 'm' && m.exit) { Sound.sfx('door'); return this.run(() => this.warp(...m.exit)); }
     // item pickup
@@ -2182,7 +2397,7 @@ class Overworld {
   async trainerBattle(n) {
     const tr = TRAINERS[n.trainer];
     await say(tr.intro, { speaker: tr.name });
-    const res = await startBattle({ kind: 'trainer', trainerId: n.trainer, team: tr.team.map(([s, l]) => newCreature(s, l)) });
+    const res = await startBattle({ kind: 'trainer', trainerId: n.trainer, team: makeTeam(tr) });
     if (res === 'win') this.refreshNPCs();
   }
   run(fn) { this.busy = true; return Promise.resolve().then(fn).catch(e => console.error(e)).finally(() => { this.busy = false; Input.clear(); }); }
@@ -2196,23 +2411,25 @@ class Overworld {
     const n = this.npcs.find(q => q.x === fx && q.y === fy);
     if (n) { n.dir = OPP[this.p.dir]; return this.run(() => this.talk(n)); }
     const sign = this.map.signs[fx + ',' + fy];
+    if (sign === '@travel') return this.run(() => travelGate());
     if (sign) return this.run(() => say(sign));
   }
   async talk(n) {
     if (n.trainer) {
       const tr = TRAINERS[n.trainer];
       if (Game.flags[tr.flag] && n.trainer === 'indra' && !Game.flags.gotBrahmastra) { Game.flags.gotBrahmastra = true; addItem('brahmastra', 1); Sound.sfx('pickup'); await say(['INDRA: Before you go - take the Brahmastra Orb. It tames any wild creature without fail, but only once.', 'You received the BRAHMASTRA ORB!'], { speaker: 'Indra' }); return; }
-      if (Game.flags[tr.flag]) { await say(n.boss ? (n.trainer === 'indra' ? ['INDRA: The rains will follow you, Tamer.', 'Other gods watch from distant cities. Their roads are still sealed by mist - for now.'] : ['AGNI: Carry the flame with you. Vaijayanta awaits.']) : n.lines, { speaker: n.name }); return; }
+      if (Game.flags[tr.flag]) { await say(tr.after || n.lines || ['...'], { speaker: n.name }); return; }
+      if (tr.requires && !tr.requires.every(f => Game.flags[f])) { await say(tr.blocked, { speaker: n.name }); return; }
       if (n.boss) {
-        const c = await ask(n.trainer === 'indra' ? 'The air hums with thunder. Begin the Trial of the Heavens?' : 'The sacred fire roars. Challenge Agni, Lieutenant of Indra?');
+        const c = await ask(tr.confirm || `Challenge ${tr.name}?`);
         if (c !== 0) return;
       }
       return this.trainerBattle(n);
     }
-    if (n.role === 'shop') { await say('Welcome to the Bazaar! Orbs, herbs and holy water - all fairly priced.', { speaker: n.name }); await openShop(); return; }
+    if (n.role === 'shop') { await say(this.map.greet || 'Welcome to the Bazaar! Orbs, herbs and holy water - all fairly priced.', { speaker: n.name }); await openShop(); return; }
     if (n.role === 'heal') {
       const c = await ask('Shall I let your companions rest in the shrine\'s light?', ['Yes', 'No'], { speaker: n.name });
-      if (c === 0) { Game.flags.lastShrine = true; await fadeOut(10); healParty(); Sound.sfx('heal'); await wait(30); await fadeIn(10); await say('Your companions are fully restored. Return whenever you need.', { speaker: n.name }); }
+      if (c === 0) { Game.flags.shrine = [this.map.id, this.p.x, this.p.y, this.p.dir]; await fadeOut(10); healParty(); Sound.sfx('heal'); await wait(30); await fadeIn(10); await say('Your companions are fully restored. Return whenever you need.', { speaker: n.name }); }
       return;
     }
     if (n.role === 'storage') { await say('The Sanctum Stone glows. Creatures beyond your party of six rest here.'); await openSanctum(); return; }
@@ -2251,10 +2468,13 @@ class Overworld {
     if (!this.map.outdoor) return;
     const night = nightLevel();
     if (this.parts.length < 26 && chance(.2)) {
-      if (night > .5) this.parts.push({ k: 'fly', x: this.cam.x + Math.random() * W, y: this.cam.y + Math.random() * H, vx: 0, vy: 0, life: 300, ph: Math.random() * 6 });
+      const kind = this.map.particles || 'petals';
+      if (kind === 'snow') this.parts.push({ k: 'snow', x: this.cam.x + Math.random() * (W + 80) - 40, y: this.cam.y - 8, vx: -.1 + Math.random() * .3, vy: .4 + Math.random() * .5, life: 700, ph: Math.random() * 6, s: chance(.3) ? 2 : 1 });
+      else if (night > .5) this.parts.push({ k: 'fly', x: this.cam.x + Math.random() * W, y: this.cam.y + Math.random() * H, vx: 0, vy: 0, life: 300, ph: Math.random() * 6 });
+      else if (kind === 'leaves') this.parts.push({ k: 'petal', x: this.cam.x + Math.random() * (W + 80) - 40, y: this.cam.y - 8, vx: .4 + Math.random() * .4, vy: .25 + Math.random() * .25, life: 700, ph: Math.random() * 6, c: pick(['#7a9a4a', '#a8c070', '#5a7a3a']) });
       else this.parts.push({ k: 'petal', x: this.cam.x + Math.random() * (W + 80) - 40, y: this.cam.y - 8, vx: .2 + Math.random() * .3, vy: .35 + Math.random() * .3, life: 700, ph: Math.random() * 6, c: pick(['#ff9f1a', '#ffd23a', '#ff6a3a']) });
     }
-    for (const q of this.parts) { q.life--; q.ph += .05; if (q.k === 'petal') { q.x += q.vx + Math.sin(q.ph) * .4; q.y += q.vy; } else { q.x += Math.sin(q.ph * 1.3) * .3; q.y += Math.cos(q.ph) * .25; } }
+    for (const q of this.parts) { q.life--; q.ph += .05; if (q.k === 'petal' || q.k === 'snow') { q.x += q.vx + Math.sin(q.ph) * .4; q.y += q.vy; } else { q.x += Math.sin(q.ph * 1.3) * .3; q.y += Math.cos(q.ph) * .25; } }
     this.parts = this.parts.filter(q => q.life > 0 && q.y < this.cam.y + H + 10);
   }
   draw(ctx) {
@@ -2265,7 +2485,7 @@ class Overworld {
     const cx = Math.round(this.cam.x), cy = Math.round(this.cam.y);
     ctx.fillStyle = '#0b0714'; ctx.fillRect(0, 0, W, H);
     const x0 = Math.max(0, Math.floor(cx / 16)), y0 = Math.max(0, Math.floor(cy / 16)), x1 = Math.min(m.w - 1, x0 + 21), y1 = Math.min(m.h - 1, y0 + 16);
-    for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) ctx.drawImage(Tiles.get(m.t[y][x], Game.frames, x, y), x * 16 - cx, y * 16 - cy);
+    for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) ctx.drawImage(Tiles.get(m.t[y][x], Game.frames, x, y, m.theme), x * 16 - cx, y * 16 - cy);
     // buildings
     for (const b of m.buildings) ctx.drawImage(b.img.canvas, b.x * 16 - cx, b.y * 16 - cy - b.img.top);
     // items
@@ -2287,7 +2507,7 @@ class Overworld {
       ctx.fillStyle = 'rgba(0,0,0,.25)'; ctx.fillRect(ex - cx + 3, ey - cy + 13, 10, 3);
       ctx.drawImage(fr[dir][walkF], Math.round(ex - cx), Math.round(ey - cy - 3));
       if (en.e.alert) { drawWin(ctx, ex - cx + 3, ey - cy - 20, 11, 13); Font.draw(ctx, '!', ex - cx + 8, ey - cy - 17, UI.red); }
-      if (en.e.boss && !Game.flags[TRAINERS[en.e.trainer].flag]) { const a = .5 + .5 * Math.sin(Game.frames / 15); ctx.globalAlpha = a * .5; ctx.fillStyle = en.e.trainer === 'indra' ? '#9fe4ff' : '#ff7a1a'; ctx.beginPath(); ctx.arc(ex - cx + 8, ey - cy + 6, 11, 0, 7); ctx.fill(); ctx.globalAlpha = 1; ctx.drawImage(fr[dir][walkF], Math.round(ex - cx), Math.round(ey - cy - 3)); }
+      if (en.e.boss && !Game.flags[TRAINERS[en.e.trainer].flag]) { const a = .5 + .5 * Math.sin(Game.frames / 15); ctx.globalAlpha = a * .5; ctx.fillStyle = TRAINERS[en.e.trainer].god ? '#9fe4ff' : '#ff7a1a'; ctx.beginPath(); ctx.arc(ex - cx + 8, ey - cy + 6, 11, 0, 7); ctx.fill(); ctx.globalAlpha = 1; ctx.drawImage(fr[dir][walkF], Math.round(ex - cx), Math.round(ey - cy - 3)); }
     }
     // day / night tint + lamp glow
     if (m.outdoor) {
@@ -2301,11 +2521,15 @@ class Overworld {
           const g = ctx.createRadialGradient(gx, gy, 1, gx, gy, rr); g.addColorStop(0, `rgba(255,190,90,${.55 * n})`); g.addColorStop(1, 'rgba(255,150,50,0)');
           ctx.fillStyle = g; ctx.fillRect(gx - rr, gy - rr, rr * 2, rr * 2);
         }
+        if (m.theme === 'norse' && n > .4) { // aurora
+          for (let k = 0; k < 3; k++) { ctx.fillStyle = `rgba(${k === 1 ? '120,255,200' : '80,200,255'},${(n - .4) * .22})`; ctx.beginPath(); ctx.moveTo(0, 10 + k * 10); for (let xx = 0; xx <= W; xx += 16) ctx.lineTo(xx, 14 + k * 10 + Math.sin(xx / 40 + Game.frames / 90 + k) * 10); ctx.lineTo(W, 0); ctx.lineTo(0, 0); ctx.fill(); }
+        }
         ctx.globalCompositeOperation = 'source-over';
       }
       for (const q of this.parts) {
         const qx = Math.round(q.x - cx), qy = Math.round(q.y - cy);
-        if (q.k === 'petal') { ctx.fillStyle = q.c; ctx.fillRect(qx, qy, 2, 1); ctx.fillRect(qx + (Math.sin(q.ph) > 0 ? 1 : 0), qy + 1, 1, 1); }
+        if (q.k === 'snow') { ctx.fillStyle = '#ffffff'; ctx.fillRect(qx, qy, q.s, q.s); }
+        else if (q.k === 'petal') { ctx.fillStyle = q.c; ctx.fillRect(qx, qy, 2, 1); ctx.fillRect(qx + (Math.sin(q.ph) > 0 ? 1 : 0), qy + 1, 1, 1); }
         else { const a = .5 + .5 * Math.sin(q.ph * 3); ctx.fillStyle = `rgba(220,255,140,${a})`; ctx.fillRect(qx, qy, 1, 1); ctx.fillStyle = `rgba(220,255,140,${a * .3})`; ctx.fillRect(qx - 1, qy - 1, 3, 3); }
       }
     }
@@ -2322,6 +2546,206 @@ function drawSanctumStone(ctx, x, y) {
   const a = .5 + .5 * Math.sin(Game.frames / 12); ctx.fillStyle = `rgba(120,220,255,${.4 + a * .5})`; ctx.fillRect(x + 6, y + 1, 4, 6); ctx.fillRect(x + 7, y, 2, 8);
 }
 
+// ---- 10_world_cities.js ----
+// =====================================================================
+//  STAGE 3 WORLD (part 1): Olympos (Greece) and Asgard (Norse), world map travel
+// =====================================================================
+Object.assign(LOOKS, {
+  vayu: { hair: '#e8f0f8', skin: '#c8a888', outfit: '#9fe4ff', accent: '#ffffff', pants: '#5a8ab8', style: 'long', crown: true, style2: 'robe' },
+  varuna: { hair: '#1a2a4a', skin: '#5a7ab8', outfit: '#1e5a9a', accent: '#e8c040', pants: '#0e3a6a', style: 'long', crown: true, beard: true, style2: 'robe' },
+  hoplite: { hair: '#2a1a10', skin: '#c89070', outfit: '#c8402a', accent: '#e8c040', pants: '#f0e8d8', style: 'short', crown: true },
+  oracle: { hair: '#2a1a2a', skin: '#d8a880', outfit: '#7a4ab8', accent: '#e8c040', pants: '#7a4ab8', style: 'long', style2: 'robe' },
+  philosopher: { hair: '#d8d8d8', skin: '#c89070', outfit: '#f4f2ea', accent: '#2a5ab0', pants: '#f4f2ea', style: 'short', beard: true, style2: 'robe' },
+  fisher: { hair: '#3a2a1a', skin: '#b87a50', outfit: '#3a6ab8', accent: '#e8e0c8', pants: '#5a4a3a', style: 'short', beard: true },
+  potter: { hair: '#2a1a10', skin: '#d8a070', outfit: '#c8683a', accent: '#f4f2ea', pants: '#7a5030', style: 'short' },
+  gr_clerk: { hair: '#4a2a1a', skin: '#d8a880', outfit: '#2a5ab0', accent: '#ffffff', pants: '#1a3a80', style: 'bun' },
+  gr_priest: { hair: '#2a1a10', skin: '#d8a880', outfit: '#ffffff', accent: '#e8c040', pants: '#ffffff', style: 'long', style2: 'robe' },
+  ares: { hair: '#3a1a10', skin: '#c88a60', outfit: '#a82a1a', accent: '#e8c040', pants: '#5a1a10', style: 'short', crown: true, beard: true },
+  poseidon: { hair: '#d8e0e8', skin: '#c8a080', outfit: '#1e78d0', accent: '#e8c040', pants: '#1e78d0', style: 'long', beard: true, crown: true, style2: 'robe' },
+  hades: { hair: '#1a1020', skin: '#b8a0b0', outfit: '#3a2a4a', accent: '#c8a0ff', pants: '#2a1a3a', style: 'long', beard: true, crown: true, style2: 'robe' },
+  zeus: { hair: '#f0f0f0', skin: '#d8a880', outfit: '#f4f2ea', accent: '#e8c040', pants: '#2a5ab0', style: 'long', beard: true, crown: true, style2: 'robe' },
+  viking: { hair: '#c8902a', skin: '#e8c0a0', outfit: '#6a4a2a', accent: '#c8c0b0', pants: '#3a3a4a', style: 'long', beard: true },
+  shieldmaiden: { hair: '#e8c060', skin: '#f0c8a8', outfit: '#5a6a7a', accent: '#c8402a', pants: '#3a2a20', style: 'long' },
+  skald: { hair: '#8a4a20', skin: '#e8c0a0', outfit: '#2a5a3a', accent: '#c8a040', pants: '#3a2a20', style: 'short', beard: true },
+  carver: { hair: '#c8c8c8', skin: '#e0b898', outfit: '#4a5a6a', accent: '#c8a040', pants: '#2a2a3a', style: 'short', beard: true },
+  sledkid: { hair: '#f0d070', skin: '#f0c8a8', outfit: '#c84a3a', accent: '#ffffff', pants: '#2a3a5a', style: 'short' },
+  no_clerk: { hair: '#c8702a', skin: '#f0c8a8', outfit: '#3a5a7a', accent: '#e8d8b0', pants: '#3a2a20', style: 'bun' },
+  no_priest: { hair: '#f0e8d0', skin: '#f0c8a8', outfit: '#e8e8f0', accent: '#5a8a6a', pants: '#e8e8f0', style: 'long', style2: 'robe' },
+  einherjar: { hair: '#6a4a2a', skin: '#e0b898', outfit: '#7a7a8a', accent: '#c8a040', pants: '#3a3a4a', style: 'short', beard: true, crown: true },
+  thor: { hair: '#c8402a', skin: '#e8b090', outfit: '#5a6a7a', accent: '#c8402a', pants: '#3a3a4a', style: 'long', beard: true },
+  tyr: { hair: '#6a4a2a', skin: '#e0b898', outfit: '#7a7a8a', accent: '#c8a040', pants: '#4a3a2a', style: 'short', beard: true },
+  heimdall: { hair: '#f0e8c0', skin: '#e8c0a0', outfit: '#e8e8f0', accent: '#e8c040', pants: '#c8a040', style: 'long' },
+  odin: { hair: '#c8c8c8', skin: '#d8b090', outfit: '#2a3a6a', accent: '#8a8a9a', pants: '#2a3a6a', style: 'long', beard: true, style2: 'robe' },
+});
+const HALL_ROWS = ['wwwwwwwwwwww', 'wwwwDAADwwww', 'pDppcccppDpp', 'ppppcccppppp', 'pDppcccppDpp', 'ppppcccppppp', 'pDppcccppDpp', 'ppppcccppppp', 'pDppcccppDpp', 'ppppcccppppp', 'ppppcccppppp', 'wwwwwmwwwwww'];
+const PALACE_ROWS = ['wwwwwwwwwwwwww', 'wwwwwwAAwwwwww', 'gDgggcccgggDgg', 'gggggcccgggggg', 'gDgggcccgggDgg', 'gggggcccgggggg', 'gDgggcccgggDgg', 'gggggcccgggggg', 'gDgggcccgggDgg', 'gggggcccgggggg', 'gDgggcccgggDgg', 'gggggcccgggggg', 'gggggcccgggggg', 'wwwwwwmwwwwwww'];
+const SHOP_ROWS = ['wwwwwwwwww', 'wKKwwwwKKw', 'pppppppppp', 'ppCCCCCCpp', 'pppppppppp', 'ppcccccppp', 'pppppppppp', 'wwwwmwwwww'];
+const SHRINE_ROWS = ['wwwwwwwwww', 'wwwAAwwwKw', 'ppppppppKp', 'ppppccpppp', 'ppppccpppp', 'ppppccpppp', 'ppppccpppp', 'wwwwmwwwww'];
+function interior(id, name, theme, rows, deco, npcs, exit, extra = {}) {
+  MAPS[id] = Object.assign({ id, name, theme, music: extra.music || theme, t: fromRows(rows.map(r => r.replace(/D/g, deco))), buildings: [], signs: {}, items: [], npcs, exit }, extra);
+}
+function buildMoreCities() {
+  // ======================= OLYMPOS (Greece) =======================
+  {
+    const w = 32, h = 30, t = blank(w, h, '.');
+    R(t, 0, 0, w, 2, 'T'); R(t, 0, h - 1, w, 1, 'T'); R(t, 0, 0, 1, h, 'T'); R(t, w - 1, 0, 1, h, 'T');
+    R(t, 2, 8, 28, 3, '='); R(t, 15, 11, 2, 19, '_');
+    R(t, 5, 16, 1, 1, '_'); R(t, 25, 16, 1, 1, '_'); R(t, 11, 16, 1, 1, '_'); R(t, 20, 16, 1, 1, '_');
+    R(t, 5, 17, 10, 1, '_'); R(t, 17, 17, 9, 1, '_');
+    R(t, 2, 19, 11, 7, ','); R(t, 18, 18, 5, 4, ':');
+    R(t, 21, 22, 10, 1, '_'); R(t, 21, 23, 10, 6, '~'); R(t, 26, 22, 1, 6, 'B');
+    R(t, 8, 11, 5, 1, 'f'); R(t, 18, 11, 5, 1, 'f'); R(t, 2, 26, 4, 1, 'f');
+    for (const [x, y] of [[2, 11], [29, 11], [13, 25], [18, 26], [19, 27], [2, 27], [10, 27], [6, 27], [1, 2], [30, 2], [10, 2], [21, 2]]) t[y][x] = 'T';
+    for (const [x, y] of [[2, 8], [29, 8], [12, 10], [19, 10]]) t[y][x] = 'L';
+    t[27][14] = 'S';
+    MAPS.greece = {
+      id: 'greece', name: 'Olympos', outdoor: true, music: 'greece', theme: 'greece', bg: 'greece', particles: 'leaves', t, w, h,
+      buildings: [
+        { x: 12, y: 2, w: 8, h: 6, style: 'zeustemple', door: 15, to: ['zeus_temple', 6, 12] },
+        { x: 2, y: 3, w: 7, h: 5, style: 'arena', door: 5, to: ['ares_hall', 5, 10] },
+        { x: 23, y: 3, w: 7, h: 5, style: 'hadesgate', door: 26, to: ['hades_hall', 5, 10] },
+        { x: 3, y: 12, w: 6, h: 4, style: 'gr_shop', door: 5, to: ['greece_shop', 4, 6] },
+        { x: 23, y: 12, w: 6, h: 4, style: 'gr_shrine', door: 25, to: ['greece_shrine', 4, 6] },
+        { x: 9, y: 12, w: 5, h: 4, style: 'gr_house', door: 11, locked: 'Someone inside is practising the lyre. Badly.' },
+        { x: 18, y: 12, w: 5, h: 4, style: 'gr_house2', door: 20, locked: 'A sign: "Gone to the theatre. Back after the tragedy."' },
+      ],
+      warps: [{ x: 15, y: 29, to: ['@travel'] }, { x: 16, y: 29, to: ['@travel'] }],
+      signs: { '14,27': 'SOUTH GATE: the Mist Road. Walk through the gate to travel to other cities.' },
+      npcs: [
+        { id: 'gr_guard', name: 'Temple Guard', look: 'hoplite', x: 15, y: 8, dir: 'down', when: () => !(Game.flags.beatAres && Game.flags.beatPoseidon && Game.flags.beatHades), lines: ['Only those who have faced Ares, Poseidon and Hades may climb to the Temple of Zeus.', 'Ares fights in the arena to the west, Hades waits behind the gate to the east, and Poseidon stands at the end of the pier.'] },
+        { id: 'gr_guard2', name: 'Temple Guard', look: 'hoplite', x: 14, y: 8, dir: 'right', when: () => !!(Game.flags.beatAres && Game.flags.beatPoseidon && Game.flags.beatHades), lines: ['The three have spoken for you. Go up - the King of Olympos is waiting.'] },
+        { id: 'poseidon', name: 'Poseidon', look: 'poseidon', x: 26, y: 27, dir: 'up', trainer: 'poseidon', boss: true },
+        { id: 'nikos', name: 'Hoplite Nikos', look: 'hoplite', x: 13, y: 21, dir: 'right', trainer: 'nikos', sight: 2, lines: ['A good fight! The lieutenants are ready for you.'] },
+        { id: 'kallisto', name: 'Oracle Kallisto', look: 'oracle', x: 19, y: 24, dir: 'left', trainer: 'kallisto', sight: 3, lines: ['I foresee... that you should visit the shrine. Just a hunch.'] },
+        { id: 'philo', name: 'Philosopher Theon', look: 'philosopher', x: 20, y: 9, dir: 'down', ai: 'cheerful philosopher in the agora who answers questions with more questions', lines: ['Is a creature tamed because it obeys you, or because it trusts you? Think about it!', 'They say Zeus tests hospitality. Be kind to strangers - one of them might be a god.'] },
+        { id: 'fisher', name: 'Fisherman Petros', look: 'fisher', x: 23, y: 21, dir: 'left', ai: 'old fisherman who tells respectful tales of Poseidon and his sea-horses', lines: ['Poseidon himself stands on that pier some days. Bow before you challenge him!', 'Pegafoals are born from sea-foam. Watch the waves at dawn.'] },
+        { id: 'potter', name: 'Little Daphne', look: 'potter', x: 10, y: 17, dir: 'down', wander: 2, ai: 'child potter who paints creatures on vases', lines: ['I paint creatures on vases! Gorglings are hard - their hair keeps hiding.', 'Water beats fire, but did you know Stone shrugs off Storm completely?'] },
+        { id: 'gr_gate', name: 'Gatekeeper', look: 'hoplite', x: 17, y: 28, dir: 'left', lines: ['The Mist Road connects the eight mythic cities. Walk through the gate behind me to travel.', 'You can also travel from your menu while outdoors.'] },
+      ],
+      encounters: {
+        ',': { lv: [16, 22], table: [['pegafoal', 25], ['gorgling', 25], ['minotot', 22], ['hydrelle', 10], ['chimerant', 8], ['cerbepup', 10, 'night']] },
+        ':': { lv: [22, 27], table: [['hydrelle', 18], ['cerbepup', 18, 'night'], ['chimerant', 18], ['gorgling', 14], ['minotot', 14], ['pegafoal', 10], ['cyclite', 6]] },
+      },
+      items: [{ id: 'g1', x: 4, y: 24, item: 'soma', n: 3 }, { id: 'g2', x: 22, y: 19, item: 'vayavyastra', n: 2 }, { id: 'g3', x: 9, y: 26, item: 'gangajal', n: 1 }],
+    };
+    interior('greece_shop', 'Agora Market', 'greece', SHOP_ROWS, 'p', [{ id: 'gr_clerk', name: 'Shopkeeper Eleni', look: 'gr_clerk', x: 4, y: 2, dir: 'down', role: 'shop' }], ['greece', 5, 16, 'down']);
+    interior('greece_shrine', 'Shrine of Asclepius', 'greece', SHRINE_ROWS, 'p', [{ id: 'gr_priest', name: 'Priestess Ione', look: 'gr_priest', x: 4, y: 2, dir: 'down', role: 'heal' }, { id: 'sanctum', name: 'Sanctum Stone', look: 'stone', x: 7, y: 2, dir: 'down', role: 'storage' }], ['greece', 25, 16, 'down']);
+    interior('ares_hall', 'Arena of Ares', 'greece', HALL_ROWS, 'F', [{ id: 'ares', name: 'Ares', look: 'ares', x: 5, y: 2, dir: 'down', trainer: 'ares', boss: true }], ['greece', 5, 8, 'down'], { music: 'boss', bg: 'arena' });
+    interior('hades_hall', 'Halls of Hades', 'greece', HALL_ROWS, 'F', [{ id: 'hades', name: 'Hades', look: 'hades', x: 5, y: 2, dir: 'down', trainer: 'hades', boss: true }], ['greece', 26, 8, 'down'], { music: 'boss', bg: 'underworld' });
+    interior('zeus_temple', 'Temple of Zeus', 'greece', PALACE_ROWS, 'P', [{ id: 'zeus', name: 'Zeus', look: 'zeus', x: 6, y: 2, dir: 'down', trainer: 'zeus', boss: true }], ['greece', 15, 8, 'down'], { music: 'boss', bg: 'olympos' });
+  }
+  // ======================= ASGARD (Norse) =======================
+  {
+    const w = 32, h = 30, t = blank(w, h, '.');
+    R(t, 0, 0, w, 2, 'T'); R(t, 0, h - 1, w, 1, 'T'); R(t, 0, 0, 1, h, 'T'); R(t, w - 1, 0, 1, h, 'T');
+    R(t, 2, 8, 28, 3, '='); R(t, 15, 11, 2, 19, '_');
+    R(t, 5, 16, 1, 1, '_'); R(t, 25, 16, 1, 1, '_'); R(t, 11, 16, 1, 1, '_'); R(t, 20, 16, 1, 1, '_');
+    R(t, 5, 17, 10, 1, '_'); R(t, 17, 17, 9, 1, '_');
+    R(t, 2, 18, 11, 5, ','); R(t, 18, 18, 5, 3, ':');
+    R(t, 2, 24, 9, 5, '~'); for (const [x, y] of [[4, 25], [7, 26], [3, 27], [9, 25], [6, 28]]) t[y][x] = 'i';
+    R(t, 21, 22, 10, 7, '~'); R(t, 26, 22, 1, 6, 'Y');
+    R(t, 18, 11, 4, 1, 'f'); R(t, 8, 11, 4, 1, 'f');
+    for (const [x, y] of [[2, 11], [29, 11], [13, 25], [19, 27], [14, 23], [12, 27], [1, 2], [30, 2], [9, 2], [22, 2], [21, 20]]) t[y][x] = 'T';
+    for (const [x, y] of [[2, 8], [29, 8], [12, 10], [19, 10]]) t[y][x] = 'L';
+    t[27][14] = 'S';
+    MAPS.norse = {
+      id: 'norse', name: 'Asgard', outdoor: true, music: 'norse', theme: 'norse', bg: 'norse', particles: 'snow', t, w, h,
+      buildings: [
+        { x: 11, y: 2, w: 10, h: 6, style: 'valgrind', door: 16, to: ['valgrind_hall', 6, 12] },
+        { x: 2, y: 3, w: 7, h: 5, style: 'forge', door: 5, to: ['thor_forge', 5, 10] },
+        { x: 23, y: 3, w: 7, h: 5, style: 'oathhall', door: 26, to: ['tyr_hall', 5, 10] },
+        { x: 3, y: 12, w: 6, h: 4, style: 'no_shop', door: 5, to: ['norse_shop', 4, 6] },
+        { x: 23, y: 12, w: 6, h: 4, style: 'no_shrine', door: 25, to: ['norse_shrine', 4, 6] },
+        { x: 9, y: 12, w: 5, h: 4, style: 'no_house', door: 11, locked: 'Loud snoring comes from inside. Best not to wake a sleeping skald.' },
+        { x: 18, y: 12, w: 5, h: 4, style: 'no_house2', door: 20, locked: 'The door is frozen shut. Someone has written "SPRING?" in the frost.' },
+      ],
+      warps: [{ x: 15, y: 29, to: ['@travel'] }, { x: 16, y: 29, to: ['@travel'] }],
+      signs: { '14,27': 'SOUTH GATE: the Mist Road. Walk through the gate to travel to other cities.' },
+      npcs: [
+        { id: 'no_guard', name: 'Einherjar Guard', look: 'einherjar', x: 16, y: 8, dir: 'down', when: () => !(Game.flags.beatThor && Game.flags.beatTyr && Game.flags.beatHeimdall), lines: ['Valgrind is closed to those who have not faced Thor, Tyr and Heimdall.', 'Thor works at the forge to the west. Tyr keeps the Hall of Oaths to the east. Heimdall guards the rainbow bridge.'] },
+        { id: 'no_guard2', name: 'Einherjar Guard', look: 'einherjar', x: 17, y: 8, dir: 'left', when: () => !!(Game.flags.beatThor && Game.flags.beatTyr && Game.flags.beatHeimdall), lines: ['The All-Father has heard of you. Enter Valgrind.'] },
+        { id: 'heimdall', name: 'Heimdall', look: 'heimdall', x: 26, y: 27, dir: 'up', trainer: 'heimdall', boss: true },
+        { id: 'sigrun', name: 'Shieldmaiden Sigrun', look: 'shieldmaiden', x: 13, y: 20, dir: 'right', trainer: 'sigrun', sight: 2, lines: ['Your shield arm is strong. Go and face the lieutenants!'] },
+        { id: 'bjorn', name: 'Skald Bjorn', look: 'skald', x: 19, y: 24, dir: 'left', trainer: 'bjorn', sight: 3, lines: ['I am still writing the verse about your victory. It rhymes with "orb".'] },
+        { id: 'carver', name: 'Rune-carver Ragna', look: 'carver', x: 20, y: 9, dir: 'down', ai: 'patient rune-carver who explains Norse myths respectfully', lines: ['Odin gave an eye for a drink from the well of wisdom. Knowledge always has a price.', 'Two ravens fly out each morning and tell Odin all they see. Mind your manners!'] },
+        { id: 'lakefisher', name: 'Ice-fisher Leif', look: 'viking', x: 11, y: 25, dir: 'left', ai: 'ice fisherman who loves telling stories about the world-serpent', lines: ['Jormlets nibble my lines all winter. One day one of them will circle the whole world.', 'Thor once went fishing for the world-serpent. He caught it - and then let it go.'] },
+        { id: 'sledkid', name: 'Little Astrid', look: 'sledkid', x: 9, y: 17, dir: 'down', wander: 2, ai: 'excited child who loves Ratatusk squirrels', lines: ['Ratatusks run up and down the great tree carrying gossip! I want one!', 'Heimdall can hear wool growing on sheep. So whisper!'] },
+        { id: 'no_gate', name: 'Gatekeeper', look: 'einherjar', x: 17, y: 28, dir: 'left', lines: ['The Mist Road leads to the other cities. Walk through the gate behind me to travel.'] },
+      ],
+      encounters: {
+        ',': { lv: [22, 28], table: [['huginix', 25], ['ratatusk', 25], ['fenrisk', 22], ['draugrim', 15, 'night'], ['tanngrit', 13]] },
+        ':': { lv: [28, 33], table: [['fenrisk', 18], ['draugrim', 15, 'night'], ['jormlet', 18], ['tanngrit', 18], ['huginix', 12], ['sleipra', 8], ['fenrimaw', 4]] },
+      },
+      items: [{ id: 'n1', x: 4, y: 22, item: 'kavach', n: 2 }, { id: 'n2', x: 22, y: 19, item: 'gandiva', n: 1 }, { id: 'n3', x: 12, y: 26, item: 'amrita', n: 1 }],
+    };
+    interior('norse_shop', 'Trading Post', 'norse', SHOP_ROWS, 'p', [{ id: 'no_clerk', name: 'Trader Hilde', look: 'no_clerk', x: 4, y: 2, dir: 'down', role: 'shop' }], ['norse', 5, 16, 'down']);
+    interior('norse_shrine', 'Shrine of Eir', 'norse', SHRINE_ROWS, 'p', [{ id: 'no_priest', name: 'Healer Solveig', look: 'no_priest', x: 4, y: 2, dir: 'down', role: 'heal' }, { id: 'sanctum', name: 'Sanctum Stone', look: 'stone', x: 7, y: 2, dir: 'down', role: 'storage' }], ['norse', 25, 16, 'down']);
+    interior('thor_forge', 'Thunder Forge', 'norse', HALL_ROWS, 'F', [{ id: 'thor', name: 'Thor', look: 'thor', x: 5, y: 2, dir: 'down', trainer: 'thor', boss: true }], ['norse', 5, 8, 'down'], { music: 'boss', bg: 'forge' });
+    interior('tyr_hall', 'Hall of Oaths', 'norse', HALL_ROWS, 'P', [{ id: 'tyr', name: 'Tyr', look: 'tyr', x: 5, y: 2, dir: 'down', trainer: 'tyr', boss: true }], ['norse', 26, 8, 'down'], { music: 'boss', bg: 'oaths' });
+    interior('valgrind_hall', 'Valgrind', 'norse', PALACE_ROWS, 'F', [{ id: 'odin', name: 'Odin', look: 'odin', x: 6, y: 2, dir: 'down', trainer: 'odin', boss: true }], ['norse', 16, 8, 'down'], { music: 'boss', bg: 'valgrind' });
+  }
+  // shop/shrine greetings per city
+  for (const id of ['greece_shop', 'norse_shop']) MAPS[id].greet = id === 'greece_shop' ? 'Welcome to the Agora! Orbs from every city, fair prices.' : 'Welcome, frost-walker! Warm herbs and strong orbs here.';
+}
+
+// ---------------- travel ----------------
+async function travelGate() {
+  const open = CITY_ORDER.filter(cityUnlocked);
+  if (open.length < 2) { await say('A wall of thick mist hides the road. Pass this city\'s trial and the mist will thin.'); return; }
+  await openWorldMap();
+}
+const MAP_POS = { celtic: [52, 70], norse: [122, 46], slavic: [196, 56], greece: [130, 118], egypt: [124, 176], meso: [190, 136], india: [250, 150], japan: [292, 84] };
+function cityOf(mapId) { return { city: 'india', route: 'india', shop: 'india', shrine: 'india', house: 'india', hall: 'india', palace: 'india' }[mapId] || (MAPS[mapId] && MAPS[mapId].theme) || 'india'; }
+class WorldMapScene {
+  constructor() { this.opaque = true; this.resolve = null; this.here = cityOf(Game.player.map); this.i = Math.max(0, CITY_ORDER.indexOf(this.here)); }
+  update() {
+    if (Input.p('left') || Input.p('up')) { this.i = (this.i + 7) % 8; Sound.sfx('cursor'); }
+    if (Input.p('right') || Input.p('down')) { this.i = (this.i + 1) % 8; Sound.sfx('cursor'); }
+    if (Input.p('b') || Input.p('start')) { Sound.sfx('cancel'); this.close(null); }
+    if (Input.p('a')) {
+      const id = CITY_ORDER[this.i];
+      if (!cityUnlocked(id)) { Sound.sfx('bump'); return; }
+      if (id === this.here) { Sound.sfx('bump'); return; }
+      Sound.sfx('confirm'); this.close(id);
+    }
+  }
+  close(v) { Scenes.remove(this); this.resolve(v); }
+  draw(ctx) {
+    ctx.fillStyle = '#2a4a7a'; ctx.fillRect(0, 0, W, H);
+    for (let y = 0; y < H; y += 6) { ctx.fillStyle = 'rgba(255,255,255,.04)'; ctx.fillRect(((y * 7 + (Game.frames >> 3)) % 40) - 20, y, W + 40, 1); }
+    // land masses (stylised)
+    const land = [[60, 70, 34, 26], [128, 50, 50, 22], [196, 60, 46, 26], [132, 118, 30, 18], [126, 176, 34, 26], [190, 138, 32, 22], [248, 150, 30, 30], [292, 86, 18, 34]];
+    for (const [x, y, rx, ry] of land) { ctx.fillStyle = '#c8b88a'; ctx.beginPath(); ctx.ellipse(x, y, rx + 3, ry + 3, 0, 0, 7); ctx.fill(); ctx.fillStyle = '#8ab06a'; ctx.beginPath(); ctx.ellipse(x, y, rx, ry, 0, 0, 7); ctx.fill(); }
+    // mist road (dotted)
+    ctx.fillStyle = '#e8e0c8';
+    for (let k = 0; k < CITY_ORDER.length - 1; k++) { const [x0, y0] = MAP_POS[CITY_ORDER[k]], [x1, y1] = MAP_POS[CITY_ORDER[k + 1]]; for (let t = 0; t < 1; t += .06) ctx.fillRect(lerp(x0, x1, t) | 0, lerp(y0, y1, t) | 0, 2, 2); }
+    Font.draw(ctx, 'THE MIST ROAD', 6, 4, '#ffffff', '#0b0714');
+    CITY_ORDER.forEach((id, k) => {
+      const [x, y] = MAP_POS[id], open = cityUnlocked(id), sel = k === this.i, c = CITIES[id];
+      ctx.fillStyle = '#0b0714'; ctx.fillRect(x - 6, y - 6, 12, 12);
+      ctx.fillStyle = open ? c.color : '#6a6a7a'; ctx.fillRect(x - 5, y - 5, 10, 10);
+      if (!open) { ctx.fillStyle = 'rgba(220,220,235,.55)'; ctx.beginPath(); ctx.ellipse(x, y, 14, 7, 0, 0, 7); ctx.fill(); }
+      if (id === this.here) { ctx.fillStyle = '#ffffff'; ctx.fillRect(x - 1, y - 12 + Math.sin(Game.frames / 8) * 2, 3, 4); }
+      Font.drawC(ctx, c.name, x, y + 8, sel ? '#ffd040' : open ? '#ffffff' : '#b0b0c0', '#0b0714');
+      if (sel) { ctx.strokeStyle = '#ffd040'; ctx.strokeRect(x - 8.5, y - 8.5, 17, 17); }
+    });
+    const id = CITY_ORDER[this.i], info = CITY_INFO[id], c = CITIES[id];
+    drawWin(ctx, 0, 196, W, 44);
+    Font.draw(ctx, `${c.name} (${c.culture})`, 10, 203, c.color);
+    Font.drawR(ctx, `God: ${info.god}`, 310, 203, UI.dim);
+    const status = id === this.here ? 'You are here.' : cityUnlocked(id) ? 'The road is clear. Press Z to travel.' : !info.built ? 'Sealed by mist. This city arrives in a later update.' : `Sealed by mist. ${info.needs || ''} to open it.`;
+    Font.draw(ctx, status, 10, 216, UI.ink);
+    Font.draw(ctx, '< >  choose    Z travel    X back', 10, 228, UI.dim);
+  }
+}
+async function openWorldMap() {
+  const dest = await new Promise(r => { const s = new WorldMapScene(); s.resolve = r; Scenes.push(s); });
+  if (!dest) return;
+  const [m, x, y, d] = CITY_INFO[dest].arrive;
+  Sound.sfx('door');
+  await fadeOut(20); World.load(m, x, y, d); Game.flags['visited_' + dest] = true; await fadeIn(20);
+}
+
 // ---- 11_battle.js ----
 // =====================================================================
 //  BATTLE SYSTEM
@@ -2332,27 +2756,55 @@ function initB(c) { c.b = { st: { atk: 0, def: 0, spd: 0 }, shield: null, bind: 
 function spd(c) { return stat(c, 'spd') * stageMult(c.b.st.spd); }
 
 const BG_CACHE = {};
+// indoor halls: [top colour, bottom colour, trim colour, pillar style]
+const HALL_BG = {
+  hall: ['#3a0e08', '#8a2a10', '#ff7a1a'], palace: ['#1a1450', '#4a3a9a', '#ffd040'],
+  arena: ['#5a1a10', '#c8a070', '#e8c040'], underworld: ['#0e0818', '#3a2a4a', '#c8a0ff'], olympos: ['#7aaae8', '#f4f0e6', '#e8c040'],
+  forge: ['#1a1010', '#5a3a2a', '#ff7a1a'], oaths: ['#2a1a10', '#6a4a30', '#c8a040'], valgrind: ['#3a2a10', '#a87a30', '#ffd860'],
+};
 function battleBG(kind) {
   if (BG_CACHE[kind]) return BG_CACHE[kind];
   const c = mkCanvas(W, H), x = c.getContext('2d'), r = mulberry32(hashStr(kind));
-  if (kind === 'hall' || kind === 'palace') {
-    const pal = kind === 'hall' ? ['#3a0e08', '#8a2a10', '#ff7a1a'] : ['#1a1450', '#4a3a9a', '#ffd040'];
-    const g = x.createLinearGradient(0, 0, 0, H); g.addColorStop(0, pal[0]); g.addColorStop(1, pal[1]); x.fillStyle = g; x.fillRect(0, 0, W, H);
-    for (let i = 0; i < 6; i++) { const px = 10 + i * 60; x.fillStyle = 'rgba(0,0,0,.25)'; x.fillRect(px, 0, 22, 140); x.fillStyle = pal[2]; x.globalAlpha = .35; x.fillRect(px, 0, 22, 4); x.fillRect(px, 130, 22, 6); x.globalAlpha = 1; }
+  const sky = (a, b, h = 150) => { const g = x.createLinearGradient(0, 0, 0, h); g.addColorStop(0, a); g.addColorStop(1, b); x.fillStyle = g; x.fillRect(0, 0, W, h); };
+  const clouds = (n, col) => { for (let i = 0; i < n; i++) { x.fillStyle = col; const cx = r() * W, cy = 20 + r() * 50; x.beginPath(); x.ellipse(cx, cy, 22, 6, 0, 0, 7); x.ellipse(cx + 12, cy - 4, 14, 6, 0, 0, 7); x.fill(); } };
+  const hills = (col, y0, amp) => { x.fillStyle = col; x.beginPath(); x.moveTo(0, y0); for (let i = 0; i <= W; i += 20) x.lineTo(i, y0 - 12 + r() * amp); x.lineTo(W, 150); x.lineTo(0, 150); x.fill(); };
+  let platCol = ['#c8a868', '#e8c888'];
+  if (HALL_BG[kind]) {
+    const pal = HALL_BG[kind];
+    sky(pal[0], pal[1], H);
+    if (kind === 'olympos') { clouds(6, 'rgba(255,255,255,.8)'); }
+    for (let i = 0; i < 6; i++) { const px = 10 + i * 60; x.fillStyle = kind === 'olympos' || kind === 'arena' ? 'rgba(255,255,255,.55)' : 'rgba(0,0,0,.25)'; x.fillRect(px, 0, 22, 140); x.fillStyle = pal[2]; x.globalAlpha = .35; x.fillRect(px, 0, 22, 4); x.fillRect(px, 130, 22, 6); x.globalAlpha = 1; }
+    if (kind === 'forge' || kind === 'hall' || kind === 'valgrind') for (let i = 0; i < 5; i++) { const px = 40 + i * 60; x.fillStyle = 'rgba(255,140,40,.5)'; x.beginPath(); x.arc(px, 30, 6, 0, 7); x.fill(); }
+    if (kind === 'underworld') for (let i = 0; i < 30; i++) { x.fillStyle = 'rgba(200,160,255,.4)'; x.fillRect(r() * W, r() * 140, 1, 1); }
     x.fillStyle = 'rgba(0,0,0,.3)'; x.fillRect(0, 140, W, 100);
+    if (kind === 'olympos') platCol = ['#e8e4dc', '#ffffff']; if (kind === 'underworld') platCol = ['#4a3a5a', '#6a5a7a']; if (kind === 'forge' || kind === 'oaths') platCol = ['#5a4a3a', '#7a6a5a'];
+  } else if (kind === 'greece' || kind === 'sea') {
+    sky('#3a8ae8', '#cfe8ff'); clouds(4, 'rgba(255,255,255,.8)');
+    x.fillStyle = '#ffffff'; x.beginPath(); x.arc(276, 30, 12, 0, 7); x.fill();
+    x.fillStyle = '#1e6ab8'; x.fillRect(0, 106, W, 30); x.fillStyle = '#6ab4ff'; for (let i = 0; i < 30; i++) x.fillRect(r() * W, 108 + r() * 26, 6, 1);
+    // white temple on a hill
+    x.fillStyle = '#a8b880'; x.beginPath(); x.moveTo(20, 112); x.quadraticCurveTo(70, 70, 130, 112); x.fill();
+    x.fillStyle = '#f4f2ea'; x.fillRect(50, 78, 44, 4); x.beginPath(); x.moveTo(48, 78); x.lineTo(72, 66); x.lineTo(96, 78); x.fill(); for (let k = 0; k < 5; k++) x.fillRect(52 + k * 9, 82, 4, 16); x.fillRect(48, 98, 48, 3);
+    if (kind === 'sea') { x.fillStyle = '#1e5ab0'; x.fillRect(0, 128, W, 112); x.fillStyle = '#6ab4ff'; for (let i = 0; i < 80; i++) x.fillRect(r() * W, 130 + r() * 110, 5, 1); platCol = ['#a87a4a', '#c89a6a']; }
+    else { x.fillStyle = '#9ab45a'; x.fillRect(0, 128, W, 112); x.fillStyle = '#b4c86e'; for (let i = 0; i < 60; i++) x.fillRect(r() * W, 130 + r() * 110, 3, 1); for (const px of [170, 300, 228]) { x.fillStyle = '#5a4a30'; x.fillRect(px, 112, 2, 18); x.fillStyle = '#1e4a2a'; x.beginPath(); x.ellipse(px + 1, 104, 5, 16, 0, 0, 7); x.fill(); } platCol = ['#c8c6bc', '#eeece6']; }
+  } else if (kind === 'norse' || kind === 'bifrost') {
+    sky(kind === 'bifrost' ? '#1a2a5a' : '#8aa8c8', kind === 'bifrost' ? '#6a8ac8' : '#e8f0f8');
+    if (kind === 'bifrost') { ['#ff5a5a', '#ffa040', '#ffe060', '#60d070', '#50a0ff', '#a070ff'].forEach((col, i) => { x.strokeStyle = col; x.lineWidth = 3; x.beginPath(); x.arc(160, 170, 130 - i * 3, Math.PI, 0); x.stroke(); }); }
+    x.fillStyle = '#c8d4e4'; x.beginPath(); x.moveTo(0, 120); x.lineTo(50, 60); x.lineTo(100, 110); x.lineTo(150, 50); x.lineTo(220, 115); x.lineTo(270, 70); x.lineTo(W, 110); x.lineTo(W, 150); x.lineTo(0, 150); x.fill();
+    x.fillStyle = '#ffffff'; for (const [px, py] of [[50, 60], [150, 50], [270, 70]]) { x.beginPath(); x.moveTo(px - 12, py + 14); x.lineTo(px, py); x.lineTo(px + 12, py + 14); x.fill(); }
+    x.fillStyle = '#e6edf3'; x.fillRect(0, 128, W, 112); x.fillStyle = '#ffffff'; for (let i = 0; i < 60; i++) x.fillRect(r() * W, 130 + r() * 110, 3, 1);
+    for (const px of [20, 190, 300]) { x.fillStyle = '#1a3a2e'; for (let k = 0; k < 3; k++) { x.beginPath(); x.moveTo(px, 92 + k * 9); x.lineTo(px + 9 + k * 3, 106 + k * 9); x.lineTo(px - 9 - k * 3, 106 + k * 9); x.fill(); } x.fillStyle = '#ffffff'; x.fillRect(px - 2, 93, 4, 2); }
+    platCol = ['#c8d4e0', '#f4f8fc'];
   } else {
-    const g = x.createLinearGradient(0, 0, 0, 150); g.addColorStop(0, '#5fa8e8'); g.addColorStop(1, '#f8dcb0'); x.fillStyle = g; x.fillRect(0, 0, W, 150);
-    x.fillStyle = '#fff4d0'; x.beginPath(); x.arc(270, 34, 14, 0, 7); x.fill();
-    for (let i = 0; i < 5; i++) { x.fillStyle = 'rgba(255,255,255,.7)'; const cx = r() * W, cy = 20 + r() * 50; x.beginPath(); x.ellipse(cx, cy, 22, 6, 0, 0, 7); x.ellipse(cx + 12, cy - 4, 14, 6, 0, 0, 7); x.fill(); }
-    // distant temple and palms
-    x.fillStyle = '#8aa0b8'; x.beginPath(); x.moveTo(0, 120); for (let i = 0; i <= W; i += 20) x.lineTo(i, 108 + r() * 14); x.lineTo(W, 150); x.lineTo(0, 150); x.fill();
+    sky('#5fa8e8', '#f8dcb0'); x.fillStyle = '#fff4d0'; x.beginPath(); x.arc(270, 34, 14, 0, 7); x.fill(); clouds(5, 'rgba(255,255,255,.7)');
+    hills('#8aa0b8', 120, 14);
     x.fillStyle = '#6a7f98'; x.fillRect(40, 92, 26, 30); x.beginPath(); x.moveTo(36, 94); x.quadraticCurveTo(53, 60, 70, 94); x.fill(); x.fillRect(51, 58, 4, 8);
     x.fillStyle = '#4a8a4a'; x.fillRect(0, 128, W, 112);
     x.fillStyle = '#5aa04a'; for (let i = 0; i < 60; i++) x.fillRect(r() * W, 130 + r() * 110, 3, 1);
     for (const px of [150, 300, 12]) { x.fillStyle = '#4a3a24'; x.fillRect(px, 96, 3, 34); x.fillStyle = '#2f6a34'; for (let k = 0; k < 5; k++) { x.beginPath(); x.ellipse(px + 1 + Math.cos(k * 1.3) * 8, 96 + Math.sin(k * 1.3) * 3, 10, 3, k * 1.3, 0, 7); x.fill(); } }
+    platCol = ['#7ab858', '#9ad070'];
   }
-  // platforms
-  const plat = (cx, cy, rx, ry) => { x.fillStyle = 'rgba(0,0,0,.25)'; x.beginPath(); x.ellipse(cx, cy + 3, rx, ry, 0, 0, 7); x.fill(); x.fillStyle = kind === 'route' ? '#7ab858' : '#c8a868'; x.beginPath(); x.ellipse(cx, cy, rx, ry, 0, 0, 7); x.fill(); x.fillStyle = kind === 'route' ? '#9ad070' : '#e8c888'; x.beginPath(); x.ellipse(cx, cy - 2, rx - 6, ry - 3, 0, 0, 7); x.fill(); };
+  const plat = (cx, cy, rx, ry) => { x.fillStyle = 'rgba(0,0,0,.25)'; x.beginPath(); x.ellipse(cx, cy + 3, rx, ry, 0, 0, 7); x.fill(); x.fillStyle = platCol[0]; x.beginPath(); x.ellipse(cx, cy, rx, ry, 0, 0, 7); x.fill(); x.fillStyle = platCol[1]; x.beginPath(); x.ellipse(cx, cy - 2, rx - 6, ry - 3, 0, 0, 7); x.fill(); };
   plat(POS.e.x, POS.e.y - 4, 48, 11); plat(POS.p.x, POS.p.y - 4, 54, 12);
   return BG_CACHE[kind] = c;
 }
@@ -2501,7 +2953,7 @@ class BattleScene {
   async intro() {
     const E = this.E; markSeen(E.sp);
     if (this.tr) {
-      const look = LOOKS[this.cfg.trainerId === 'rohan' ? 'pilgrim' : this.cfg.trainerId];
+      const look = LOOKS[this.tr.look || this.cfg.trainerId];
       this.trainerSprite = { look, x: 400, aura: this.tr.god ? '#9fe4ff' : this.tr.lieutenant ? '#ff7a1a' : null };
       this.anim.e.hide = true;
       tween(this.anim.p, 'dx', 0, 30); await tween(this.trainerSprite, 'x', 236, 30);
@@ -2526,7 +2978,7 @@ class BattleScene {
     a.hide = false; a.dx = 0; a.dy = 0; a.alpha = 1; a.sil = 1; a.scale = 1;
     Sound.sfx('magic'); this.emit(side, 'Light', 14);
     await tween(a, 'sil', 0, 20);
-    if (side === 'e' && c.sp === 'airavat' && this.tr && this.tr.sigLine) { Sound.sfx('thunder'); flash('#ffffff', 14); shake(18); await this.msg(this.tr.sigLine, 70); }
+    if (side === 'e' && this.tr && this.tr.sigLine && c.sp === this.tr.sigSp && !this.sigShown && (this.sigShown = true)) { Sound.sfx('thunder'); flash('#ffffff', 14); shake(18); await this.msg(this.tr.sigLine, 70); }
   }
   async chooseAction() {
     const P = this.P;
@@ -2672,7 +3124,7 @@ class BattleScene {
     if (mv.custom) return this.execCustom(u, uSide, t, tSide, mv);
     const fx = mv.fx || {};
     const selfOnly = mv.cat === 'status' && !fx.foe && !fx.status && !fx.stun && !fx.bind;
-    if (!selfOnly && Math.random() * 100 >= mv.acc) { await this.msg('But it missed!', 35); return; }
+    if (!selfOnly && !mv.sure && Math.random() * 100 >= mv.acc) { await this.msg('But it missed!', 35); return; }
     if (mv.pow) {
       if (mv.sig) { shake(20); flash('#ffffff', 20); }
       await this.attackFX(mv.type, uSide, tSide);
@@ -2870,7 +3322,7 @@ class BattleScene {
   }
   async awardXP(E, mul) {
     const sp = SPECIES[E.sp];
-    const base = Math.floor(sp.xp * E.lv / 5 * (this.tr ? 1.5 : 1) * (perk() === 'xp' ? 1.1 : 1) * mul);
+    const base = Math.floor(sp.xp * E.lv / 4 * (this.tr ? 1.5 : 1) * (perk() === 'xp' ? 1.1 : 1) * mul);
     const got = Game.party.filter(c => c.hp > 0 && this.parts4.has(c.uid));
     if (!got.length) return;
     const each = Math.max(1, Math.floor(base / got.length));
@@ -2970,7 +3422,7 @@ function previewCard(mv, P) {
 async function startBattle(cfg) {
   Sound.sfx('encounter');
   const mapId = Game.player.map;
-  cfg.bg = mapId === 'hall' ? 'hall' : mapId === 'palace' ? 'palace' : 'route';
+  cfg.bg = (cfg.trainerId && TRAINERS[cfg.trainerId].bg) || (MAPS[mapId] && MAPS[mapId].bg) || 'route';
   await tween(Overlay, 'swirl', 1, 36);
   const B = new BattleScene(cfg);
   Scenes.push(B);
@@ -2981,7 +3433,7 @@ async function startBattle(cfg) {
   if (res === 'win' && B.tr) {
     const tr = B.tr, money = tr.reward * Math.max(...B.foes.map(c => c.lv));
     Sound.play('victory');
-    B.trainerSprite = { look: LOOKS[cfg.trainerId === 'rohan' ? 'pilgrim' : cfg.trainerId], x: 400, aura: null };
+    B.trainerSprite = { look: LOOKS[tr.look || cfg.trainerId], x: 400, aura: null };
     await tween(B.trainerSprite, 'x', 236, 24);
     await say(tr.lose, { speaker: tr.name });
     Game.player.money += money; Game.flags[tr.flag] = true;
@@ -2995,13 +3447,14 @@ async function startBattle(cfg) {
   Game.party.forEach(c => { delete c.b; }); B.foes.forEach(c => { delete c.b; });
   if (res === 'lose') {
     Game.player.money = Math.floor(Game.player.money / 2);
-    healParty(); World.load('shrine', 4, 4, 'up');
+    healParty(); const sh = Game.flags.shrine || ['shrine', 4, 4, 'up']; World.load(sh[0], sh[1], sh[2], sh[3] || 'up');
     await fadeIn(16);
     await say(['You blacked out and were carried back to the shrine...', 'Priestess Gauri tended your companions. Half of your coins were spent on offerings.'], { speaker: 'Priestess Gauri' });
   } else {
     Sound.play(World.map.music);
     await fadeIn(16);
     if (res === 'win' && cfg.trainerId === 'indra') await indraEnding();
+    else if (res === 'win' && TRAINERS[cfg.trainerId] && TRAINERS[cfg.trainerId].ending) await godEnding(TRAINERS[cfg.trainerId]);
   }
   return res;
 }
@@ -3033,7 +3486,12 @@ async function indraEnding() {
     Game.flags.gotBrahmastra = true; addItem('brahmastra', 1); Sound.sfx('pickup');
     await say(['INDRA: Take this as well - the Brahmastra Orb. It tames any wild creature without fail, but it can never be made again.', 'You received the BRAHMASTRA ORB! (Only one exists.)'], { speaker: 'Indra' });
   }
-  await say(['TRIAL OF INDRAPURI COMPLETE.', 'This build (Stage 1) contains only the first city. The roads to Hellas, Asgard and the other mythic cities are still sealed by mist and arrive in later stages.', 'You can keep exploring, taming and levelling your companions. Remember to SAVE from the menu!']);
+  await say(['TRIAL OF INDRAPURI COMPLETE.', 'The mist on the road to OLYMPOS has lifted. Use TRAVEL in the menu, or the sealed rocks at the end of the Monsoon Trail, to open the world map.', 'Remember to SAVE from the menu!']);
+  Sound.play(World.map.music);
+}
+async function godEnding(tr) {
+  Sound.play('title');
+  await say(tr.ending, { speaker: tr.name });
   Sound.play(World.map.music);
 }
 
@@ -3089,7 +3547,7 @@ class TitleScene {
     drawCreature(ctx, STARTERS[Math.floor(Game.frames / 240) % 3], 60, 150, {});
     drawCreature(ctx, 'garudin', 262, 146, { flip: true });
     if (!this.ready && Math.floor(Game.frames / 30) % 2) Font.drawC(ctx, 'PRESS Z / ENTER', 160, 168, '#ffffff', '#1a0f2e');
-    Font.draw(ctx, 'Stage 1 build', 4, H - 10, '#c8a8d8');
+    Font.draw(ctx, 'Stage 3 (part 1) build', 4, H - 10, '#c8a8d8');
     Font.drawR(ctx, AI_ENDPOINT ? 'AI: server mode' : 'AI: offline mode', W - 4, H - 10, '#c8a8d8');
   }
 }
@@ -3191,13 +3649,18 @@ async function openStartMenu() {
       drawWin(ctx, 4, 4, 150, 104);
       Font.draw(ctx, Game.player.name, 14, 12, UI.gold);
       Font.draw(ctx, `Coins   ${Game.player.money}`, 14, 26, UI.ink);
-      Font.draw(ctx, `Seals   ${badgeCount()} / 2`, 14, 38, UI.ink);
+      Font.draw(ctx, `Seals   ${badgeCount()} / 8`, 14, 38, UI.ink);
       Font.draw(ctx, `Tamed   ${Object.keys(Game.tamed).length} / ${SPECIES_ORDER.length}`, 14, 50, UI.ink);
       Font.draw(ctx, `Time    ${playTimeStr()}`, 14, 62, UI.ink);
       Font.draw(ctx, `Clock   ${clockStr()}`, 14, 74, UI.ink);
       Font.draw(ctx, 'AI: ' + (AI_ENDPOINT ? (AI.status === 'fallback' ? 'server unreachable' : 'server') : 'offline mode'), 14, 90, UI.dim);
     };
-    const i = await choose(['PARTY', 'BESTIARY', 'BAG', 'SAVE', 'OPTIONS', 'TITLE', 'CLOSE'], { x: 228, y: 4, w: 88, extra });
+    const canTravel = CITY_ORDER.filter(cityUnlocked).length > 1;
+    const labels = ['PARTY', 'BESTIARY', 'BAG', 'SAVE', 'OPTIONS', 'TITLE', 'CLOSE'];
+    if (canTravel) labels.splice(2, 0, 'TRAVEL');
+    const pickL = labels[await choose(labels, { x: 228, y: 4, w: 88, extra })];
+    if (pickL === 'TRAVEL') { if (!World.map.outdoor) { await say('Step outside to see the Mist Road.'); continue; } await openWorldMap(); return; }
+    const i = ['PARTY', 'BESTIARY', 'BAG', 'SAVE', 'OPTIONS', 'TITLE', 'CLOSE'].indexOf(pickL);
     if (i < 0 || i === 6) return;
     if (i === 0) await openParty();
     if (i === 1) await openBestiary();
