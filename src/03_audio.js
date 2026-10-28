@@ -1,5 +1,6 @@
 // =====================================================================
-//  CHIPTUNE AUDIO  (Web Audio: square/triangle voices, noise drums, raga-flavoured loops)
+//  CHIPTUNE AUDIO  (Web Audio: pulse/triangle/saw/pluck voices, harmony lines, noise drums,
+//  a theme per city plus battle, hall, shop, shrine, ending and fanfare tracks)
 // =====================================================================
 const Sound = (() => {
   let ac = null, master, musicBus, sfxBus, noiseBuf;
@@ -13,21 +14,29 @@ const Sound = (() => {
     return { len: toks.length, ev };
   }
   const T = {
-    title: { bpm: 84, drone: [36, 43], lead: 'C5 - - Db5 E5 - F5 - G5 - - - Ab5 G5 F5 E5 | F5 - E5 Db5 C5 - - - B4 - C5 Db5 C5 - - -', bass: 'C3 - - - - - - - C3 - - - G2 - - - F2 - - - - - - - G2 - - - C3 - - -', drums: 'k.......h...k...k.......h...s...' },
-    city: { bpm: 108, drone: [36, 43], lead: 'E5 F#5 G5 - A5 - G5 F#5 E5 - D5 - E5 - - - G5 A5 B5 - A5 G5 F#5 - E5 - D5 E5 C5 - - - B4 - D5 - E5 F#5 E5 D5 C5 - B4 - A4 - - - C5 - E5 F#5 G5 - F#5 E5 D5 E5 C5 B4 C5 - - -', bass: 'C3 . G3 . C3 . G3 . A2 . E3 . A2 . E3 . F2 . C3 . F2 . C3 . G2 . D3 . G2 . D3 . E3 . B3 . E3 . B3 . A2 . E3 . A2 . E3 . F2 . C3 . F2 . C3 . G2 . D3 . C3 . . .', drums: 'k.h.s.h.k.hks.h.' },
+    title: { voice: 'pulse', bpm: 84, drone: [36, 43], lead: 'C5 - - Db5 E5 - F5 - G5 - - - Ab5 G5 F5 E5 | F5 - E5 Db5 C5 - - - B4 - C5 Db5 C5 - - -', bass: 'C3 - - - - - - - C3 - - - G2 - - - F2 - - - - - - - G2 - - - C3 - - -', drums: 'k.......h...k...k.......h...s...' },
+    city: { voice: 'pluck', bpm: 108, drone: [36, 43], lead: 'E5 F#5 G5 - A5 - G5 F#5 E5 - D5 - E5 - - - G5 A5 B5 - A5 G5 F#5 - E5 - D5 E5 C5 - - - B4 - D5 - E5 F#5 E5 D5 C5 - B4 - A4 - - - C5 - E5 F#5 G5 - F#5 E5 D5 E5 C5 B4 C5 - - -', bass: 'C3 . G3 . C3 . G3 . A2 . E3 . A2 . E3 . F2 . C3 . F2 . C3 . G2 . D3 . G2 . D3 . E3 . B3 . E3 . B3 . A2 . E3 . A2 . E3 . F2 . C3 . F2 . C3 . G2 . D3 . C3 . . .', drums: 'k.h.s.h.k.hks.h.' },
     route: { bpm: 132, lead: 'G4 - C5 - E5 - F5 E5 D5 - C5 - Bb4 - C5 - | E5 - G5 - A5 G5 F5 E5 D5 - Bb4 - C5 - - -', bass: 'C3 . C3 G2 Bb2 . C3 . F2 . F2 C3 G2 . C3 . C3 . C3 G2 Bb2 . C3 . F2 . G2 . C3 . . .', drums: 'k.hkh.s.k.hkh.sh' },
-    battle: { bpm: 160, lead: 'C5 Eb5 G5 Eb5 C5 Eb5 G5 Ab5 G5 F5 Eb5 Db5 C5 - Bb4 - | C5 Eb5 G5 Bb5 Ab5 G5 F5 Eb5 F5 - Db5 - C5 - - -', bass: 'C3 C3 C4 C3 C3 C3 Bb2 C3 Ab2 Ab2 Ab3 Ab2 Bb2 Bb2 Bb3 Bb2 C3 C3 C4 C3 C3 C3 Bb2 C3 Db3 Db3 Db4 Db3 C3 C3 C4 C3', drums: 'k.hsk.hsk.hsk.ss' },
-    boss: { bpm: 168, drone: [36], lead: 'C5 Db5 E5 C5 F5 E5 Db5 C5 G5 - Ab5 G5 F5 E5 Db5 - | C6 B5 Ab5 G5 F5 E5 F5 G5 Ab5 G5 F5 E5 Db5 - C5 -', bass: 'C2 C3 C2 C3 C2 C3 Db2 Db3 C2 C3 C2 C3 C2 C3 Db2 Db3 F2 F3 F2 F3 G2 G3 G2 G3 Ab2 Ab3 G2 G3 Db2 Db3 C2 C3', drums: 'kkhsk.hskkhsk.ss' },
-    greece: { bpm: 116, lead: 'D5 - A4 - D5 E5 F5 - E5 D5 C5 - D5 - - - | F5 - G5 A5 - G5 F5 E5 D5 - E5 F5 E5 - - -', bass: 'D3 . A2 . D3 . A2 . C3 . G2 . D3 . . . F2 . C3 . G2 . D3 . A2 . E3 . A2 . . .', drums: 'k.h.k.h.s.h.k.hh' },
-    norse: { bpm: 92, drone: [33, 40], lead: 'A4 - - C5 E5 - D5 C5 B4 - - - G4 - A4 - | C5 - D5 E5 - - G5 E5 D5 - C5 B4 A4 - - -', bass: 'A2 - - - - - - - G2 - - - - - - - F2 - - - - - - - E2 - - - G2 - - -', drums: 'k.......k...s...' },
-    egypt: { bpm: 112, drone: [38], lead: 'D5 Eb5 F#5 - G5 F#5 Eb5 D5 C5 - D5 - - - - - | A4 - Bb4 C5 D5 - Eb5 D5 C5 Bb4 A4 - D5 - - -', bass: 'D3 . D3 . A2 . D3 . C3 . C3 . D3 . . . D3 . D3 . G2 . G2 . A2 . A2 . D3 . . .', drums: 'k.hk.hs.k.hk.sh.' },
-    japan: { bpm: 96, lead: 'E5 - F5 - A5 - - - B5 A5 F5 E5 - - - - | C5 - E5 F5 A5 - F5 E5 B4 - C5 - E5 - - -', bass: 'E2 - - - - - - - A2 - - - - - - - F2 - - - - - - - E2 - - - B2 - - -', drums: 'k...h...k.k.s...' },
-    celtic: { bpm: 132, lead: 'G5 A5 B5 A5 G5 E5 D5 E5 G5 - A5 - B5 - D6 - | E6 D6 B5 A5 G5 A5 B5 G5 A5 - E5 - G5 - - -', bass: 'G2 . D3 . G2 . D3 . F2 . C3 . F2 . C3 . A2 . E3 . A2 . E3 . D3 . G2 . . . . .', drums: 'k.hk.hs.hk.hs.h.' },
-    meso: { bpm: 100, drone: [33], lead: 'A4 - Bb4 - C5 - D5 - E5 - F5 E5 D5 - - - | C5 - D5 E5 - D5 C5 Bb4 A4 - - - G4 - A4 -', bass: 'A2 - - - E2 - - - F2 - - - E2 - - - A2 - - - D3 - - - E2 - - - A2 - - -', drums: 'k..k..s.k..k.ss.' },
-    slavic: { bpm: 120, lead: 'A4 - C5 - E5 - D5 C5 B4 - G4 - A4 - - - | E5 - F5 E5 D5 - C5 B4 C5 - A4 - B4 - - -', bass: 'A2 . E3 . A2 . E3 . G2 . D3 . G2 . D3 . F2 . C3 . F2 . C3 . E2 . B2 . E2 . . .', drums: 'k.h.s.h.k.hks.h.' },
-    victory: { bpm: 150, once: true, lead: 'C5 E5 G5 C6 - - G5 C6 - - - - . . . .', bass: 'C3 - - - - - G2 C3 - - - - . . . .', drums: 'k...k...k.s.k...' },
+    battle: { voice: 'square', bpm: 160, lead: 'C5 Eb5 G5 Eb5 C5 Eb5 G5 Ab5 G5 F5 Eb5 Db5 C5 - Bb4 - | C5 Eb5 G5 Bb5 Ab5 G5 F5 Eb5 F5 - Db5 - C5 - - -', bass: 'C3 C3 C4 C3 C3 C3 Bb2 C3 Ab2 Ab2 Ab3 Ab2 Bb2 Bb2 Bb3 Bb2 C3 C3 C4 C3 C3 C3 Bb2 C3 Db3 Db3 Db4 Db3 C3 C3 C4 C3', drums: 'k.hsk.hsk.hsk.ss' },
+    boss: { voice: 'saw', bpm: 168, drone: [36], lead: 'C5 Db5 E5 C5 F5 E5 Db5 C5 G5 - Ab5 G5 F5 E5 Db5 - | C6 B5 Ab5 G5 F5 E5 F5 G5 Ab5 G5 F5 E5 Db5 - C5 -', bass: 'C2 C3 C2 C3 C2 C3 Db2 Db3 C2 C3 C2 C3 C2 C3 Db2 Db3 F2 F3 F2 F3 G2 G3 G2 G3 Ab2 Ab3 G2 G3 Db2 Db3 C2 C3', drums: 'kkhsk.hskkhsk.ss' },
+    greece: { voice: 'pluck', bpm: 116, lead: 'D5 - A4 - D5 E5 F5 - E5 D5 C5 - D5 - - - | F5 - G5 A5 - G5 F5 E5 D5 - E5 F5 E5 - - -', bass: 'D3 . A2 . D3 . A2 . C3 . G2 . D3 . . . F2 . C3 . G2 . D3 . A2 . E3 . A2 . . .', drums: 'k.h.k.h.s.h.k.hh' },
+    norse: { voice: 'tri', bpm: 92, drone: [33, 40], lead: 'A4 - - C5 E5 - D5 C5 B4 - - - G4 - A4 - | C5 - D5 E5 - - G5 E5 D5 - C5 B4 A4 - - -', bass: 'A2 - - - - - - - G2 - - - - - - - F2 - - - - - - - E2 - - - G2 - - -', drums: 'k.......k...s...' },
+    egypt: { voice: 'saw', bpm: 112, drone: [38], lead: 'D5 Eb5 F#5 - G5 F#5 Eb5 D5 C5 - D5 - - - - - | A4 - Bb4 C5 D5 - Eb5 D5 C5 Bb4 A4 - D5 - - -', bass: 'D3 . D3 . A2 . D3 . C3 . C3 . D3 . . . D3 . D3 . G2 . G2 . A2 . A2 . D3 . . .', drums: 'k.hk.hs.k.hk.sh.' },
+    japan: { voice: 'pluck', bpm: 96, lead: 'E5 - F5 - A5 - - - B5 A5 F5 E5 - - - - | C5 - E5 F5 A5 - F5 E5 B4 - C5 - E5 - - -', bass: 'E2 - - - - - - - A2 - - - - - - - F2 - - - - - - - E2 - - - B2 - - -', drums: 'k...h...k.k.s...' },
+    celtic: { voice: 'pulse', bpm: 132, lead: 'G5 A5 B5 A5 G5 E5 D5 E5 G5 - A5 - B5 - D6 - | E6 D6 B5 A5 G5 A5 B5 G5 A5 - E5 - G5 - - -', bass: 'G2 . D3 . G2 . D3 . F2 . C3 . F2 . C3 . A2 . E3 . A2 . E3 . D3 . G2 . . . . .', drums: 'k.hk.hs.hk.hs.h.' },
+    meso: { voice: 'saw', bpm: 100, drone: [33], lead: 'A4 - Bb4 - C5 - D5 - E5 - F5 E5 D5 - - - | C5 - D5 E5 - D5 C5 Bb4 A4 - - - G4 - A4 -', bass: 'A2 - - - E2 - - - F2 - - - E2 - - - A2 - - - D3 - - - E2 - - - A2 - - -', drums: 'k..k..s.k..k.ss.' },
+    slavic: { voice: 'pulse', bpm: 120, lead: 'A4 - C5 - E5 - D5 C5 B4 - G4 - A4 - - - | E5 - F5 E5 D5 - C5 B4 C5 - A4 - B4 - - -', bass: 'A2 . E3 . A2 . E3 . G2 . D3 . G2 . D3 . F2 . C3 . F2 . C3 . E2 . B2 . E2 . . .', drums: 'k.h.s.h.k.hks.h.' },
+    trainer: { voice: 'pulse', bpm: 150, lead: 'G4 B4 D5 G5 F#5 - D5 - E5 D5 B4 G4 A4 - - - | G4 B4 D5 G5 A5 - B5 A5 G5 F#5 E5 D5 G5 - - -', bass: 'G2 G3 G2 G3 D2 D3 D2 D3 C2 C3 C2 C3 D2 D3 D2 D3 G2 G3 G2 G3 D2 D3 D2 D3 C2 C3 D2 D3 G2 G3 G2 G3', drums: 'k.hsk.hsk.hsk.hs' },
+    lieutenant: { voice: 'saw', bpm: 164, drone: [38], lead: 'D5 F5 A5 F5 D5 F5 A5 C6 Bb5 A5 G5 F5 E5 - C5 - | D5 F5 A5 D6 C6 Bb5 A5 G5 A5 - F5 - D5 - - -', bass: 'D2 D3 D2 D3 D2 D3 C2 C3 Bb1 Bb2 Bb1 Bb2 A1 A2 A1 A2 D2 D3 D2 D3 F2 F3 F2 F3 G2 G3 A2 A3 D2 D3 D2 D3', drums: 'kkhsk.hskkhsk.ss' },
+    god: { voice: 'pulse', bpm: 140, drone: [36, 43], lead: 'C5 - G4 - C5 D5 Eb5 - F5 - Eb5 D5 C5 - G5 - | Ab5 - G5 F5 Eb5 - D5 - C5 - D5 Eb5 D5 - - -', harm: 'Eb4 - - - G4 - - - Ab4 - - - G4 - - - F4 - - - G4 - - - Ab4 - - - G4 - - -', bass: 'C2 . C2 . C2 . G1 . Ab1 . Ab1 . G1 . G1 . C2 . C2 . C2 . F1 . F1 . G1 . G1 . C2 .', drums: 'k..sk.hsk..sk.ss' },
+    hall: { voice: 'tri', bpm: 80, drone: [36], lead: 'C5 - - - - - Db5 - C5 - - - - - - - | G4 - - - - - Ab4 - G4 - - - - - - -', bass: 'C2 - - - - - - - - - - - - - - - G1 - - - - - - - - - - - - - - -', drums: 'k...............' },
+    shop: { voice: 'pluck', bpm: 124, lead: 'C5 E5 G5 E5 F5 A5 G5 - E5 G5 C6 G5 A5 G5 E5 - | D5 F5 A5 F5 E5 G5 C6 - B5 A5 G5 F5 E5 D5 C5 -', bass: 'C3 . G2 . F2 . G2 . C3 . G2 . F2 . C3 . D3 . A2 . C3 . G2 . G2 . G2 . C3 . . .', drums: 'k.h.s.h.k.h.s.hh' },
+    shrine: { voice: 'tri', bpm: 72, lead: 'E5 - G5 - B5 - - - A5 - G5 - E5 - - - | D5 - E5 - G5 - - - E5 - D5 - C5 - - -', bass: 'C3 - - - - - - - A2 - - - - - - - F2 - - - - - - - G2 - - - - - - -', drums: '................' },
+    ending: { voice: 'pulse', bpm: 100, lead: 'C5 - E5 - G5 - C6 - B5 - G5 - A5 - - - | F5 - A5 - C6 - F5 - E5 - D5 - C5 - - -', harm: 'E4 - - - - - - - D4 - - - C4 - - - A3 - - - - - - - G3 - - - E4 - - -', bass: 'C3 - - - G2 - - - E2 - - - A2 - - - F2 - - - C3 - - - G2 - - - C3 - - -', drums: 'k...h...k...h.h.' },
+    fanfare: { voice: 'pulse', bpm: 140, once: true, lead: 'C5 C5 C5 - G4 - - C5 - E5 - G5 - - - - C6 - - - - - - - . . . . . . . .', bass: 'C3 - - - - - - - G2 - - - - - - - C3 - - - - - - - . . . . . . . .', drums: 'k...k...k.s.k...' },
+    victory: { voice: 'pulse', bpm: 150, once: true, lead: 'C5 E5 G5 C6 - - G5 C6 - - - - . . . .', bass: 'C3 - - - - - G2 C3 - - - - . . . .', drums: 'k...k...k.s.k...' },
   };
-  for (const k in T) { T[k].L = parseLine(T[k].lead); T[k].B = parseLine(T[k].bass); }
+  for (const k in T) { T[k].L = parseLine(T[k].lead); T[k].B = parseLine(T[k].bass); if (T[k].harm) T[k].Hm = parseLine(T[k].harm); }
 
   function init() {
     if (ac) { if (ac.state === 'suspended') ac.resume(); return; }
@@ -40,11 +49,14 @@ const Sound = (() => {
     applyVolumes();
     if (trackName) { const n = trackName; trackName = null; play(n); }
   }
+  const LEVELS = [0, .12, .22, .32, .45], SFX_LEVELS = [0, .2, .38, .55, .75];
+  if (Settings.musicVol === undefined) Settings.musicVol = Settings.music === false ? 0 : 3;
+  if (Settings.sfxVol === undefined) Settings.sfxVol = Settings.sfx === false ? 0 : 3;
   function applyVolumes() {
     if (!ac) return;
     master.gain.value = Settings.muted ? 0 : 0.55;
-    musicBus.gain.value = Settings.music ? 0.32 : 0;
-    sfxBus.gain.value = Settings.sfx ? 0.55 : 0;
+    musicBus.gain.setTargetAtTime(LEVELS[Settings.musicVol] || 0, ac.currentTime, .05);
+    sfxBus.gain.value = SFX_LEVELS[Settings.sfxVol] || 0;
   }
   function tone(f, t, dur, type = 'square', vol = 0.15, bus = musicBus, slideTo = 0) {
     const o = ac.createOscillator(), g = ac.createGain();
@@ -63,7 +75,15 @@ const Sound = (() => {
   function scheduleStep(t) {
     const tr = track, spb = 60 / tr.bpm / 2;
     const sL = step % tr.L.len, sB = step % tr.B.len;
-    for (const e of tr.L.ev) if (e.step === sL && e.n) { tone(midi(e.n), t, e.len * spb * 0.95, 'square', 0.075); tone(midi(e.n) * 1.003, t, e.len * spb * 0.9, 'square', 0.03); }
+    for (const e of tr.L.ev) if (e.step === sL && e.n) {
+      const f = midi(e.n), d = e.len * spb, v = tr.voice || 'square';
+      if (v === 'tri') { tone(f, t, d * .95, 'triangle', .16); tone(f * 2, t, d * .5, 'sine', .025); }
+      else if (v === 'saw') { tone(f, t, d * .95, 'sawtooth', .045); tone(f * 1.004, t, d * .9, 'square', .03); }
+      else if (v === 'pluck') { tone(f, t, Math.min(d, .22), 'square', .085); tone(f * 2, t, .06, 'triangle', .04); }
+      else if (v === 'pulse') { tone(f, t, d * .95, 'square', .06); tone(f * 1.007, t, d * .9, 'square', .045); }
+      else { tone(f, t, d * .95, 'square', .075); tone(f * 1.003, t, d * .9, 'square', .03); }
+    }
+    if (tr.Hm) { const sH = step % tr.Hm.len; for (const e of tr.Hm.ev) if (e.step === sH && e.n) tone(midi(e.n), t, e.len * spb * .95, 'triangle', .08); }
     for (const e of tr.B.ev) if (e.step === sB && e.n) tone(midi(e.n), t, e.len * spb * 0.9, 'triangle', 0.2);
     const dc = tr.drums[step % tr.drums.length];
     if (dc === 'k') tone(140, t, 0.16, 'sine', 0.35, musicBus, 40);
@@ -112,9 +132,15 @@ const Sound = (() => {
     thunder: t => { noise(t, 0.9, 0.45, sfxBus, 80); tone(70, t, 0.8, 'sawtooth', 0.2, sfxBus, 30); },
     evolve: t => { for (let i = 0; i < 12; i++) tone(400 + i * 60, t + i * 0.08, 0.1, 'square', 0.1, sfxBus); },
     magic: t => { [880, 1175, 1480, 1760].forEach((f, i) => tone(f, t + i * 0.04, 0.15, 'sine', 0.12, sfxBus)); },
+    lowhp: t => { tone(1046, t, .07, 'square', .06, sfxBus); tone(880, t + .09, .07, 'square', .05, sfxBus); },
+    step: t => noise(t, .05, .05, sfxBus, 3000),
+    menu: t => { tone(660, t, .05, 'square', .1, sfxBus); tone(990, t + .05, .07, 'square', .1, sfxBus); },
+    item: t => { tone(784, t, .06, 'triangle', .15, sfxBus); tone(1175, t + .06, .1, 'triangle', .15, sfxBus); },
+    custom: t => { for (let i = 0; i < 8; i++) tone(500 + i * 110, t + i * .035, .12, i % 2 ? 'sine' : 'triangle', .1, sfxBus); noise(t, .4, .06, sfxBus, 4000); },
+    seal: t => { [523, 659, 784, 1046, 784, 1046, 1318].forEach((f, i) => tone(f, t + i * .09, .16, 'square', .12, sfxBus)); },
     pickup: t => { [784, 1046, 1318].forEach((f, i) => tone(f, t + i * 0.06, 0.1, 'square', 0.12, sfxBus)); },
   };
   function sfx(name) { if (!ac) return; const f = S[name]; if (f) f(ac.currentTime + 0.005); }
   function toggleMute() { Settings.muted = !Settings.muted; saveSettings(); applyVolumes(); return Settings.muted; }
-  return { init, play, stop, sfx, toggleMute, applyVolumes, get current() { return trackName; } };
+  return { init, play, stop, sfx, toggleMute, applyVolumes, LEVELS, get current() { return trackName; } };
 })();

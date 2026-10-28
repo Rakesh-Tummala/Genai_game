@@ -15,7 +15,9 @@ function stat(c, k) {
   return v;
 }
 const maxHP = c => stat(c, 'hp');
-const maxEN = c => 20 + Math.floor(c.lv / 5);
+const maxEN = c => 20 + Math.floor(c.lv / 5) + (perk() === 'energy' ? 4 : 0);
+// custom attacks per battle depend on the chosen character (Amunet gets one extra)
+Object.defineProperty(CA, 'MAX_PER_BATTLE', { get: () => 3 + (perk() === 'custom' ? 1 : 0), configurable: true });
 function cName(c) { return SPECIES[c.sp].name; }
 function learnAt(spId, lv) { return SPECIES[spId].learn.filter(l => l[0] === lv).map(l => l[1]); }
 function newCreature(spId, lv) {

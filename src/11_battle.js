@@ -150,6 +150,7 @@ class BattleScene {
     this.floats = this.floats.filter(f => f.life > 0);
     for (const pr of this.proj) pr.t++;
     if (this.P) this.hpShow.p += (this.P.hp - this.hpShow.p) * .15;
+    if (this.P && this.P.hp > 0 && this.P.hp < maxHP(this.P) * .2 && !this.result && Game.frames % 50 === 0) Sound.sfx('lowhp');
     if (this.E) this.hpShow.e += (this.E.hp - this.hpShow.e) * .15;
   }
   drawMon(ctx, side) {
@@ -252,7 +253,7 @@ class BattleScene {
   }
   // ---------------- main flow ----------------
   async run() {
-    Sound.play(this.tr ? this.tr.music : 'battle');
+    Sound.play(!this.tr ? 'battle' : this.tr.god ? 'god' : this.tr.lieutenant ? 'lieutenant' : 'trainer');
     await this.intro();
     while (!this.result) {
       this.custom.cd = Math.max(0, this.custom.cd);
@@ -466,7 +467,7 @@ class BattleScene {
     const A = stat(u, 'atk') * stageMult(u.b.st.atk) * (u.b.burn ? .85 : 1), D = stat(t, 'def') * stageMult(t.b.st.def);
     const base = Math.floor(Math.floor(2 * u.lv / 5 + 2) * power * A / D / 50) + 2;
     const stab = SPECIES[u.sp].types.includes(mv.type) ? 1.5 : 1, eff = typeMult(mv.type, SPECIES[t.sp].types);
-    const crit = chance((mv.crit || 1) / 16);
+    const crit = chance((mv.crit || 1) * (u === this.P && perk() === 'crit' ? 2 : 1) / 16);
     const terr = this.terrain && this.terrain.type === mv.type ? 1 + this.terrain.boost / 100 : 1;
     return { dmg: eff === 0 ? 0 : Math.max(1, Math.floor(base * stab * eff * (crit ? 1.5 : 1) * terr * (.85 + Math.random() * .15))), eff, crit };
   }
@@ -555,10 +556,10 @@ class BattleScene {
     const it = ITEMS[id]; takeItem(id);
     const side = c === this.P ? 'p' : null;
     await this.msg(`You used a ${it.name}.`, 30);
-    const healMul = 1;
-    if (it.use === 'heal') { if (side) await this.heal(c, 'p', it.amt * healMul); else { c.hp = Math.min(maxHP(c), c.hp + it.amt); await this.msg(`${cName(c)} recovered HP.`, 30); } }
+    const healMul = perk() === 'heal' ? 1.2 : 1; Sound.sfx('item');
+    if (it.use === 'heal') { const amt = Math.round(it.amt * healMul); if (side) await this.heal(c, 'p', amt); else { c.hp = Math.min(maxHP(c), c.hp + amt); await this.msg(`${cName(c)} recovered HP.`, 30); } }
     if (it.use === 'full') { c.hp = maxHP(c); Object.assign(c.b, { burn: 0, poison: 0, sleep: 0, bind: 0, stun: false }); Sound.sfx('heal'); if (side) this.emit('p', 'Grove', 20, 'up'); await this.msg(`${cName(c)} is fully restored!`, 35); }
-    if (it.use === 'revive') { c.hp = Math.floor(maxHP(c) / 2); Sound.sfx('heal'); await this.msg(`${cName(c)} was revived!`, 35); }
+    if (it.use === 'revive') { c.hp = Math.floor(maxHP(c) * (healMul > 1 ? .6 : .5)); Sound.sfx('heal'); await this.msg(`${cName(c)} was revived!`, 35); }
     if (it.use === 'cure') {   // Tulsi: one status, worst first
       const b = c.b, order = [['burn', 'burn'], ['poison', 'poison'], ['sleep', 'sleep'], ['bind', 'bind'], ['stun', 'stun']];
       const k = order.find(([key]) => b[key]);
@@ -633,7 +634,7 @@ class BattleScene {
   }
   async awardXP(E, mul) {
     const sp = SPECIES[E.sp];
-    const base = Math.floor(sp.xp * E.lv / 4 * (this.tr ? 1.5 : 1) * (perk() === 'xp' ? 1.1 : 1) * mul);
+    const base = Math.floor(sp.xp * E.lv / 3.3 * (this.tr ? 1.5 : 1) * (perk() === 'xp' ? 1.1 : 1) * mul);
     const got = Game.party.filter(c => c.hp > 0 && this.parts4.has(c.uid));
     if (!got.length) return;
     const each = Math.max(1, Math.floor(base / got.length));
@@ -642,6 +643,13 @@ class BattleScene {
       await this.msg(`${cName(c)} gained ${each} XP!`, 30);
       c.xp += each;
       while (c.lv < LEVEL_CAP && c.xp >= xpForLevel(c.lv + 1)) await this.levelUp(c);
+    }
+    // companions who stayed on the bench learn by watching: half XP
+    const bench = Game.party.filter(c => c.hp > 0 && !this.parts4.has(c.uid) && c.lv < LEVEL_CAP);
+    if (bench.length) {
+      const half = Math.max(1, Math.floor(each / 2));
+      await this.msg(`The rest of your team gained ${half} XP by watching.`, 30);
+      for (const c of bench) { c.xp += half; while (c.lv < LEVEL_CAP && c.xp >= xpForLevel(c.lv + 1)) await this.levelUp(c); }
     }
     this.parts4 = new Set([this.P.uid]);
   }
@@ -679,7 +687,7 @@ class BattleScene {
       }
       if (b.shield && --b.shield.turns <= 0) { b.shield = null; await this.msg(`${n}'s shield faded.`, 30); }
       if (b.stunImm) b.stunImm--;
-      c.en = Math.min(maxEN(c), c.en + 2);
+      c.en = Math.min(maxEN(c), c.en + 2 + (side === 'p' && perk() === 'energy' ? 1 : 0));
     }
     if (await this.checkFaints()) return;
     if (this.terrain && --this.terrain.turns <= 0) { await this.msg(`The ${this.terrain.type} Terrain faded.`, 30); this.terrain = null; }
@@ -742,7 +750,7 @@ async function startBattle(cfg) {
   try { res = await B.run(); } catch (e) { console.error(e); res = 'run'; }
   // post battle
   if (res === 'win' && B.tr) {
-    const tr = B.tr, money = tr.reward * Math.max(...B.foes.map(c => c.lv));
+    const tr = B.tr, money = Math.floor(tr.reward * Math.max(...B.foes.map(c => c.lv)) * (perk() === 'money' ? 1.25 : 1));
     Sound.play('victory');
     B.trainerSprite = { look: LOOKS[tr.look || cfg.trainerId], x: 400, aura: null };
     await tween(B.trainerSprite, 'x', 236, 24);
@@ -791,7 +799,7 @@ class EvolutionScene {
   }
 }
 async function indraEnding() {
-  Sound.play('title');
+  Sound.play('fanfare'); Sound.sfx('seal');
   await say(['The thunder softens into gentle rain. Across Indrapuri, lamps are lit in celebration.', 'INDRA: You have stood steady in the storm. Take the Vajra Seal - proof that the heavens of Indrapuri recognise you.', 'You received the VAJRA SEAL!'], { speaker: 'Indra' });
   if (!Game.flags.gotBrahmastra) {
     Game.flags.gotBrahmastra = true; addItem('brahmastra', 1); Sound.sfx('pickup');
@@ -801,7 +809,13 @@ async function indraEnding() {
   Sound.play(World.map.music);
 }
 async function godEnding(tr) {
-  Sound.play('title');
+  Sound.play('fanfare'); Sound.sfx('seal');
   await say(tr.ending, { speaker: tr.name });
+  if (tr.flag === 'beatPerun' && !Game.flags.creditsSeen) {
+    Game.flags.creditsSeen = true;
+    await fadeOut(30); Sound.play('ending'); const cr = playCredits(); await fadeIn(20); await cr;
+    await fadeOut(20); await fadeIn(20);
+    await say('The credits are done, but the Mist Road stays open. Keep taming and filling your Bestiary! (Remember to SAVE.)');
+  }
   Sound.play(World.map.music);
 }

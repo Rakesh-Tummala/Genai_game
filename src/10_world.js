@@ -104,6 +104,7 @@ function buildMaps() {
   MAPS.palace = { id: 'palace', name: 'Vaijayanta Palace', music: 'boss', bg: 'palace', t: fromRows(['wwwwwwwwwwwwww', 'wwwwwwAAwwwwww', 'gPgggcccgggPgg', 'gggggcccgggggg', 'gPgggcccgggPgg', 'gggggcccgggggg', 'gPgggcccgggPgg', 'gggggcccgggggg', 'gPgggcccgggPgg', 'gggggcccgggggg', 'gPgggcccgggPgg', 'gggggcccgggggg', 'gggggcccgggggg', 'wwwwwwmwwwwwww']), buildings: [], signs: {}, items: [],
     npcs: [{ id: 'indra', name: 'Indra', look: 'indra', x: 6, y: 2, dir: 'down', trainer: 'indra', boss: true }, { id: 'vayu', name: 'Vayu', look: 'vayu', x: 3, y: 7, dir: 'right', trainer: 'vayu', boss: true }, { id: 'varuna', name: 'Varuna', look: 'varuna', x: 10, y: 7, dir: 'left', trainer: 'varuna', boss: true }], exit: ['city', 14, 9, 'down'] };
   buildMoreCities();
+  for (const id in MAPS) { const m = MAPS[id]; if (m.npcs.some(n => n.role === 'shop')) m.music = 'shop'; else if (m.npcs.some(n => n.role === 'heal')) m.music = 'shrine'; else if (m.music === 'boss') m.music = 'hall'; }
   for (const id in MAPS) { const m = MAPS[id]; m.h = m.t.length; m.w = m.t[0].length; m.buildings.forEach(b => b.img = renderBuilding(b)); }
 }
 
@@ -178,9 +179,10 @@ class Overworld {
     }
     // wild encounters
     const enc = m.encounters && m.encounters[this.tileAt(p.x, p.y)];
+    if (enc) Sound.sfx('step');
     if (enc && chance(.11)) {
       const night = nightLevel() > .5;
-      const table = enc.table.map(e => [e[0], e[1] * (e[2] === 'night' && night ? 2.5 : 1)]);
+      const table = enc.table.map(e => [e[0], e[1] * (e[2] === 'night' && night ? 2.5 : 1) * (perk() === 'rare' && SPECIES[e[0]].rarity !== 'common' ? 1.6 : 1)]);
       let tot = table.reduce((a, e) => a + e[1], 0), r = Math.random() * tot, sp = table[0][0];
       for (const e of table) { if ((r -= e[1]) < 0) { sp = e[0]; break; } }
       const lv = randi(enc.lv[0], enc.lv[1]);
@@ -257,7 +259,7 @@ class Overworld {
     n.from = [n.x, n.y]; n.x = nx; n.y = ny; n.moving = true; n.prog = 0;
   }
   async openMenu() {
-    this.busy = true; Sound.sfx('confirm');
+    this.busy = true; Sound.sfx('menu');
     try { await openStartMenu(); } finally { this.busy = false; Input.clear(); }
   }
   // ---------------- drawing ----------------

@@ -40,13 +40,26 @@ On phones and tablets an on-screen D-pad with A/B/MENU buttons appears automatic
 
 ---
 
-## Stage 1: what is playable
+## What is in the game (v1.0)
 
-This build is **Stage 3 (complete)**. All eight mythic cities are playable from Indrapuri to Kitezh, with the full creature roster, all orbs and items, the Bestiary and world-map travel. Stage 4 (more characters, fuller audio, polish) is next.
+This is the **complete game (v1.0, Stages 1-4)**: 10 playable characters, all eight mythic cities from Indrapuri to Kitezh, 70 creatures, all orbs and items, the Bestiary, world-map travel, a full chiptune soundtrack and an ending.
 
 **Playable now**
 
-- Title screen, 3 playable characters (Ira, Tarun, Saanvi), each with a small perk (+10% taming chance, +10% XP, 15% shop discount).
+- Title screen (shows your save's name, seals, tamed count and play time) and **10 playable characters**, one or more from each culture, each with their own sprite, backstory and perk:
+
+  | Character | From | Perk |
+  |---|---|---|
+  | Ira | Indrapuri | +10% taming chance |
+  | Tarun | Indrapuri | +10% experience |
+  | Saanvi | Indrapuri | 15% shop discount |
+  | Eleni | Olympos | Healing items heal 20% more (revives restore 60%) |
+  | Leif | Asgard | Starts with 5 extra Bana Orbs and 2 Agneyastra Orbs |
+  | Amunet | Heliopolis | 4 custom attacks per battle instead of 3 |
+  | Haruto | Takama | Your critical hits happen twice as often |
+  | Orla | Tir na nOg | +25% coins from battles |
+  | Iltani | Babylon | Uncommon and rare creatures appear more often |
+  | Mirko | Kitezh | Companions get +4 max EN and regain EN faster |
 - Choice of 3 starter creatures (Yalicub, Makarin, Vanarling).
 - **Eight playable cities**, each with its own tiles, trees, buildings, music, battle backgrounds and weather:
   - **Indrapuri (India)** - details below.
@@ -75,13 +88,16 @@ This build is **Stage 3 (complete)**. All eight mythic cities are playable from 
 - India trainers: Pilgrim Rohan (regular trainer, 4 creatures, spots you on the road), lieutenants Agni (Fire Hall), Vayu and Varuna (inside Vaijayanta Palace, 4 creatures each), and Indra's trial (god, 5 creatures, unique intro, signature move *Vajra Thunderbolt*). Indra now requires Vayu and Varuna first.
 - AI-powered NPC dialogue, expanded creature lore (Party > Summary > Z) and Mythic Forms, each with built-in fallback text.
 - **Bestiary** (menu > BESTIARY): all 70 entries grouped by city, seen/tamed progress, silhouettes for unseen creatures, lore, evolutions and base stats for tamed creatures, and expanded AI lore with Z.
-- Save / load (localStorage), options (text speed, music, sound effects, mute), chiptune music and sound effects.
+- **Audio**: a chiptune theme for every city, separate music for wild, trainer, lieutenant and god battles, shops, shrines, trial halls, a victory jingle, a seal fanfare and an ending theme. Several instrument voices (pulse, pluck, triangle, saw) with harmony lines and drones. Sound effects for menus, items, custom attacks, grass rustle, low-HP warning, seals and more. Music and sound-effect volume each have 5 levels, plus mute (N key or the music-note button).
+- **Ending**: beating Perun plays scrolling credits listing your seals, companions and Bestiary progress. The world stays open afterwards.
+- Companions that sit on the bench still earn half XP from battles.
+- Save / load (localStorage) and options (text speed, music volume, sound-effect volume, mute, Bestiary preview).
 
-**Not in this build yet**
+**Known limitations**
 
-- Characters 4-10 and their perks (Stage 4). Only Ira, Tarun and Saanvi are playable.
-- The full audio pass (Stage 4). Each city has one music loop; battles share two tracks.
-- A general polish and balance pass (Stage 4). Late-game levels were only spot-checked with strong test teams.
+- Difficulty was tuned with simulated playthroughs and spot-checked battles, not a full human playthrough. Gods are meant to be the hardest fights: expect a few levels of grinding and some healing items, especially for Odin.
+- The story always starts in Indrapuri with the same three starters, whichever character you pick.
+- Old saves keep working, but a save made before Stage 3 will need Vayu and Varuna (inside Indra's palace) before Indra.
 
 ---
 
@@ -178,7 +194,7 @@ and start the server with `ALLOW_FILE_ORIGIN=1`.
 |---|---|
 | `mythbound.html` | The game. Built from `src/`; this is the file you play. |
 | `src/shell.html` | HTML/CSS shell. |
-| `src/01_core.js` ... `src/13_main.js` (plus `05_data_world.js`, `05_data_z_cities.js`, `05_data_zz_cities2.js`, `06_sprites_parts.js`, `10_world_cities.js`, `10_world_cities2.js`) | Game source, concatenated in order (core, font, audio, input, data, sprites, AI, game state, UI, world, battle, scenes, main loop). |
+| `src/01_core.js` ... `src/13_main.js` (plus `05_data_world.js`, `05_data_z_cities.js`, `05_data_zz_cities2.js`, `05_data_zzz_stage4.js`, `06_sprites_parts.js`, `10_world_cities.js`, `10_world_cities2.js`) | Game source, concatenated in order (core, font, audio, input, data, sprites, AI, game state, UI, world, battle, scenes, main loop). |
 | `build.js` | Inlines `src/` into `mythbound.html`: `node build.js`. |
 | `server.js` | Optional AI server. |
 | `package.json` | Scripts and the SDK dependency for live mode. |
@@ -194,4 +210,4 @@ Edit files in `src/`, then run `node build.js`.
 | 1 | Complete loop in India: city, route, 13 creatures, battles, taming, custom AI attacks, trainer, Agni, Indra, save/load, server | Done |
 | 2 | All creatures, all orbs and items, Bestiary | Done |
 | 3 | Remaining 7 cities with trainers, lieutenants and gods; world map | Done |
-| 4 | 10 characters, full audio, polish | Planned |
+| 4 | 10 characters, full audio, polish | Done |

@@ -18,7 +18,10 @@ const SKYLINE = (() => { // eight silhouettes hinting at the eight mythic cities
   return c;
 })();
 class TitleScene {
-  constructor() { this.opaque = true; this.lanterns = []; this.ready = false; this.t = 0; }
+  constructor() {
+    this.opaque = true; this.lanterns = []; this.ready = false; this.t = 0; this.saveInfo = null;
+    try { const d = JSON.parse(localStorage.getItem(SAVE_KEY)); if (d && d.player) { const s = Math.floor((d.frames || 0) / 60); this.saveInfo = { name: d.player.name, seals: ['beatIndra', 'beatZeus', 'beatOdin', 'beatRa', 'beatAmaterasu', 'beatDagda', 'beatMarduk', 'beatPerun'].filter(f => d.flags && d.flags[f]).length, tamed: Object.keys(d.tamed || {}).length, time: Math.floor(s / 3600) + ':' + String(Math.floor(s / 60) % 60).padStart(2, '0') }; } } catch (e) { }
+  }
   update() {
     this.t++;
     if (this.lanterns.length < 14 && chance(.04)) this.lanterns.push({ x: Math.random() * W, y: H + 5, v: .2 + Math.random() * .3, ph: Math.random() * 6 });
@@ -49,7 +52,8 @@ class TitleScene {
     drawCreature(ctx, STARTERS[Math.floor(Game.frames / 240) % 3], 60, 150, {});
     drawCreature(ctx, 'garudin', 262, 146, { flip: true });
     if (!this.ready && Math.floor(Game.frames / 30) % 2) Font.drawC(ctx, 'PRESS Z / ENTER', 160, 168, '#ffffff', '#1a0f2e');
-    Font.draw(ctx, 'Stage 3 build', 4, H - 10, '#c8a8d8');
+    Font.draw(ctx, 'v1.0', 4, H - 10, '#c8a8d8');
+    if (this.ready && this.saveInfo) { const si = this.saveInfo; Font.drawC(ctx, `Save: ${si.name}  |  Seals ${si.seals}/8  |  Tamed ${si.tamed}  |  ${si.time}`, 160, 136, '#f4c8a0', '#1a0f2e'); }
     Font.drawR(ctx, AI_ENDPOINT ? 'AI: server mode' : 'AI: offline mode', W - 4, H - 10, '#c8a8d8');
   }
 }
@@ -61,33 +65,58 @@ function resetGame() {
 class CharSelectScene {
   constructor() { this.opaque = true; this.i = 0; this.resolve = null; }
   update() {
-    if (Input.p('left')) { this.i = (this.i + 2) % 3; Sound.sfx('cursor'); }
-    if (Input.p('right')) { this.i = (this.i + 1) % 3; Sound.sfx('cursor'); }
+    const n = CHARACTERS.length, cols = 5;
+    if (Input.p('left')) { this.i = (this.i + n - 1) % n; Sound.sfx('cursor'); }
+    if (Input.p('right')) { this.i = (this.i + 1) % n; Sound.sfx('cursor'); }
+    if (Input.p('up') || Input.p('down')) { this.i = (this.i + cols) % n; Sound.sfx('cursor'); }
     if (Input.p('a')) { Sound.sfx('confirm'); this.done(CHARACTERS[this.i]); }
     if (Input.p('b')) { Sound.sfx('cancel'); this.done(null); }
   }
   done(v) { Scenes.remove(this); this.resolve(v); }
   draw(ctx) {
     const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#24123e'); g.addColorStop(1, '#5a2a3a'); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
-    Font.drawC(ctx, 'CHOOSE YOUR TAMER', 160, 8, UI.gold, '#0b0714');
+    Font.drawC(ctx, 'CHOOSE YOUR TAMER', 160, 5, UI.gold, '#0b0714');
     CHARACTERS.forEach((c, i) => {
-      const x = 8 + i * 104, sel = i === this.i;
-      drawWin(ctx, x, 22, 98, 118, sel ? { c1: '#4a2a6a', c2: '#2a1640' } : {});
+      const x = 6 + (i % 5) * 62, y = 16 + Math.floor(i / 5) * 58, sel = i === this.i;
+      drawWin(ctx, x, y, 60, 56, sel ? { c1: '#4a2a6a', c2: '#2a1640', border: '#ffd040' } : {});
       const dir = sel ? ['down', 'left', 'up', 'right'][Math.floor(Game.frames / 40) % 4] : 'down';
       const fr = personFrames(c.look)[dir][sel ? (Math.floor(Game.frames / 10) % 3) : 0];
-      ctx.drawImage(fr, x + 25, 30, 48, 48);
-      Font.drawC(ctx, c.name, x + 49, 84, sel ? '#ffffff' : UI.ink);
-      Font.wrap(c.perkText, 86).forEach((l, k) => Font.drawC(ctx, l, x + 49, 98 + k * 10, UI.green));
-      if (sel) drawCursor(ctx, x + 6, 84);
+      ctx.drawImage(fr, x + 14, y + 6, 32, 32);
+      Font.drawC(ctx, c.name, x + 30, y + 42, sel ? '#ffffff' : UI.ink);
     });
-    drawWin(ctx, 0, 146, W, 94);
     const c = CHARACTERS[this.i];
-    Font.draw(ctx, c.name, 12, 154, UI.gold);
-    Font.wrap(c.story, 296).forEach((l, k) => Font.draw(ctx, l, 12, 168 + k * 12, UI.ink));
-    Font.draw(ctx, 'Perk: ' + c.perkText, 12, 206, UI.green);
-    Font.draw(ctx, '<  >  choose     Z confirm     X back', 12, 224, UI.dim);
+    drawWin(ctx, 0, 134, W, 106);
+    ctx.drawImage(personFrames(c.look).down[Math.floor(Game.frames / 12) % 3], 8, 146, 48, 48);
+    Font.draw(ctx, c.name, 64, 142, UI.gold);
+    Font.drawR(ctx, 'from ' + (c.home || 'Indrapuri'), 312, 142, UI.dim);
+    Font.wrap(c.story, 246).slice(0, 4).forEach((l, k) => Font.draw(ctx, l, 64, 155 + k * 11, UI.ink));
+    Font.draw(ctx, 'Perk: ' + c.perkText, 12, 204, UI.green);
+    Font.draw(ctx, 'Arrows choose   Z confirm   X back', 12, 224, UI.dim);
   }
 }
+class CreditsScene {
+  constructor() { this.opaque = true; this.y = H; this.resolve = null; this.t = 0;
+    const seals = [['Indrapuri', 'Indra', 'Vajra Seal'], ['Olympos', 'Zeus', 'Aegis Seal'], ['Asgard', 'Odin', 'Raven Seal'], ['Heliopolis', 'Ra', 'Sun Seal'], ['Takama', 'Amaterasu', 'Mirror Seal'], ['Tir na nOg', 'The Dagda', 'Harp Seal'], ['Babylon', 'Marduk', 'Star Seal'], ['Kitezh', 'Perun', 'Oak Seal']];
+    this.lines = [['MYTHBOUND', 'big'], ['Tamers of the Eight Mythic Cities', 'dim'], [''], [`${Game.player.name}, Tamer of the Mist Road`, 'gold'], [''], ['THE EIGHT SEALS', 'gold'], ...seals.map(([c, g, s]) => [`${s} - ${g} of ${c}`]), [''],
+      ['YOUR COMPANIONS', 'gold'], ...Game.party.map(m => [`${cName(m)}${m.mythic ? ' ' + m.mythic.epithet : ''}  Lv ${m.lv}`]), [''],
+      ['BESTIARY', 'gold'], [`Seen ${SPECIES_ORDER.filter(id => Game.seen[id]).length} / ${SPECIES_ORDER.length}    Tamed ${SPECIES_ORDER.filter(id => Game.tamed[id]).length} / ${SPECIES_ORDER.length}`], [''],
+      ['All creatures, cities and characters are original,', 'dim'], ['inspired by the folklore of India, Greece, the Norse lands,', 'dim'], ['Egypt, Japan, the Celtic lands, Mesopotamia', 'dim'], ['and the Slavic lands.', 'dim'], [''],
+      ['Every sprite, sound and note was made in code.', 'dim'], [''], ['THANK YOU FOR PLAYING', 'gold'], [''], ['Keep exploring - your journey continues.', 'dim']];
+  }
+  update() { this.t++; this.y -= Input.h('a') ? 1.6 : .4; const end = -this.lines.length * 14 + 60; if (this.y < end) { this.y = end; if (Input.p('a') || Input.p('b')) this.finish(); } if (Input.p('b')) this.finish(); }
+  finish() { if (this.closed) return; this.closed = true; Scenes.remove(this); this.resolve(); }
+  draw(ctx) {
+    ctx.fillStyle = '#0b0620'; ctx.fillRect(0, 0, W, H);
+    const r = mulberry32(11); for (let i = 0; i < 60; i++) { ctx.fillStyle = `rgba(255,240,200,${.2 + (Math.sin(this.t / 20 + i) + 1) * .3})`; ctx.fillRect(r() * W | 0, r() * H | 0, 1, 1); }
+    this.lines.forEach(([txt, kind], k) => {
+      const y = this.y + k * 14; if (y < -20 || y > H) return;
+      if (kind === 'big') Font.drawBig(ctx, txt, 160 - Font.measure(txt) * 1.5, y - 4, '#ffd040', 3, '#3a1a08');
+      else Font.drawC(ctx, txt, 160, y + 6, kind === 'gold' ? UI.gold : kind === 'dim' ? '#b8a8d0' : '#ffffff', '#0b0714');
+    });
+    if (this.y <= -this.lines.length * 14 + 60 && Math.floor(this.t / 30) % 2) Font.drawC(ctx, 'Press Z', 160, 228, UI.dim);
+  }
+}
+function playCredits() { return new Promise(r => { const s = new CreditsScene(); s.resolve = r; Scenes.push(s); }); }
 class StarterScene {
   constructor() { this.opaque = true; this.i = 1; this.resolve = null; this.busy = false; }
   async update() {
@@ -125,8 +154,9 @@ class StarterScene {
 class BlankScene { constructor(c) { this.opaque = true; this.c = c || '#0b0714'; } update() { } draw(ctx) { ctx.fillStyle = this.c; ctx.fillRect(0, 0, W, H); const r = mulberry32(3); for (let i = 0; i < 50; i++) { ctx.fillStyle = `rgba(255,240,200,${.2 + r() * .5})`; ctx.fillRect(r() * W | 0, r() * H | 0, 1, 1); } } }
 async function newGameFlow() {
   await fadeOut(12);
-  const cs = new CharSelectScene(); Scenes.push(cs); await fadeIn(12);
-  const ch = await new Promise(r => cs.resolve = r);
+  const cs = new CharSelectScene(); const picked = new Promise(r => cs.resolve = r);
+  Scenes.push(cs); await fadeIn(12);
+  const ch = await picked;
   if (!ch) return false;
   resetGame(); Game.player.charId = ch.id; Game.player.name = ch.name;
   const bl = new BlankScene(); Scenes.push(bl);
@@ -136,6 +166,7 @@ async function newGameFlow() {
   const st = new StarterScene(); Scenes.push(st);
   const sp = await new Promise(r => st.resolve = r);
   const c = newCreature(sp, 5); addCreature(c);
+  if (perk() === 'orbs') { addItem('bana', 5); addItem('agneyastra', 2); }
   await fadeOut(14);
   Scenes.replaceAll(World); World.load('house', 4, 3, 'up');
   await fadeIn(14);
@@ -222,9 +253,9 @@ async function openBag() {
     const t = await choose(Game.party.map(c => ({ label: cName(c), right: `${c.hp}/${maxHP(c)}` })), { x: 60, y: 30, w: 200, title: `Use ${it.name} on?` });
     if (t < 0) continue;
     const c = Game.party[t];
-    if (it.use === 'revive') { if (c.hp > 0) { await say('It isn\'t fainted.'); continue; } takeItem(id); c.hp = Math.floor(maxHP(c) / 2); }
+    if (it.use === 'revive') { if (c.hp > 0) { await say('It isn\'t fainted.'); continue; } takeItem(id); c.hp = Math.floor(maxHP(c) * (perk() === 'heal' ? .6 : .5)); }
     else if (c.hp <= 0) { await say('It has fainted. Use a Sanjivani Herb or visit the shrine.'); continue; }
-    else if (it.use === 'heal') { if (c.hp >= maxHP(c)) { await say('HP is already full.'); continue; } takeItem(id); c.hp = Math.min(maxHP(c), c.hp + it.amt); }
+    else if (it.use === 'heal') { if (c.hp >= maxHP(c)) { await say('HP is already full.'); continue; } takeItem(id); c.hp = Math.min(maxHP(c), c.hp + Math.round(it.amt * (perk() === 'heal' ? 1.2 : 1))); }
     else if (it.use === 'full') { takeItem(id); c.hp = maxHP(c); }
     else if (it.use === 'pp') { takeItem(id); c.moves.forEach(m => m.pp = MOVES[m.id].pp); c.en = maxEN(c); }
     else if (it.use === 'cure') { await say('Status conditions only last during battle.'); continue; }
@@ -282,14 +313,15 @@ async function openOptions() {
   let i = 0;
   while (true) {
     const sp = ['Slow', 'Normal', 'Fast', 'Instant'][Settings.textSpeed];
-    const items = [{ label: 'Text speed', right: sp }, { label: 'Music', right: Settings.music ? 'On' : 'Off' }, { label: 'Sound FX', right: Settings.sfx ? 'On' : 'Off' }, { label: 'Mute all', right: Settings.muted ? 'Yes' : 'No' }, { label: 'Bestiary preview', right: Settings.bestiaryPreview ? 'On' : 'Off' }, { label: 'Back' }];
+    const bar = v => v ? '|'.repeat(v) + '.'.repeat(4 - v) : 'Off';
+    const items = [{ label: 'Text speed', right: sp }, { label: 'Music volume', right: bar(Settings.musicVol) }, { label: 'Sound FX volume', right: bar(Settings.sfxVol) }, { label: 'Mute all', right: Settings.muted ? 'Yes' : 'No' }, { label: 'Bestiary preview', right: Settings.bestiaryPreview ? 'On' : 'Off' }, { label: 'Back' }];
     const extra = ctx => { drawWin(ctx, 0, 176, W, 64); Font.wrap(AI_ENDPOINT ? `AI endpoint: ${AI_ENDPOINT} (status: ${AI.status})` : 'AI: offline mode. Custom attacks, lore and dialogue use built-in fallbacks. See README to enable the optional server.', 296).forEach((l, k) => Font.draw(ctx, l, 12, 186 + k * 12, UI.ink)); Font.draw(ctx, 'Keys: arrows/WASD move, Z/Enter confirm, X back, ESC/C/M menu, Shift run, N mute', 12, 224, UI.dim); };
-    i = await choose(items, { x: 70, y: 30, w: 180, title: 'OPTIONS', start: i, extra });
+    i = await choose(items, { x: 60, y: 30, w: 200, title: 'OPTIONS', start: i, extra });
     if (i < 0 || i === 5) { saveSettings(); return; }
     if (i === 4) { Settings.bestiaryPreview = !Settings.bestiaryPreview; if (Settings.bestiaryPreview) await say('Bestiary preview reveals every creature, including those from cities that are not playable yet. It does not change your seen/tamed progress.'); }
     if (i === 0) Settings.textSpeed = (Settings.textSpeed + 1) % 4;
-    if (i === 1) Settings.music = !Settings.music;
-    if (i === 2) Settings.sfx = !Settings.sfx;
+    if (i === 1) Settings.musicVol = (Settings.musicVol + 1) % 5;
+    if (i === 2) { Settings.sfxVol = (Settings.sfxVol + 1) % 5; Sound.applyVolumes(); Sound.sfx('confirm'); }
     if (i === 3) { toggleMuteUI(); }
     Sound.applyVolumes(); saveSettings();
   }

@@ -60,7 +60,7 @@ const AI_ENDPOINT = "";
 const W = 320, H = 240, TILE = 16;
 const SAVE_KEY = 'mythbound_save_v1';
 const SETTINGS_KEY = 'mythbound_settings_v1';
-const BUILD_STAGE = 3;
+const BUILD_STAGE = 4;
 
 // ---- small utils -----------------------------------------------------
 const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
@@ -224,7 +224,8 @@ const Font = (() => {
 
 // ---- 03_audio.js ----
 // =====================================================================
-//  CHIPTUNE AUDIO  (Web Audio: square/triangle voices, noise drums, raga-flavoured loops)
+//  CHIPTUNE AUDIO  (Web Audio: pulse/triangle/saw/pluck voices, harmony lines, noise drums,
+//  a theme per city plus battle, hall, shop, shrine, ending and fanfare tracks)
 // =====================================================================
 const Sound = (() => {
   let ac = null, master, musicBus, sfxBus, noiseBuf;
@@ -238,21 +239,29 @@ const Sound = (() => {
     return { len: toks.length, ev };
   }
   const T = {
-    title: { bpm: 84, drone: [36, 43], lead: 'C5 - - Db5 E5 - F5 - G5 - - - Ab5 G5 F5 E5 | F5 - E5 Db5 C5 - - - B4 - C5 Db5 C5 - - -', bass: 'C3 - - - - - - - C3 - - - G2 - - - F2 - - - - - - - G2 - - - C3 - - -', drums: 'k.......h...k...k.......h...s...' },
-    city: { bpm: 108, drone: [36, 43], lead: 'E5 F#5 G5 - A5 - G5 F#5 E5 - D5 - E5 - - - G5 A5 B5 - A5 G5 F#5 - E5 - D5 E5 C5 - - - B4 - D5 - E5 F#5 E5 D5 C5 - B4 - A4 - - - C5 - E5 F#5 G5 - F#5 E5 D5 E5 C5 B4 C5 - - -', bass: 'C3 . G3 . C3 . G3 . A2 . E3 . A2 . E3 . F2 . C3 . F2 . C3 . G2 . D3 . G2 . D3 . E3 . B3 . E3 . B3 . A2 . E3 . A2 . E3 . F2 . C3 . F2 . C3 . G2 . D3 . C3 . . .', drums: 'k.h.s.h.k.hks.h.' },
+    title: { voice: 'pulse', bpm: 84, drone: [36, 43], lead: 'C5 - - Db5 E5 - F5 - G5 - - - Ab5 G5 F5 E5 | F5 - E5 Db5 C5 - - - B4 - C5 Db5 C5 - - -', bass: 'C3 - - - - - - - C3 - - - G2 - - - F2 - - - - - - - G2 - - - C3 - - -', drums: 'k.......h...k...k.......h...s...' },
+    city: { voice: 'pluck', bpm: 108, drone: [36, 43], lead: 'E5 F#5 G5 - A5 - G5 F#5 E5 - D5 - E5 - - - G5 A5 B5 - A5 G5 F#5 - E5 - D5 E5 C5 - - - B4 - D5 - E5 F#5 E5 D5 C5 - B4 - A4 - - - C5 - E5 F#5 G5 - F#5 E5 D5 E5 C5 B4 C5 - - -', bass: 'C3 . G3 . C3 . G3 . A2 . E3 . A2 . E3 . F2 . C3 . F2 . C3 . G2 . D3 . G2 . D3 . E3 . B3 . E3 . B3 . A2 . E3 . A2 . E3 . F2 . C3 . F2 . C3 . G2 . D3 . C3 . . .', drums: 'k.h.s.h.k.hks.h.' },
     route: { bpm: 132, lead: 'G4 - C5 - E5 - F5 E5 D5 - C5 - Bb4 - C5 - | E5 - G5 - A5 G5 F5 E5 D5 - Bb4 - C5 - - -', bass: 'C3 . C3 G2 Bb2 . C3 . F2 . F2 C3 G2 . C3 . C3 . C3 G2 Bb2 . C3 . F2 . G2 . C3 . . .', drums: 'k.hkh.s.k.hkh.sh' },
-    battle: { bpm: 160, lead: 'C5 Eb5 G5 Eb5 C5 Eb5 G5 Ab5 G5 F5 Eb5 Db5 C5 - Bb4 - | C5 Eb5 G5 Bb5 Ab5 G5 F5 Eb5 F5 - Db5 - C5 - - -', bass: 'C3 C3 C4 C3 C3 C3 Bb2 C3 Ab2 Ab2 Ab3 Ab2 Bb2 Bb2 Bb3 Bb2 C3 C3 C4 C3 C3 C3 Bb2 C3 Db3 Db3 Db4 Db3 C3 C3 C4 C3', drums: 'k.hsk.hsk.hsk.ss' },
-    boss: { bpm: 168, drone: [36], lead: 'C5 Db5 E5 C5 F5 E5 Db5 C5 G5 - Ab5 G5 F5 E5 Db5 - | C6 B5 Ab5 G5 F5 E5 F5 G5 Ab5 G5 F5 E5 Db5 - C5 -', bass: 'C2 C3 C2 C3 C2 C3 Db2 Db3 C2 C3 C2 C3 C2 C3 Db2 Db3 F2 F3 F2 F3 G2 G3 G2 G3 Ab2 Ab3 G2 G3 Db2 Db3 C2 C3', drums: 'kkhsk.hskkhsk.ss' },
-    greece: { bpm: 116, lead: 'D5 - A4 - D5 E5 F5 - E5 D5 C5 - D5 - - - | F5 - G5 A5 - G5 F5 E5 D5 - E5 F5 E5 - - -', bass: 'D3 . A2 . D3 . A2 . C3 . G2 . D3 . . . F2 . C3 . G2 . D3 . A2 . E3 . A2 . . .', drums: 'k.h.k.h.s.h.k.hh' },
-    norse: { bpm: 92, drone: [33, 40], lead: 'A4 - - C5 E5 - D5 C5 B4 - - - G4 - A4 - | C5 - D5 E5 - - G5 E5 D5 - C5 B4 A4 - - -', bass: 'A2 - - - - - - - G2 - - - - - - - F2 - - - - - - - E2 - - - G2 - - -', drums: 'k.......k...s...' },
-    egypt: { bpm: 112, drone: [38], lead: 'D5 Eb5 F#5 - G5 F#5 Eb5 D5 C5 - D5 - - - - - | A4 - Bb4 C5 D5 - Eb5 D5 C5 Bb4 A4 - D5 - - -', bass: 'D3 . D3 . A2 . D3 . C3 . C3 . D3 . . . D3 . D3 . G2 . G2 . A2 . A2 . D3 . . .', drums: 'k.hk.hs.k.hk.sh.' },
-    japan: { bpm: 96, lead: 'E5 - F5 - A5 - - - B5 A5 F5 E5 - - - - | C5 - E5 F5 A5 - F5 E5 B4 - C5 - E5 - - -', bass: 'E2 - - - - - - - A2 - - - - - - - F2 - - - - - - - E2 - - - B2 - - -', drums: 'k...h...k.k.s...' },
-    celtic: { bpm: 132, lead: 'G5 A5 B5 A5 G5 E5 D5 E5 G5 - A5 - B5 - D6 - | E6 D6 B5 A5 G5 A5 B5 G5 A5 - E5 - G5 - - -', bass: 'G2 . D3 . G2 . D3 . F2 . C3 . F2 . C3 . A2 . E3 . A2 . E3 . D3 . G2 . . . . .', drums: 'k.hk.hs.hk.hs.h.' },
-    meso: { bpm: 100, drone: [33], lead: 'A4 - Bb4 - C5 - D5 - E5 - F5 E5 D5 - - - | C5 - D5 E5 - D5 C5 Bb4 A4 - - - G4 - A4 -', bass: 'A2 - - - E2 - - - F2 - - - E2 - - - A2 - - - D3 - - - E2 - - - A2 - - -', drums: 'k..k..s.k..k.ss.' },
-    slavic: { bpm: 120, lead: 'A4 - C5 - E5 - D5 C5 B4 - G4 - A4 - - - | E5 - F5 E5 D5 - C5 B4 C5 - A4 - B4 - - -', bass: 'A2 . E3 . A2 . E3 . G2 . D3 . G2 . D3 . F2 . C3 . F2 . C3 . E2 . B2 . E2 . . .', drums: 'k.h.s.h.k.hks.h.' },
-    victory: { bpm: 150, once: true, lead: 'C5 E5 G5 C6 - - G5 C6 - - - - . . . .', bass: 'C3 - - - - - G2 C3 - - - - . . . .', drums: 'k...k...k.s.k...' },
+    battle: { voice: 'square', bpm: 160, lead: 'C5 Eb5 G5 Eb5 C5 Eb5 G5 Ab5 G5 F5 Eb5 Db5 C5 - Bb4 - | C5 Eb5 G5 Bb5 Ab5 G5 F5 Eb5 F5 - Db5 - C5 - - -', bass: 'C3 C3 C4 C3 C3 C3 Bb2 C3 Ab2 Ab2 Ab3 Ab2 Bb2 Bb2 Bb3 Bb2 C3 C3 C4 C3 C3 C3 Bb2 C3 Db3 Db3 Db4 Db3 C3 C3 C4 C3', drums: 'k.hsk.hsk.hsk.ss' },
+    boss: { voice: 'saw', bpm: 168, drone: [36], lead: 'C5 Db5 E5 C5 F5 E5 Db5 C5 G5 - Ab5 G5 F5 E5 Db5 - | C6 B5 Ab5 G5 F5 E5 F5 G5 Ab5 G5 F5 E5 Db5 - C5 -', bass: 'C2 C3 C2 C3 C2 C3 Db2 Db3 C2 C3 C2 C3 C2 C3 Db2 Db3 F2 F3 F2 F3 G2 G3 G2 G3 Ab2 Ab3 G2 G3 Db2 Db3 C2 C3', drums: 'kkhsk.hskkhsk.ss' },
+    greece: { voice: 'pluck', bpm: 116, lead: 'D5 - A4 - D5 E5 F5 - E5 D5 C5 - D5 - - - | F5 - G5 A5 - G5 F5 E5 D5 - E5 F5 E5 - - -', bass: 'D3 . A2 . D3 . A2 . C3 . G2 . D3 . . . F2 . C3 . G2 . D3 . A2 . E3 . A2 . . .', drums: 'k.h.k.h.s.h.k.hh' },
+    norse: { voice: 'tri', bpm: 92, drone: [33, 40], lead: 'A4 - - C5 E5 - D5 C5 B4 - - - G4 - A4 - | C5 - D5 E5 - - G5 E5 D5 - C5 B4 A4 - - -', bass: 'A2 - - - - - - - G2 - - - - - - - F2 - - - - - - - E2 - - - G2 - - -', drums: 'k.......k...s...' },
+    egypt: { voice: 'saw', bpm: 112, drone: [38], lead: 'D5 Eb5 F#5 - G5 F#5 Eb5 D5 C5 - D5 - - - - - | A4 - Bb4 C5 D5 - Eb5 D5 C5 Bb4 A4 - D5 - - -', bass: 'D3 . D3 . A2 . D3 . C3 . C3 . D3 . . . D3 . D3 . G2 . G2 . A2 . A2 . D3 . . .', drums: 'k.hk.hs.k.hk.sh.' },
+    japan: { voice: 'pluck', bpm: 96, lead: 'E5 - F5 - A5 - - - B5 A5 F5 E5 - - - - | C5 - E5 F5 A5 - F5 E5 B4 - C5 - E5 - - -', bass: 'E2 - - - - - - - A2 - - - - - - - F2 - - - - - - - E2 - - - B2 - - -', drums: 'k...h...k.k.s...' },
+    celtic: { voice: 'pulse', bpm: 132, lead: 'G5 A5 B5 A5 G5 E5 D5 E5 G5 - A5 - B5 - D6 - | E6 D6 B5 A5 G5 A5 B5 G5 A5 - E5 - G5 - - -', bass: 'G2 . D3 . G2 . D3 . F2 . C3 . F2 . C3 . A2 . E3 . A2 . E3 . D3 . G2 . . . . .', drums: 'k.hk.hs.hk.hs.h.' },
+    meso: { voice: 'saw', bpm: 100, drone: [33], lead: 'A4 - Bb4 - C5 - D5 - E5 - F5 E5 D5 - - - | C5 - D5 E5 - D5 C5 Bb4 A4 - - - G4 - A4 -', bass: 'A2 - - - E2 - - - F2 - - - E2 - - - A2 - - - D3 - - - E2 - - - A2 - - -', drums: 'k..k..s.k..k.ss.' },
+    slavic: { voice: 'pulse', bpm: 120, lead: 'A4 - C5 - E5 - D5 C5 B4 - G4 - A4 - - - | E5 - F5 E5 D5 - C5 B4 C5 - A4 - B4 - - -', bass: 'A2 . E3 . A2 . E3 . G2 . D3 . G2 . D3 . F2 . C3 . F2 . C3 . E2 . B2 . E2 . . .', drums: 'k.h.s.h.k.hks.h.' },
+    trainer: { voice: 'pulse', bpm: 150, lead: 'G4 B4 D5 G5 F#5 - D5 - E5 D5 B4 G4 A4 - - - | G4 B4 D5 G5 A5 - B5 A5 G5 F#5 E5 D5 G5 - - -', bass: 'G2 G3 G2 G3 D2 D3 D2 D3 C2 C3 C2 C3 D2 D3 D2 D3 G2 G3 G2 G3 D2 D3 D2 D3 C2 C3 D2 D3 G2 G3 G2 G3', drums: 'k.hsk.hsk.hsk.hs' },
+    lieutenant: { voice: 'saw', bpm: 164, drone: [38], lead: 'D5 F5 A5 F5 D5 F5 A5 C6 Bb5 A5 G5 F5 E5 - C5 - | D5 F5 A5 D6 C6 Bb5 A5 G5 A5 - F5 - D5 - - -', bass: 'D2 D3 D2 D3 D2 D3 C2 C3 Bb1 Bb2 Bb1 Bb2 A1 A2 A1 A2 D2 D3 D2 D3 F2 F3 F2 F3 G2 G3 A2 A3 D2 D3 D2 D3', drums: 'kkhsk.hskkhsk.ss' },
+    god: { voice: 'pulse', bpm: 140, drone: [36, 43], lead: 'C5 - G4 - C5 D5 Eb5 - F5 - Eb5 D5 C5 - G5 - | Ab5 - G5 F5 Eb5 - D5 - C5 - D5 Eb5 D5 - - -', harm: 'Eb4 - - - G4 - - - Ab4 - - - G4 - - - F4 - - - G4 - - - Ab4 - - - G4 - - -', bass: 'C2 . C2 . C2 . G1 . Ab1 . Ab1 . G1 . G1 . C2 . C2 . C2 . F1 . F1 . G1 . G1 . C2 .', drums: 'k..sk.hsk..sk.ss' },
+    hall: { voice: 'tri', bpm: 80, drone: [36], lead: 'C5 - - - - - Db5 - C5 - - - - - - - | G4 - - - - - Ab4 - G4 - - - - - - -', bass: 'C2 - - - - - - - - - - - - - - - G1 - - - - - - - - - - - - - - -', drums: 'k...............' },
+    shop: { voice: 'pluck', bpm: 124, lead: 'C5 E5 G5 E5 F5 A5 G5 - E5 G5 C6 G5 A5 G5 E5 - | D5 F5 A5 F5 E5 G5 C6 - B5 A5 G5 F5 E5 D5 C5 -', bass: 'C3 . G2 . F2 . G2 . C3 . G2 . F2 . C3 . D3 . A2 . C3 . G2 . G2 . G2 . C3 . . .', drums: 'k.h.s.h.k.h.s.hh' },
+    shrine: { voice: 'tri', bpm: 72, lead: 'E5 - G5 - B5 - - - A5 - G5 - E5 - - - | D5 - E5 - G5 - - - E5 - D5 - C5 - - -', bass: 'C3 - - - - - - - A2 - - - - - - - F2 - - - - - - - G2 - - - - - - -', drums: '................' },
+    ending: { voice: 'pulse', bpm: 100, lead: 'C5 - E5 - G5 - C6 - B5 - G5 - A5 - - - | F5 - A5 - C6 - F5 - E5 - D5 - C5 - - -', harm: 'E4 - - - - - - - D4 - - - C4 - - - A3 - - - - - - - G3 - - - E4 - - -', bass: 'C3 - - - G2 - - - E2 - - - A2 - - - F2 - - - C3 - - - G2 - - - C3 - - -', drums: 'k...h...k...h.h.' },
+    fanfare: { voice: 'pulse', bpm: 140, once: true, lead: 'C5 C5 C5 - G4 - - C5 - E5 - G5 - - - - C6 - - - - - - - . . . . . . . .', bass: 'C3 - - - - - - - G2 - - - - - - - C3 - - - - - - - . . . . . . . .', drums: 'k...k...k.s.k...' },
+    victory: { voice: 'pulse', bpm: 150, once: true, lead: 'C5 E5 G5 C6 - - G5 C6 - - - - . . . .', bass: 'C3 - - - - - G2 C3 - - - - . . . .', drums: 'k...k...k.s.k...' },
   };
-  for (const k in T) { T[k].L = parseLine(T[k].lead); T[k].B = parseLine(T[k].bass); }
+  for (const k in T) { T[k].L = parseLine(T[k].lead); T[k].B = parseLine(T[k].bass); if (T[k].harm) T[k].Hm = parseLine(T[k].harm); }
 
   function init() {
     if (ac) { if (ac.state === 'suspended') ac.resume(); return; }
@@ -265,11 +274,14 @@ const Sound = (() => {
     applyVolumes();
     if (trackName) { const n = trackName; trackName = null; play(n); }
   }
+  const LEVELS = [0, .12, .22, .32, .45], SFX_LEVELS = [0, .2, .38, .55, .75];
+  if (Settings.musicVol === undefined) Settings.musicVol = Settings.music === false ? 0 : 3;
+  if (Settings.sfxVol === undefined) Settings.sfxVol = Settings.sfx === false ? 0 : 3;
   function applyVolumes() {
     if (!ac) return;
     master.gain.value = Settings.muted ? 0 : 0.55;
-    musicBus.gain.value = Settings.music ? 0.32 : 0;
-    sfxBus.gain.value = Settings.sfx ? 0.55 : 0;
+    musicBus.gain.setTargetAtTime(LEVELS[Settings.musicVol] || 0, ac.currentTime, .05);
+    sfxBus.gain.value = SFX_LEVELS[Settings.sfxVol] || 0;
   }
   function tone(f, t, dur, type = 'square', vol = 0.15, bus = musicBus, slideTo = 0) {
     const o = ac.createOscillator(), g = ac.createGain();
@@ -288,7 +300,15 @@ const Sound = (() => {
   function scheduleStep(t) {
     const tr = track, spb = 60 / tr.bpm / 2;
     const sL = step % tr.L.len, sB = step % tr.B.len;
-    for (const e of tr.L.ev) if (e.step === sL && e.n) { tone(midi(e.n), t, e.len * spb * 0.95, 'square', 0.075); tone(midi(e.n) * 1.003, t, e.len * spb * 0.9, 'square', 0.03); }
+    for (const e of tr.L.ev) if (e.step === sL && e.n) {
+      const f = midi(e.n), d = e.len * spb, v = tr.voice || 'square';
+      if (v === 'tri') { tone(f, t, d * .95, 'triangle', .16); tone(f * 2, t, d * .5, 'sine', .025); }
+      else if (v === 'saw') { tone(f, t, d * .95, 'sawtooth', .045); tone(f * 1.004, t, d * .9, 'square', .03); }
+      else if (v === 'pluck') { tone(f, t, Math.min(d, .22), 'square', .085); tone(f * 2, t, .06, 'triangle', .04); }
+      else if (v === 'pulse') { tone(f, t, d * .95, 'square', .06); tone(f * 1.007, t, d * .9, 'square', .045); }
+      else { tone(f, t, d * .95, 'square', .075); tone(f * 1.003, t, d * .9, 'square', .03); }
+    }
+    if (tr.Hm) { const sH = step % tr.Hm.len; for (const e of tr.Hm.ev) if (e.step === sH && e.n) tone(midi(e.n), t, e.len * spb * .95, 'triangle', .08); }
     for (const e of tr.B.ev) if (e.step === sB && e.n) tone(midi(e.n), t, e.len * spb * 0.9, 'triangle', 0.2);
     const dc = tr.drums[step % tr.drums.length];
     if (dc === 'k') tone(140, t, 0.16, 'sine', 0.35, musicBus, 40);
@@ -337,11 +357,17 @@ const Sound = (() => {
     thunder: t => { noise(t, 0.9, 0.45, sfxBus, 80); tone(70, t, 0.8, 'sawtooth', 0.2, sfxBus, 30); },
     evolve: t => { for (let i = 0; i < 12; i++) tone(400 + i * 60, t + i * 0.08, 0.1, 'square', 0.1, sfxBus); },
     magic: t => { [880, 1175, 1480, 1760].forEach((f, i) => tone(f, t + i * 0.04, 0.15, 'sine', 0.12, sfxBus)); },
+    lowhp: t => { tone(1046, t, .07, 'square', .06, sfxBus); tone(880, t + .09, .07, 'square', .05, sfxBus); },
+    step: t => noise(t, .05, .05, sfxBus, 3000),
+    menu: t => { tone(660, t, .05, 'square', .1, sfxBus); tone(990, t + .05, .07, 'square', .1, sfxBus); },
+    item: t => { tone(784, t, .06, 'triangle', .15, sfxBus); tone(1175, t + .06, .1, 'triangle', .15, sfxBus); },
+    custom: t => { for (let i = 0; i < 8; i++) tone(500 + i * 110, t + i * .035, .12, i % 2 ? 'sine' : 'triangle', .1, sfxBus); noise(t, .4, .06, sfxBus, 4000); },
+    seal: t => { [523, 659, 784, 1046, 784, 1046, 1318].forEach((f, i) => tone(f, t + i * .09, .16, 'square', .12, sfxBus)); },
     pickup: t => { [784, 1046, 1318].forEach((f, i) => tone(f, t + i * 0.06, 0.1, 'square', 0.12, sfxBus)); },
   };
   function sfx(name) { if (!ac) return; const f = S[name]; if (f) f(ac.currentTime + 0.005); }
   function toggleMute() { Settings.muted = !Settings.muted; saveSettings(); applyVolumes(); return Settings.muted; }
-  return { init, play, stop, sfx, toggleMute, applyVolumes, get current() { return trackName; } };
+  return { init, play, stop, sfx, toggleMute, applyVolumes, LEVELS, get current() { return trackName; } };
 })();
 
 // ---- 04_input.js ----
@@ -837,28 +863,28 @@ Object.assign(TRAINERS, {
     intro: ['I foresaw a stranger arriving from the mist today.', 'The vapours did not say who would win. Let us find out!'], lose: 'Ah. That part of the prophecy was blurry. Congratulations!',
   },
   ares: {
-    name: 'Ares', title: 'Lieutenant of Zeus', look: 'ares', team: [['minotot', 26], ['cerbepup', 26], ['chimerant', 27], ['cyclite', 28]], reward: 80, music: 'boss', lieutenant: true, flag: 'beatAres', bg: 'arena',
+    name: 'Ares', title: 'Lieutenant of Zeus', look: 'ares', team: [['minotot', 25], ['cerbepup', 25], ['chimerant', 26], ['cyclite', 27]], reward: 80, music: 'boss', lieutenant: true, flag: 'beatAres', bg: 'arena',
     requires: ['beatNikos', 'beatKallisto'], blocked: 'ARES: Come back when you have beaten the city\'s trainers, Hoplite Nikos and Oracle Kallisto.',
     confirm: 'The arena sand trembles. Accept the challenge of Ares?',
     intro: ['ARES: So, a challenger walks into my arena!', 'ARES: I test courage, not cruelty. Stand your ground and fight with all your heart!'],
     lose: 'ARES: Ha! You have the courage of a true champion. I salute you.', after: ['ARES: Courage is a fire. Keep it fed, Tamer.'],
   },
   poseidon: {
-    name: 'Poseidon', title: 'Lieutenant of Zeus', look: 'poseidon', team: [['hydrelle', 26], ['pegafoal', 26], ['minotot', 27], ['hydrelle', 27], ['pegasorn', 28]], reward: 80, music: 'boss', lieutenant: true, flag: 'beatPoseidon', bg: 'sea',
+    name: 'Poseidon', title: 'Lieutenant of Zeus', look: 'poseidon', team: [['hydrelle', 25], ['pegafoal', 25], ['minotot', 26], ['hydrelle', 26], ['pegasorn', 27]], reward: 80, music: 'boss', lieutenant: true, flag: 'beatPoseidon', bg: 'sea',
     requires: ['beatNikos', 'beatKallisto'], blocked: 'POSEIDON: The sea is patient. Beat the city\'s trainers first, then return to my pier.',
     confirm: 'Waves crash against the pier. Accept the challenge of Poseidon?',
     intro: ['POSEIDON: The sea gives and the sea takes, little Tamer.', 'POSEIDON: My horses were born from the foam. Ride the waves with them, if you can!'],
     lose: 'POSEIDON: The tide turns in your favour. Sail on, with my blessing.', after: ['POSEIDON: When the sea is calm, remember who calmed it.'],
   },
   hades: {
-    name: 'Hades', title: 'Lieutenant of Zeus', look: 'hades', team: [['gorgling', 26], ['hydrelle', 27], ['chimerant', 27], ['cerbepup', 29]], reward: 80, music: 'boss', lieutenant: true, flag: 'beatHades', bg: 'underworld',
+    name: 'Hades', title: 'Lieutenant of Zeus', look: 'hades', team: [['gorgling', 25], ['hydrelle', 26], ['chimerant', 26], ['cerbepup', 28]], reward: 80, music: 'boss', lieutenant: true, flag: 'beatHades', bg: 'underworld',
     requires: ['beatNikos', 'beatKallisto'], blocked: 'HADES: Even the dead wait their turn. Beat the city\'s trainers, then knock again.',
     confirm: 'A cold, quiet wind blows from below. Accept the challenge of Hades?',
     intro: ['HADES: Few walk through my gate willingly. Fewer walk back out.', 'HADES: I keep the order of the deep places. Show me that you understand balance.'],
     lose: 'HADES: Balanced and fair. You may leave my halls whenever you wish.', after: ['HADES: Treat endings with respect, Tamer. They are also beginnings.'],
   },
   zeus: {
-    name: 'Zeus', title: 'King of Olympos', look: 'zeus', team: [['pegasorn', 30], ['cyclite', 30], ['chimerant', 30], ['hydrelle', 31], ['cerbepup', 31], ['aetonyx', 33]], reward: 130, music: 'boss', god: true, flag: 'beatZeus', bg: 'olympos', sigSp: 'aetonyx',
+    name: 'Zeus', title: 'King of Olympos', look: 'zeus', team: [['pegasorn', 28], ['cyclite', 28], ['chimerant', 28], ['hydrelle', 29], ['cerbepup', 29], ['aetonyx', 31]], reward: 130, music: 'boss', god: true, flag: 'beatZeus', bg: 'olympos', sigSp: 'aetonyx',
     requires: ['beatAres', 'beatPoseidon', 'beatHades'], blocked: 'ZEUS: Prove yourself to my brothers and my son first - Ares, Poseidon and Hades.',
     confirm: 'Thunder rolls across the marble sky. Begin the Trial of Olympos?',
     intro: ['Lightning splits the clouds above the temple. The air smells of rain.', 'ZEUS: Traveller from the land of the monsoon. Indra speaks well of you.', 'ZEUS: On Olympos we honour hospitality, honesty and courage. Let your companions show all three.', 'ZEUS: Begin the trial of the sky!'],
@@ -876,28 +902,28 @@ Object.assign(TRAINERS, {
     intro: ['Every battle deserves a song, and I need new verses!', 'Give me a battle worth singing about!'], lose: 'What a saga! I will sing of this for three winters.',
   },
   thor: {
-    name: 'Thor', title: 'Lieutenant of Odin', look: 'thor', team: [['tanngrit', 31], ['ratatusk', 31], ['tanngrit', 32], ['draugrim', 32], ['fenrimaw', 33]], reward: 90, music: 'boss', lieutenant: true, flag: 'beatThor', bg: 'forge',
+    name: 'Thor', title: 'Lieutenant of Odin', look: 'thor', team: [['tanngrit', 30], ['ratatusk', 30], ['tanngrit', 31], ['draugrim', 31], ['fenrimaw', 32]], reward: 90, music: 'boss', lieutenant: true, flag: 'beatThor', bg: 'forge',
     requires: ['beatSigrun', 'beatBjorn'], blocked: 'THOR: Ha! Beat Sigrun and Bjorn first. Then my hammer will be warm.',
     confirm: 'Sparks leap from the anvil. Accept Thor\'s challenge?',
     intro: ['THOR: Welcome to my forge, small one! Mind the sparks.', 'THOR: I protect the people of Midgard from the cold and the giants. Show me you can protect your companions!'],
     lose: 'THOR: Ha ha! A mighty bout! You have the strength of a whole village.', after: ['THOR: My goats will be jealous. Go on, Tyr and Heimdall are waiting.'],
   },
   tyr: {
-    name: 'Tyr', title: 'Lieutenant of Odin', look: 'tyr', team: [['fenrisk', 31], ['draugrim', 32], ['fenrisk', 32], ['fenrimaw', 34]], reward: 90, music: 'boss', lieutenant: true, flag: 'beatTyr', bg: 'oaths',
+    name: 'Tyr', title: 'Lieutenant of Odin', look: 'tyr', team: [['fenrisk', 30], ['draugrim', 31], ['fenrisk', 31], ['fenrimaw', 33]], reward: 90, music: 'boss', lieutenant: true, flag: 'beatTyr', bg: 'oaths',
     requires: ['beatSigrun', 'beatBjorn'], blocked: 'TYR: An oath first: beat Sigrun and Bjorn. Then we fight.',
     confirm: 'The hall falls silent, as if waiting for a promise. Accept Tyr\'s challenge?',
     intro: ['TYR: In this hall, every word is an oath and every oath is kept.', 'TYR: Swear to battle fairly, and I will do the same.'],
     lose: 'TYR: You kept your word in every move. That is the rarest courage.', after: ['TYR: A promise kept is stronger than any wolf.'],
   },
   heimdall: {
-    name: 'Heimdall', title: 'Lieutenant of Odin', look: 'heimdall', team: [['huginix', 32], ['ratatusk', 32], ['jormlet', 33], ['sleipra', 33]], reward: 90, music: 'boss', lieutenant: true, flag: 'beatHeimdall', bg: 'bifrost',
+    name: 'Heimdall', title: 'Lieutenant of Odin', look: 'heimdall', team: [['huginix', 31], ['ratatusk', 31], ['jormlet', 32], ['sleipra', 32]], reward: 90, music: 'boss', lieutenant: true, flag: 'beatHeimdall', bg: 'bifrost',
     requires: ['beatSigrun', 'beatBjorn'], blocked: 'HEIMDALL: I heard you coming a mile away. Beat Sigrun and Bjorn, then return to the bridge.',
     confirm: 'The rainbow bridge hums underfoot. Accept Heimdall\'s challenge?',
     intro: ['HEIMDALL: I can hear the grass growing and the snow settling.', 'HEIMDALL: Nothing crosses the bridge unwatched. Show me you are worthy to pass!'],
     lose: 'HEIMDALL: I saw that victory coming - and I am still impressed.', after: ['HEIMDALL: The bridge will always be open to you.'],
   },
   odin: {
-    name: 'Odin', title: 'All-Father of Asgard', look: 'odin', team: [['huginix', 35], ['huginix', 35], ['fenrimaw', 36], ['draugrim', 36], ['jormlet', 36], ['sleipra', 38, ['gungnir', 'tempest', 'wingslash', 'tailwind']]], reward: 140, music: 'boss', god: true, flag: 'beatOdin', bg: 'valgrind', sigSp: 'sleipra',
+    name: 'Odin', title: 'All-Father of Asgard', look: 'odin', team: [['huginix', 34], ['huginix', 34], ['fenrimaw', 35], ['draugrim', 35], ['jormlet', 35], ['sleipra', 37, ['gungnir', 'tempest', 'wingslash', 'tailwind']]], reward: 140, music: 'boss', god: true, flag: 'beatOdin', bg: 'valgrind', sigSp: 'sleipra',
     requires: ['beatThor', 'beatTyr', 'beatHeimdall'], blocked: 'ODIN: Wisdom has an order. Face Thor, Tyr and Heimdall first.',
     confirm: 'Two ravens circle the high seat. Begin the Trial of Asgard?',
     intro: ['Torches flicker in the great hall. Two ravens land on the high seat.', 'ODIN: I gave much to gain wisdom, young Tamer. My ravens told me of your journey.', 'ODIN: Here we test wisdom - knowing when to strike, and when to wait.', 'ODIN: Let the trial of the All-Father begin!'],
@@ -1080,6 +1106,38 @@ Object.assign(TRAINERS, {
 });
 TRAINERS.odin.ending = ['The torches flare gold and the ravens cry out together.', 'ODIN: Take the Raven Seal, sign of Asgard\'s respect.', 'You received the RAVEN SEAL!', 'The mist on the road to HELIOPOLIS has lifted.'];
 TRAINERS.odin.after = ['ODIN: The road south to the desert city of Heliopolis is open.'];
+
+// ---- 05_data_zzz_stage4.js ----
+// =====================================================================
+//  STAGE 4 DATA: seven more playable characters (10 in total)
+//  Each is an original character from one of the eight cultures, with a small perk.
+// =====================================================================
+CHARACTERS.push(
+  { id: 'eleni', name: 'Eleni', home: 'Olympos', perk: 'heal', perkText: 'Healing items heal 20% more',
+    story: 'A sponge-diver\'s daughter from the Aegean islands. She can hold her breath longer than anyone - and patch up anyone, too.',
+    look: { hair: '#3a2014', skin: '#d8a880', outfit: '#2a5ab0', accent: '#ffffff', pants: '#f0e8d8', shoes: '#5a3a20', style: 'ponytail' } },
+  { id: 'leif', name: 'Leif', home: 'Asgard', perk: 'orbs', perkText: 'Starts with 5 Bana and 2 Agneyastra Orbs extra',
+    story: 'A trapper\'s son from the frozen north who always packs twice as much as he needs. Just in case.',
+    look: { hair: '#e8c060', skin: '#f0c8a8', outfit: '#6a4a2a', accent: '#c8402a', pants: '#3a3a4a', shoes: '#2a1a10', style: 'braids' } },
+  { id: 'amunet', name: 'Amunet', home: 'Heliopolis', perk: 'custom', perkText: '+1 custom attack per battle (4)',
+    story: 'A temple scribe\'s apprentice who copies old stories by lamplight - and loves inventing brand-new ones.',
+    look: { hair: '#1a1210', skin: '#b87a40', outfit: '#f8f0dc', accent: '#2a8a9a', pants: '#e8c040', shoes: '#8a6a30', style: 'short', band: true } },
+  { id: 'haruto', name: 'Haruto', home: 'Takama', perk: 'crit', perkText: 'Your critical hits happen twice as often',
+    story: 'A young swordsman who trains at dawn beneath the cherry trees and believes every strike should count.',
+    look: { hair: '#1a1210', skin: '#f0d0b0', outfit: '#2a3a6a', accent: '#ffffff', pants: '#2a2a3a', shoes: '#1a1a1a', style: 'spiky' } },
+  { id: 'orla', name: 'Orla', home: 'Tir na nOg', perk: 'money', perkText: '+25% coins from battles',
+    story: 'A harper\'s granddaughter who plays in every market square and somehow always earns more than expected.',
+    look: { hair: '#c84a1a', skin: '#f4d0b8', outfit: '#2a6a3a', accent: '#e8c040', pants: '#5a4a30', shoes: '#3a2a1a', style: 'braids' } },
+  { id: 'iltani', name: 'Iltani', home: 'Babylon', perk: 'rare', perkText: 'Rare creatures appear more often',
+    story: 'A stargazer from the river cities who reads the sky to know which nights bring rare creatures out of hiding.',
+    look: { hair: '#1a1210', skin: '#c08a58', outfit: '#3a5a9a', accent: '#e8c050', pants: '#c8a878', shoes: '#6a4a28', style: 'long', band: true } },
+  { id: 'mirko', name: 'Mirko', home: 'Kitezh', perk: 'energy', perkText: 'Companions get +4 max EN and regain EN faster',
+    story: 'A blacksmith\'s son with endless energy. He once hammered horseshoes all night and still beat everyone at the morning race.',
+    look: { hair: '#8a5a2a', skin: '#f0c8a8', outfit: '#c83a2a', accent: '#f0e8d8', pants: '#3a3a4a', shoes: '#2a1a10', style: 'short', cap: true } },
+);
+CHARACTERS.find(c => c.id === 'ira').home = 'Indrapuri';
+CHARACTERS.find(c => c.id === 'tarun').home = 'Indrapuri';
+CHARACTERS.find(c => c.id === 'saanvi').home = 'Indrapuri';
 
 // ---- 06_sprites.js ----
 // =====================================================================
@@ -1505,6 +1563,11 @@ function personFrames(look) {
       if (look.style === 'long') { if (dir === 'down') { for (const y of [7, 8, 9]) { S(3, y, 'h'); S(12, y, 'h'); } } else if (dir === 'up') { for (let y = 7; y <= 10; y++) for (let x = 4; x <= 11; x++) S(x, y, 'h'); } else for (let y = 7; y <= 10; y++) { S(10, y, 'h'); S(11, y, 'h'); } }
       if (look.style === 'bun') { if (dir === 'left') { S(10, 0, 'h'); S(11, 0, 'h'); S(10, 1, 'h'); S(11, 1, 'h'); S(12, 1, 'h'); } else for (let x = 6; x <= 9; x++) S(x, 0, 'h'); }
       if (look.beard && dir !== 'up') { if (dir === 'down') { for (let x = 5; x <= 10; x++) S(x, 7, 'h'); S(4, 6, 'h'); S(11, 6, 'h'); } else { S(2, 6, 'h'); S(3, 6, 'h'); S(4, 7, 'h'); S(5, 7, 'h'); S(6, 7, 'h'); } }
+      if (look.style === 'ponytail') { if (dir === 'down') { S(12, 3, 'h'); S(13, 4, 'h'); S(13, 5, 'h'); } else if (dir === 'up') { for (let y = 6; y <= 10; y++) { S(7, y, 'h'); S(8, y, 'h'); } } else { for (let y = 3; y <= 8; y++) S(12, y, 'h'); S(13, 4, 'h'); S(13, 5, 'h'); } }
+      if (look.style === 'braids') { if (dir === 'down') { for (let y = 7; y <= 10; y++) { S(3, y, 'h'); S(12, y, 'h'); } S(3, 11, 'a'); S(12, 11, 'a'); } else if (dir === 'up') { for (let y = 7; y <= 10; y++) { S(4, y, 'h'); S(11, y, 'h'); } S(4, 11, 'a'); S(11, 11, 'a'); } else { for (let y = 7; y <= 10; y++) S(10, y, 'h'); S(10, 11, 'a'); } }
+      if (look.style === 'spiky') { const xs = dir === 'left' ? [4, 6, 8, 10] : [4, 6, 8, 10, 12]; for (const x of xs) S(x, 0, 'h'); if (dir !== 'up') { S(2, 3, 'h'); S(13, 3, 'h'); } }
+      if (look.band) { if (dir === 'left') { for (let x = 3; x <= 12; x++) if (rows[3][x] === 'h') S(x, 3, 'a'); } else for (let x = 3; x <= 12; x++) S(x, 3, 'a'); }
+      if (look.cap) { const x0 = dir === 'left' ? 3 : 4, x1 = dir === 'left' ? 11 : 11; for (let x = x0; x <= x1; x++) { S(x, 1, 'a'); S(x, 2, 'a'); } if (dir === 'down') for (let x = 3; x <= 12; x++) S(x, 3, 'k'); else if (dir === 'left') for (let x = 1; x <= 6; x++) S(x, 3, 'k'); }
       if (look.crown) { const xs = dir === 'left' ? [4, 9] : [5, 10]; for (let x = xs[0]; x <= xs[1]; x++) S(x, 1, 'g'); S(xs[0], 0, 'g'); S((xs[0] + xs[1]) >> 1, 0, 'g'); S(xs[1], 0, 'g'); }
       if (look.flame) { const xs = dir === 'left' ? [5, 10] : [4, 11]; for (let x = xs[0]; x <= xs[1]; x += 2) S(x + (fr === 1 ? 1 : 0), 0, 'f'); }
       const c = mkCanvas(16, 16), cx = c.getContext('2d');
@@ -2268,7 +2331,9 @@ function stat(c, k) {
   return v;
 }
 const maxHP = c => stat(c, 'hp');
-const maxEN = c => 20 + Math.floor(c.lv / 5);
+const maxEN = c => 20 + Math.floor(c.lv / 5) + (perk() === 'energy' ? 4 : 0);
+// custom attacks per battle depend on the chosen character (Amunet gets one extra)
+Object.defineProperty(CA, 'MAX_PER_BATTLE', { get: () => 3 + (perk() === 'custom' ? 1 : 0), configurable: true });
 function cName(c) { return SPECIES[c.sp].name; }
 function learnAt(spId, lv) { return SPECIES[spId].learn.filter(l => l[0] === lv).map(l => l[1]); }
 function newCreature(spId, lv) {
@@ -2615,6 +2680,7 @@ function buildMaps() {
   MAPS.palace = { id: 'palace', name: 'Vaijayanta Palace', music: 'boss', bg: 'palace', t: fromRows(['wwwwwwwwwwwwww', 'wwwwwwAAwwwwww', 'gPgggcccgggPgg', 'gggggcccgggggg', 'gPgggcccgggPgg', 'gggggcccgggggg', 'gPgggcccgggPgg', 'gggggcccgggggg', 'gPgggcccgggPgg', 'gggggcccgggggg', 'gPgggcccgggPgg', 'gggggcccgggggg', 'gggggcccgggggg', 'wwwwwwmwwwwwww']), buildings: [], signs: {}, items: [],
     npcs: [{ id: 'indra', name: 'Indra', look: 'indra', x: 6, y: 2, dir: 'down', trainer: 'indra', boss: true }, { id: 'vayu', name: 'Vayu', look: 'vayu', x: 3, y: 7, dir: 'right', trainer: 'vayu', boss: true }, { id: 'varuna', name: 'Varuna', look: 'varuna', x: 10, y: 7, dir: 'left', trainer: 'varuna', boss: true }], exit: ['city', 14, 9, 'down'] };
   buildMoreCities();
+  for (const id in MAPS) { const m = MAPS[id]; if (m.npcs.some(n => n.role === 'shop')) m.music = 'shop'; else if (m.npcs.some(n => n.role === 'heal')) m.music = 'shrine'; else if (m.music === 'boss') m.music = 'hall'; }
   for (const id in MAPS) { const m = MAPS[id]; m.h = m.t.length; m.w = m.t[0].length; m.buildings.forEach(b => b.img = renderBuilding(b)); }
 }
 
@@ -2689,9 +2755,10 @@ class Overworld {
     }
     // wild encounters
     const enc = m.encounters && m.encounters[this.tileAt(p.x, p.y)];
+    if (enc) Sound.sfx('step');
     if (enc && chance(.11)) {
       const night = nightLevel() > .5;
-      const table = enc.table.map(e => [e[0], e[1] * (e[2] === 'night' && night ? 2.5 : 1)]);
+      const table = enc.table.map(e => [e[0], e[1] * (e[2] === 'night' && night ? 2.5 : 1) * (perk() === 'rare' && SPECIES[e[0]].rarity !== 'common' ? 1.6 : 1)]);
       let tot = table.reduce((a, e) => a + e[1], 0), r = Math.random() * tot, sp = table[0][0];
       for (const e of table) { if ((r -= e[1]) < 0) { sp = e[0]; break; } }
       const lv = randi(enc.lv[0], enc.lv[1]);
@@ -2768,7 +2835,7 @@ class Overworld {
     n.from = [n.x, n.y]; n.x = nx; n.y = ny; n.moving = true; n.prog = 0;
   }
   async openMenu() {
-    this.busy = true; Sound.sfx('confirm');
+    this.busy = true; Sound.sfx('menu');
     try { await openStartMenu(); } finally { this.busy = false; Input.clear(); }
   }
   // ---------------- drawing ----------------
@@ -3402,6 +3469,7 @@ class BattleScene {
     this.floats = this.floats.filter(f => f.life > 0);
     for (const pr of this.proj) pr.t++;
     if (this.P) this.hpShow.p += (this.P.hp - this.hpShow.p) * .15;
+    if (this.P && this.P.hp > 0 && this.P.hp < maxHP(this.P) * .2 && !this.result && Game.frames % 50 === 0) Sound.sfx('lowhp');
     if (this.E) this.hpShow.e += (this.E.hp - this.hpShow.e) * .15;
   }
   drawMon(ctx, side) {
@@ -3504,7 +3572,7 @@ class BattleScene {
   }
   // ---------------- main flow ----------------
   async run() {
-    Sound.play(this.tr ? this.tr.music : 'battle');
+    Sound.play(!this.tr ? 'battle' : this.tr.god ? 'god' : this.tr.lieutenant ? 'lieutenant' : 'trainer');
     await this.intro();
     while (!this.result) {
       this.custom.cd = Math.max(0, this.custom.cd);
@@ -3718,7 +3786,7 @@ class BattleScene {
     const A = stat(u, 'atk') * stageMult(u.b.st.atk) * (u.b.burn ? .85 : 1), D = stat(t, 'def') * stageMult(t.b.st.def);
     const base = Math.floor(Math.floor(2 * u.lv / 5 + 2) * power * A / D / 50) + 2;
     const stab = SPECIES[u.sp].types.includes(mv.type) ? 1.5 : 1, eff = typeMult(mv.type, SPECIES[t.sp].types);
-    const crit = chance((mv.crit || 1) / 16);
+    const crit = chance((mv.crit || 1) * (u === this.P && perk() === 'crit' ? 2 : 1) / 16);
     const terr = this.terrain && this.terrain.type === mv.type ? 1 + this.terrain.boost / 100 : 1;
     return { dmg: eff === 0 ? 0 : Math.max(1, Math.floor(base * stab * eff * (crit ? 1.5 : 1) * terr * (.85 + Math.random() * .15))), eff, crit };
   }
@@ -3807,10 +3875,10 @@ class BattleScene {
     const it = ITEMS[id]; takeItem(id);
     const side = c === this.P ? 'p' : null;
     await this.msg(`You used a ${it.name}.`, 30);
-    const healMul = 1;
-    if (it.use === 'heal') { if (side) await this.heal(c, 'p', it.amt * healMul); else { c.hp = Math.min(maxHP(c), c.hp + it.amt); await this.msg(`${cName(c)} recovered HP.`, 30); } }
+    const healMul = perk() === 'heal' ? 1.2 : 1; Sound.sfx('item');
+    if (it.use === 'heal') { const amt = Math.round(it.amt * healMul); if (side) await this.heal(c, 'p', amt); else { c.hp = Math.min(maxHP(c), c.hp + amt); await this.msg(`${cName(c)} recovered HP.`, 30); } }
     if (it.use === 'full') { c.hp = maxHP(c); Object.assign(c.b, { burn: 0, poison: 0, sleep: 0, bind: 0, stun: false }); Sound.sfx('heal'); if (side) this.emit('p', 'Grove', 20, 'up'); await this.msg(`${cName(c)} is fully restored!`, 35); }
-    if (it.use === 'revive') { c.hp = Math.floor(maxHP(c) / 2); Sound.sfx('heal'); await this.msg(`${cName(c)} was revived!`, 35); }
+    if (it.use === 'revive') { c.hp = Math.floor(maxHP(c) * (healMul > 1 ? .6 : .5)); Sound.sfx('heal'); await this.msg(`${cName(c)} was revived!`, 35); }
     if (it.use === 'cure') {   // Tulsi: one status, worst first
       const b = c.b, order = [['burn', 'burn'], ['poison', 'poison'], ['sleep', 'sleep'], ['bind', 'bind'], ['stun', 'stun']];
       const k = order.find(([key]) => b[key]);
@@ -3885,7 +3953,7 @@ class BattleScene {
   }
   async awardXP(E, mul) {
     const sp = SPECIES[E.sp];
-    const base = Math.floor(sp.xp * E.lv / 4 * (this.tr ? 1.5 : 1) * (perk() === 'xp' ? 1.1 : 1) * mul);
+    const base = Math.floor(sp.xp * E.lv / 3.3 * (this.tr ? 1.5 : 1) * (perk() === 'xp' ? 1.1 : 1) * mul);
     const got = Game.party.filter(c => c.hp > 0 && this.parts4.has(c.uid));
     if (!got.length) return;
     const each = Math.max(1, Math.floor(base / got.length));
@@ -3894,6 +3962,13 @@ class BattleScene {
       await this.msg(`${cName(c)} gained ${each} XP!`, 30);
       c.xp += each;
       while (c.lv < LEVEL_CAP && c.xp >= xpForLevel(c.lv + 1)) await this.levelUp(c);
+    }
+    // companions who stayed on the bench learn by watching: half XP
+    const bench = Game.party.filter(c => c.hp > 0 && !this.parts4.has(c.uid) && c.lv < LEVEL_CAP);
+    if (bench.length) {
+      const half = Math.max(1, Math.floor(each / 2));
+      await this.msg(`The rest of your team gained ${half} XP by watching.`, 30);
+      for (const c of bench) { c.xp += half; while (c.lv < LEVEL_CAP && c.xp >= xpForLevel(c.lv + 1)) await this.levelUp(c); }
     }
     this.parts4 = new Set([this.P.uid]);
   }
@@ -3931,7 +4006,7 @@ class BattleScene {
       }
       if (b.shield && --b.shield.turns <= 0) { b.shield = null; await this.msg(`${n}'s shield faded.`, 30); }
       if (b.stunImm) b.stunImm--;
-      c.en = Math.min(maxEN(c), c.en + 2);
+      c.en = Math.min(maxEN(c), c.en + 2 + (side === 'p' && perk() === 'energy' ? 1 : 0));
     }
     if (await this.checkFaints()) return;
     if (this.terrain && --this.terrain.turns <= 0) { await this.msg(`The ${this.terrain.type} Terrain faded.`, 30); this.terrain = null; }
@@ -3994,7 +4069,7 @@ async function startBattle(cfg) {
   try { res = await B.run(); } catch (e) { console.error(e); res = 'run'; }
   // post battle
   if (res === 'win' && B.tr) {
-    const tr = B.tr, money = tr.reward * Math.max(...B.foes.map(c => c.lv));
+    const tr = B.tr, money = Math.floor(tr.reward * Math.max(...B.foes.map(c => c.lv)) * (perk() === 'money' ? 1.25 : 1));
     Sound.play('victory');
     B.trainerSprite = { look: LOOKS[tr.look || cfg.trainerId], x: 400, aura: null };
     await tween(B.trainerSprite, 'x', 236, 24);
@@ -4043,7 +4118,7 @@ class EvolutionScene {
   }
 }
 async function indraEnding() {
-  Sound.play('title');
+  Sound.play('fanfare'); Sound.sfx('seal');
   await say(['The thunder softens into gentle rain. Across Indrapuri, lamps are lit in celebration.', 'INDRA: You have stood steady in the storm. Take the Vajra Seal - proof that the heavens of Indrapuri recognise you.', 'You received the VAJRA SEAL!'], { speaker: 'Indra' });
   if (!Game.flags.gotBrahmastra) {
     Game.flags.gotBrahmastra = true; addItem('brahmastra', 1); Sound.sfx('pickup');
@@ -4053,8 +4128,14 @@ async function indraEnding() {
   Sound.play(World.map.music);
 }
 async function godEnding(tr) {
-  Sound.play('title');
+  Sound.play('fanfare'); Sound.sfx('seal');
   await say(tr.ending, { speaker: tr.name });
+  if (tr.flag === 'beatPerun' && !Game.flags.creditsSeen) {
+    Game.flags.creditsSeen = true;
+    await fadeOut(30); Sound.play('ending'); const cr = playCredits(); await fadeIn(20); await cr;
+    await fadeOut(20); await fadeIn(20);
+    await say('The credits are done, but the Mist Road stays open. Keep taming and filling your Bestiary! (Remember to SAVE.)');
+  }
   Sound.play(World.map.music);
 }
 
@@ -4079,7 +4160,10 @@ const SKYLINE = (() => { // eight silhouettes hinting at the eight mythic cities
   return c;
 })();
 class TitleScene {
-  constructor() { this.opaque = true; this.lanterns = []; this.ready = false; this.t = 0; }
+  constructor() {
+    this.opaque = true; this.lanterns = []; this.ready = false; this.t = 0; this.saveInfo = null;
+    try { const d = JSON.parse(localStorage.getItem(SAVE_KEY)); if (d && d.player) { const s = Math.floor((d.frames || 0) / 60); this.saveInfo = { name: d.player.name, seals: ['beatIndra', 'beatZeus', 'beatOdin', 'beatRa', 'beatAmaterasu', 'beatDagda', 'beatMarduk', 'beatPerun'].filter(f => d.flags && d.flags[f]).length, tamed: Object.keys(d.tamed || {}).length, time: Math.floor(s / 3600) + ':' + String(Math.floor(s / 60) % 60).padStart(2, '0') }; } } catch (e) { }
+  }
   update() {
     this.t++;
     if (this.lanterns.length < 14 && chance(.04)) this.lanterns.push({ x: Math.random() * W, y: H + 5, v: .2 + Math.random() * .3, ph: Math.random() * 6 });
@@ -4110,7 +4194,8 @@ class TitleScene {
     drawCreature(ctx, STARTERS[Math.floor(Game.frames / 240) % 3], 60, 150, {});
     drawCreature(ctx, 'garudin', 262, 146, { flip: true });
     if (!this.ready && Math.floor(Game.frames / 30) % 2) Font.drawC(ctx, 'PRESS Z / ENTER', 160, 168, '#ffffff', '#1a0f2e');
-    Font.draw(ctx, 'Stage 3 build', 4, H - 10, '#c8a8d8');
+    Font.draw(ctx, 'v1.0', 4, H - 10, '#c8a8d8');
+    if (this.ready && this.saveInfo) { const si = this.saveInfo; Font.drawC(ctx, `Save: ${si.name}  |  Seals ${si.seals}/8  |  Tamed ${si.tamed}  |  ${si.time}`, 160, 136, '#f4c8a0', '#1a0f2e'); }
     Font.drawR(ctx, AI_ENDPOINT ? 'AI: server mode' : 'AI: offline mode', W - 4, H - 10, '#c8a8d8');
   }
 }
@@ -4122,33 +4207,58 @@ function resetGame() {
 class CharSelectScene {
   constructor() { this.opaque = true; this.i = 0; this.resolve = null; }
   update() {
-    if (Input.p('left')) { this.i = (this.i + 2) % 3; Sound.sfx('cursor'); }
-    if (Input.p('right')) { this.i = (this.i + 1) % 3; Sound.sfx('cursor'); }
+    const n = CHARACTERS.length, cols = 5;
+    if (Input.p('left')) { this.i = (this.i + n - 1) % n; Sound.sfx('cursor'); }
+    if (Input.p('right')) { this.i = (this.i + 1) % n; Sound.sfx('cursor'); }
+    if (Input.p('up') || Input.p('down')) { this.i = (this.i + cols) % n; Sound.sfx('cursor'); }
     if (Input.p('a')) { Sound.sfx('confirm'); this.done(CHARACTERS[this.i]); }
     if (Input.p('b')) { Sound.sfx('cancel'); this.done(null); }
   }
   done(v) { Scenes.remove(this); this.resolve(v); }
   draw(ctx) {
     const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#24123e'); g.addColorStop(1, '#5a2a3a'); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
-    Font.drawC(ctx, 'CHOOSE YOUR TAMER', 160, 8, UI.gold, '#0b0714');
+    Font.drawC(ctx, 'CHOOSE YOUR TAMER', 160, 5, UI.gold, '#0b0714');
     CHARACTERS.forEach((c, i) => {
-      const x = 8 + i * 104, sel = i === this.i;
-      drawWin(ctx, x, 22, 98, 118, sel ? { c1: '#4a2a6a', c2: '#2a1640' } : {});
+      const x = 6 + (i % 5) * 62, y = 16 + Math.floor(i / 5) * 58, sel = i === this.i;
+      drawWin(ctx, x, y, 60, 56, sel ? { c1: '#4a2a6a', c2: '#2a1640', border: '#ffd040' } : {});
       const dir = sel ? ['down', 'left', 'up', 'right'][Math.floor(Game.frames / 40) % 4] : 'down';
       const fr = personFrames(c.look)[dir][sel ? (Math.floor(Game.frames / 10) % 3) : 0];
-      ctx.drawImage(fr, x + 25, 30, 48, 48);
-      Font.drawC(ctx, c.name, x + 49, 84, sel ? '#ffffff' : UI.ink);
-      Font.wrap(c.perkText, 86).forEach((l, k) => Font.drawC(ctx, l, x + 49, 98 + k * 10, UI.green));
-      if (sel) drawCursor(ctx, x + 6, 84);
+      ctx.drawImage(fr, x + 14, y + 6, 32, 32);
+      Font.drawC(ctx, c.name, x + 30, y + 42, sel ? '#ffffff' : UI.ink);
     });
-    drawWin(ctx, 0, 146, W, 94);
     const c = CHARACTERS[this.i];
-    Font.draw(ctx, c.name, 12, 154, UI.gold);
-    Font.wrap(c.story, 296).forEach((l, k) => Font.draw(ctx, l, 12, 168 + k * 12, UI.ink));
-    Font.draw(ctx, 'Perk: ' + c.perkText, 12, 206, UI.green);
-    Font.draw(ctx, '<  >  choose     Z confirm     X back', 12, 224, UI.dim);
+    drawWin(ctx, 0, 134, W, 106);
+    ctx.drawImage(personFrames(c.look).down[Math.floor(Game.frames / 12) % 3], 8, 146, 48, 48);
+    Font.draw(ctx, c.name, 64, 142, UI.gold);
+    Font.drawR(ctx, 'from ' + (c.home || 'Indrapuri'), 312, 142, UI.dim);
+    Font.wrap(c.story, 246).slice(0, 4).forEach((l, k) => Font.draw(ctx, l, 64, 155 + k * 11, UI.ink));
+    Font.draw(ctx, 'Perk: ' + c.perkText, 12, 204, UI.green);
+    Font.draw(ctx, 'Arrows choose   Z confirm   X back', 12, 224, UI.dim);
   }
 }
+class CreditsScene {
+  constructor() { this.opaque = true; this.y = H; this.resolve = null; this.t = 0;
+    const seals = [['Indrapuri', 'Indra', 'Vajra Seal'], ['Olympos', 'Zeus', 'Aegis Seal'], ['Asgard', 'Odin', 'Raven Seal'], ['Heliopolis', 'Ra', 'Sun Seal'], ['Takama', 'Amaterasu', 'Mirror Seal'], ['Tir na nOg', 'The Dagda', 'Harp Seal'], ['Babylon', 'Marduk', 'Star Seal'], ['Kitezh', 'Perun', 'Oak Seal']];
+    this.lines = [['MYTHBOUND', 'big'], ['Tamers of the Eight Mythic Cities', 'dim'], [''], [`${Game.player.name}, Tamer of the Mist Road`, 'gold'], [''], ['THE EIGHT SEALS', 'gold'], ...seals.map(([c, g, s]) => [`${s} - ${g} of ${c}`]), [''],
+      ['YOUR COMPANIONS', 'gold'], ...Game.party.map(m => [`${cName(m)}${m.mythic ? ' ' + m.mythic.epithet : ''}  Lv ${m.lv}`]), [''],
+      ['BESTIARY', 'gold'], [`Seen ${SPECIES_ORDER.filter(id => Game.seen[id]).length} / ${SPECIES_ORDER.length}    Tamed ${SPECIES_ORDER.filter(id => Game.tamed[id]).length} / ${SPECIES_ORDER.length}`], [''],
+      ['All creatures, cities and characters are original,', 'dim'], ['inspired by the folklore of India, Greece, the Norse lands,', 'dim'], ['Egypt, Japan, the Celtic lands, Mesopotamia', 'dim'], ['and the Slavic lands.', 'dim'], [''],
+      ['Every sprite, sound and note was made in code.', 'dim'], [''], ['THANK YOU FOR PLAYING', 'gold'], [''], ['Keep exploring - your journey continues.', 'dim']];
+  }
+  update() { this.t++; this.y -= Input.h('a') ? 1.6 : .4; const end = -this.lines.length * 14 + 60; if (this.y < end) { this.y = end; if (Input.p('a') || Input.p('b')) this.finish(); } if (Input.p('b')) this.finish(); }
+  finish() { if (this.closed) return; this.closed = true; Scenes.remove(this); this.resolve(); }
+  draw(ctx) {
+    ctx.fillStyle = '#0b0620'; ctx.fillRect(0, 0, W, H);
+    const r = mulberry32(11); for (let i = 0; i < 60; i++) { ctx.fillStyle = `rgba(255,240,200,${.2 + (Math.sin(this.t / 20 + i) + 1) * .3})`; ctx.fillRect(r() * W | 0, r() * H | 0, 1, 1); }
+    this.lines.forEach(([txt, kind], k) => {
+      const y = this.y + k * 14; if (y < -20 || y > H) return;
+      if (kind === 'big') Font.drawBig(ctx, txt, 160 - Font.measure(txt) * 1.5, y - 4, '#ffd040', 3, '#3a1a08');
+      else Font.drawC(ctx, txt, 160, y + 6, kind === 'gold' ? UI.gold : kind === 'dim' ? '#b8a8d0' : '#ffffff', '#0b0714');
+    });
+    if (this.y <= -this.lines.length * 14 + 60 && Math.floor(this.t / 30) % 2) Font.drawC(ctx, 'Press Z', 160, 228, UI.dim);
+  }
+}
+function playCredits() { return new Promise(r => { const s = new CreditsScene(); s.resolve = r; Scenes.push(s); }); }
 class StarterScene {
   constructor() { this.opaque = true; this.i = 1; this.resolve = null; this.busy = false; }
   async update() {
@@ -4186,8 +4296,9 @@ class StarterScene {
 class BlankScene { constructor(c) { this.opaque = true; this.c = c || '#0b0714'; } update() { } draw(ctx) { ctx.fillStyle = this.c; ctx.fillRect(0, 0, W, H); const r = mulberry32(3); for (let i = 0; i < 50; i++) { ctx.fillStyle = `rgba(255,240,200,${.2 + r() * .5})`; ctx.fillRect(r() * W | 0, r() * H | 0, 1, 1); } } }
 async function newGameFlow() {
   await fadeOut(12);
-  const cs = new CharSelectScene(); Scenes.push(cs); await fadeIn(12);
-  const ch = await new Promise(r => cs.resolve = r);
+  const cs = new CharSelectScene(); const picked = new Promise(r => cs.resolve = r);
+  Scenes.push(cs); await fadeIn(12);
+  const ch = await picked;
   if (!ch) return false;
   resetGame(); Game.player.charId = ch.id; Game.player.name = ch.name;
   const bl = new BlankScene(); Scenes.push(bl);
@@ -4197,6 +4308,7 @@ async function newGameFlow() {
   const st = new StarterScene(); Scenes.push(st);
   const sp = await new Promise(r => st.resolve = r);
   const c = newCreature(sp, 5); addCreature(c);
+  if (perk() === 'orbs') { addItem('bana', 5); addItem('agneyastra', 2); }
   await fadeOut(14);
   Scenes.replaceAll(World); World.load('house', 4, 3, 'up');
   await fadeIn(14);
@@ -4283,9 +4395,9 @@ async function openBag() {
     const t = await choose(Game.party.map(c => ({ label: cName(c), right: `${c.hp}/${maxHP(c)}` })), { x: 60, y: 30, w: 200, title: `Use ${it.name} on?` });
     if (t < 0) continue;
     const c = Game.party[t];
-    if (it.use === 'revive') { if (c.hp > 0) { await say('It isn\'t fainted.'); continue; } takeItem(id); c.hp = Math.floor(maxHP(c) / 2); }
+    if (it.use === 'revive') { if (c.hp > 0) { await say('It isn\'t fainted.'); continue; } takeItem(id); c.hp = Math.floor(maxHP(c) * (perk() === 'heal' ? .6 : .5)); }
     else if (c.hp <= 0) { await say('It has fainted. Use a Sanjivani Herb or visit the shrine.'); continue; }
-    else if (it.use === 'heal') { if (c.hp >= maxHP(c)) { await say('HP is already full.'); continue; } takeItem(id); c.hp = Math.min(maxHP(c), c.hp + it.amt); }
+    else if (it.use === 'heal') { if (c.hp >= maxHP(c)) { await say('HP is already full.'); continue; } takeItem(id); c.hp = Math.min(maxHP(c), c.hp + Math.round(it.amt * (perk() === 'heal' ? 1.2 : 1))); }
     else if (it.use === 'full') { takeItem(id); c.hp = maxHP(c); }
     else if (it.use === 'pp') { takeItem(id); c.moves.forEach(m => m.pp = MOVES[m.id].pp); c.en = maxEN(c); }
     else if (it.use === 'cure') { await say('Status conditions only last during battle.'); continue; }
@@ -4343,14 +4455,15 @@ async function openOptions() {
   let i = 0;
   while (true) {
     const sp = ['Slow', 'Normal', 'Fast', 'Instant'][Settings.textSpeed];
-    const items = [{ label: 'Text speed', right: sp }, { label: 'Music', right: Settings.music ? 'On' : 'Off' }, { label: 'Sound FX', right: Settings.sfx ? 'On' : 'Off' }, { label: 'Mute all', right: Settings.muted ? 'Yes' : 'No' }, { label: 'Bestiary preview', right: Settings.bestiaryPreview ? 'On' : 'Off' }, { label: 'Back' }];
+    const bar = v => v ? '|'.repeat(v) + '.'.repeat(4 - v) : 'Off';
+    const items = [{ label: 'Text speed', right: sp }, { label: 'Music volume', right: bar(Settings.musicVol) }, { label: 'Sound FX volume', right: bar(Settings.sfxVol) }, { label: 'Mute all', right: Settings.muted ? 'Yes' : 'No' }, { label: 'Bestiary preview', right: Settings.bestiaryPreview ? 'On' : 'Off' }, { label: 'Back' }];
     const extra = ctx => { drawWin(ctx, 0, 176, W, 64); Font.wrap(AI_ENDPOINT ? `AI endpoint: ${AI_ENDPOINT} (status: ${AI.status})` : 'AI: offline mode. Custom attacks, lore and dialogue use built-in fallbacks. See README to enable the optional server.', 296).forEach((l, k) => Font.draw(ctx, l, 12, 186 + k * 12, UI.ink)); Font.draw(ctx, 'Keys: arrows/WASD move, Z/Enter confirm, X back, ESC/C/M menu, Shift run, N mute', 12, 224, UI.dim); };
-    i = await choose(items, { x: 70, y: 30, w: 180, title: 'OPTIONS', start: i, extra });
+    i = await choose(items, { x: 60, y: 30, w: 200, title: 'OPTIONS', start: i, extra });
     if (i < 0 || i === 5) { saveSettings(); return; }
     if (i === 4) { Settings.bestiaryPreview = !Settings.bestiaryPreview; if (Settings.bestiaryPreview) await say('Bestiary preview reveals every creature, including those from cities that are not playable yet. It does not change your seen/tamed progress.'); }
     if (i === 0) Settings.textSpeed = (Settings.textSpeed + 1) % 4;
-    if (i === 1) Settings.music = !Settings.music;
-    if (i === 2) Settings.sfx = !Settings.sfx;
+    if (i === 1) Settings.musicVol = (Settings.musicVol + 1) % 5;
+    if (i === 2) { Settings.sfxVol = (Settings.sfxVol + 1) % 5; Sound.applyVolumes(); Sound.sfx('confirm'); }
     if (i === 3) { toggleMuteUI(); }
     Sound.applyVolumes(); saveSettings();
   }
