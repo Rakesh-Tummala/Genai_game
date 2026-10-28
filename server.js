@@ -3,8 +3,10 @@
 //  MYTHBOUND optional AI server
 //  - Serves the game at http://localhost:8787/ with AI enabled
 //  - POST /api/ai  { task, payload }  ->  { ok: true, data: {...} }
-//  - Reads the API key from the ANTHROPIC_API_KEY environment variable only
-//  - MOCK mode (MOCK=1, or no key set) returns canned JSON for testing
+//  - Providers (AI_PROVIDER): anthropic (default, ANTHROPIC_API_KEY), ollama (free, local,
+//    no key), openai (any OpenAI-compatible endpoint: Groq, OpenRouter, Gemini, LM Studio...)
+//  - Keys are read from environment variables only, never sent to the browser
+//  - MOCK mode (MOCK=1, or anthropic with no key) returns canned JSON for testing
 //  - Localhost-only: binds 127.0.0.1, checks Host and Origin, rate-limits,
 //    and limits input size. The game validates every number itself.
 // =====================================================================
@@ -16,8 +18,13 @@ const path = require('path');
 const PORT = Number(process.env.PORT) || 8787;
 const HOST = process.env.HOST || '127.0.0.1';
 const API_KEY = process.env.ANTHROPIC_API_KEY || '';
-const MOCK = process.env.MOCK === '1' || !API_KEY;
-const MODEL = process.env.AI_MODEL || 'claude-opus-5-5';
+const PROVIDER = (process.env.AI_PROVIDER || 'anthropic').toLowerCase();
+const OLLAMA_URL = (process.env.OLLAMA_URL || 'http://127.0.0.1:11434').replace(/\/$/, '');
+const OPENAI_BASE = (process.env.AI_BASE_URL || '').replace(/\/$/, '');
+const OPENAI_KEY = process.env.AI_API_KEY || '';
+const MOCK = process.env.MOCK === '1' || (PROVIDER === 'anthropic' && !API_KEY) || (PROVIDER === 'openai' && !OPENAI_BASE);
+const MODEL = process.env.AI_MODEL || { anthropic: 'claude-opus-5-5', ollama: 'llama3.2:3b', openai: '' }[PROVIDER] || '';
+const AI_TIMEOUT = Number(process.env.AI_TIMEOUT_MS) || 8000;   // the game waits about 9 s before using its offline fallback
 const RATE_PER_MIN = Number(process.env.RATE_LIMIT) || 30;
 const ALLOW_FILE_ORIGIN = process.env.ALLOW_FILE_ORIGIN === '1';
 const MAX_BODY = 4096;
@@ -99,7 +106,37 @@ function mock(task, p) {
   return {};
 }
 
-// ---------------------------------------------------------------- live mode (official Anthropic SDK)
+// ---------------------------------------------------------------- live mode
+// helpers shared by the non-Anthropic providers
+function parseJSONText(text) { const m = String(text || '').match(/\{[\s\S]*\}/); if (!m) throw new Error('no JSON in reply'); return JSON.parse(m[0]); }
+async function postJSON(url, body, headers = {}, timeoutMs = AI_TIMEOUT) {
+  const ctl = new AbortController(), tm = setTimeout(() => ctl.abort(), timeoutMs);
+  try {
+    const r = await fetch(url, { method: 'POST', headers: Object.assign({ 'Content-Type': 'application/json' }, headers), body: JSON.stringify(body), signal: ctl.signal });
+    if (!r.ok) throw new Error('HTTP ' + r.status + ' ' + (await r.text()).slice(0, 200));
+    return await r.json();
+  } finally { clearTimeout(tm); }
+}
+// Ollama (local, free): native chat API with a JSON schema so small models stay on format
+async function liveOllama(task, payload) {
+  const t = TASKS[task];
+  const j = await postJSON(OLLAMA_URL + '/api/chat', {
+    model: MODEL, stream: false, keep_alive: '30m', format: t.schema, options: { temperature: 0.7, num_predict: 300 },
+    messages: [{ role: 'system', content: t.system + ' Reply with a single JSON object only.' }, { role: 'user', content: 'Game data (JSON):\n' + JSON.stringify(payload) }],
+  });
+  return parseJSONText(j.message && j.message.content);
+}
+// any OpenAI-compatible chat endpoint (Groq, OpenRouter, Gemini's compatibility endpoint, LM Studio ...)
+async function liveOpenAI(task, payload) {
+  const t = TASKS[task];
+  const j = await postJSON(OPENAI_BASE + '/chat/completions', {
+    model: MODEL, temperature: 0.7, max_tokens: 400, response_format: { type: 'json_object' },
+    messages: [{ role: 'system', content: t.system + ' Reply with a single JSON object only, using exactly these fields: ' + JSON.stringify(t.schema.properties) }, { role: 'user', content: 'Game data (JSON):\n' + JSON.stringify(payload) }],
+  }, OPENAI_KEY ? { Authorization: 'Bearer ' + OPENAI_KEY } : {});
+  return parseJSONText(j.choices && j.choices[0] && j.choices[0].message && j.choices[0].message.content);
+}
+
+// Anthropic (official SDK)
 let client = null;
 async function getClient() {
   if (client) return client;
@@ -110,6 +147,8 @@ async function getClient() {
   return client;
 }
 async function live(task, payload) {
+  if (PROVIDER === 'ollama') return liveOllama(task, payload);
+  if (PROVIDER === 'openai') return liveOpenAI(task, payload);
   const t = TASKS[task], c = await getClient();
   const user = 'Game data (JSON):\n' + JSON.stringify(payload);
   const req = {
@@ -153,7 +192,7 @@ const server = http.createServer((req, res) => {
     });
     return;
   }
-  if (req.method === 'GET' && url === '/health') return send(res, 200, { ok: true, mode: MOCK ? 'mock' : 'live', model: MOCK ? null : MODEL }, cors);
+  if (req.method === 'GET' && url === '/health') return send(res, 200, { ok: true, mode: MOCK ? 'mock' : 'live', provider: MOCK ? null : PROVIDER, model: MOCK ? null : MODEL }, cors);
   if (req.method !== 'POST' || url !== '/api/ai') return send(res, 404, { ok: false, error: 'not found' }, cors);
 
   const ip = req.socket.remoteAddress || 'local';
@@ -181,6 +220,12 @@ const server = http.createServer((req, res) => {
   });
 });
 server.listen(PORT, HOST, () => {
-  console.log(`MYTHBOUND AI server on http://localhost:${PORT}/  (mode: ${MOCK ? 'MOCK' : 'live, model ' + MODEL})`);
-  if (!API_KEY && process.env.MOCK !== '1') console.log('No ANTHROPIC_API_KEY set - running in MOCK mode.');
+  console.log(`MYTHBOUND AI server on http://localhost:${PORT}/  (mode: ${MOCK ? 'MOCK' : 'live, ' + PROVIDER + ', model ' + MODEL})`);
+  if (MOCK && process.env.MOCK !== '1') console.log(PROVIDER === 'openai' ? 'AI_PROVIDER=openai needs AI_BASE_URL - running in MOCK mode.' : 'No ANTHROPIC_API_KEY set - running in MOCK mode. For free local AI use AI_PROVIDER=ollama.');
+  // warm up a local model so the first custom attack is not slowed by loading it into memory
+  // (the first load can take a minute on a laptop, so the warm-up waits up to 3 minutes)
+  if (!MOCK && PROVIDER === 'ollama') console.log('Loading ' + MODEL + ' into memory (first time can take a minute)...');
+  if (!MOCK && PROVIDER === 'ollama') postJSON(OLLAMA_URL + '/api/chat', { model: MODEL, stream: false, keep_alive: '30m', messages: [{ role: 'user', content: 'Reply with {}' }], format: 'json', options: { num_predict: 5 } }, {}, 180000)
+    .then(() => console.log('Ollama model ' + MODEL + ' is loaded and ready.'))
+    .catch(e => console.log('Could not reach Ollama at ' + OLLAMA_URL + ' (' + e.message + '). Is Ollama running and the model pulled? (ollama pull ' + MODEL + ')'));
 });

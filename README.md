@@ -158,13 +158,47 @@ $env:ANTHROPIC_API_KEY="your-key-here"; node server.js
 
 Open <http://localhost:8787/>. The server injects `AI_ENDPOINT = "/api/ai"` into the page it serves, so the file on disk stays in offline mode.
 
+### Free local AI (Ollama, no key)
+
+[Ollama](https://ollama.com) runs an open model on your own computer, free and offline. A ~3B model fits on a 4 GB graphics card and answers in a few seconds.
+
+```bash
+ollama pull llama3.2:3b
+```
+
+Windows PowerShell:
+
+```powershell
+$env:AI_PROVIDER="ollama"; node server.js
+```
+
+macOS / Linux:
+
+```bash
+AI_PROVIDER=ollama node server.js
+```
+
+The server loads the model when it starts so the first custom attack is quick. Small models write simpler names and descriptions than Claude, but the game still validates every reply and sets all numbers, so nothing can break. Larger models (7-8B) need more than 4 GB of video memory; if a reply takes longer than about 8 seconds the game uses its offline interpreter instead.
+
+### Other OpenAI-compatible services (Groq, OpenRouter, Gemini, LM Studio)
+
+```bash
+AI_PROVIDER=openai AI_BASE_URL=https://api.groq.com/openai/v1 AI_API_KEY=your-key AI_MODEL=model-name node server.js
+```
+
+Use the base URL and model name from your provider's documentation. Many have free tiers with rate limits.
+
 ### Settings (environment variables)
 
 | Variable | Default | Meaning |
 |---|---|---|
-| `ANTHROPIC_API_KEY` | (none) | API key. Never stored in the HTML. Without it the server uses MOCK mode. |
+| `AI_PROVIDER` | `anthropic` | `anthropic`, `ollama` (local, free, no key) or `openai` (any OpenAI-compatible endpoint). |
+| `ANTHROPIC_API_KEY` | (none) | Claude API key. Never stored in the HTML. Without it the anthropic provider uses MOCK mode. |
+| `OLLAMA_URL` | `http://127.0.0.1:11434` | Where Ollama is running. |
+| `AI_BASE_URL`, `AI_API_KEY` | (none) | Endpoint and key for `AI_PROVIDER=openai`. |
 | `MOCK` | `0` | `1` forces MOCK mode even with a key. |
-| `AI_MODEL` | `claude-opus-5-5` | Model used in live mode. |
+| `AI_MODEL` | `claude-opus-5-5` / `llama3.2:3b` | Model used in live mode (default depends on the provider). |
+| `AI_TIMEOUT_MS` | `8000` | How long the server waits for Ollama / OpenAI-compatible replies. |
 | `PORT` | `8787` | Port. |
 | `RATE_LIMIT` | `30` | Requests per minute per client. |
 | `ALLOW_FILE_ORIGIN` | `0` | `1` allows requests from a game opened as a local file (`Origin: null`). |
