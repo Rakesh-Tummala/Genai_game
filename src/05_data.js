@@ -179,7 +179,7 @@ const TRAINERS = {
     lose: 'Your bond is true. Agni\'s Fire Hall will open its doors to you now.', flag: 'beatRohan',
   },
   agni: {
-    name: 'Agni', title: 'Lieutenant of Indra', team: [['yalicub', 12], ['garudin', 12], ['vetalix', 13], ['yalidhar', 15]], reward: 70, music: 'boss', lieutenant: true,
+    name: 'Agni', title: 'Lieutenant of Indra', team: [['yalicub', 11], ['garudin', 11], ['vetalix', 12], ['yalidhar', 14]], reward: 70, music: 'boss', lieutenant: true,
     intro: ['The sacred fire carries every offering to the heavens.', 'I am Agni, keeper of the flame. A flame tests what is true and burns what is false.', 'Step into the light, Tamer, and let us see what remains!'],
     lose: 'Your spirit did not burn away. Go to Vaijayanta Palace - the King of the Heavens is waiting.', flag: 'beatAgni',
   },

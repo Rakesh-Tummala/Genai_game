@@ -90,7 +90,7 @@ This is the **complete game (v1.0, Stages 1-4)**: 10 playable characters, all ei
 - **Bestiary** (menu > BESTIARY): all 70 entries grouped by city, seen/tamed progress, silhouettes for unseen creatures, lore, evolutions and base stats for tamed creatures, and expanded AI lore with Z.
 - **Audio**: a chiptune theme for every city, separate music for wild, trainer, lieutenant and god battles, shops, shrines, trial halls, a victory jingle, a seal fanfare and an ending theme. Several instrument voices (pulse, pluck, triangle, saw) with harmony lines and drones. Sound effects for menus, items, custom attacks, grass rustle, low-HP warning, seals and more. Music and sound-effect volume each have 5 levels, plus mute (N key or the music-note button).
 - **Ending**: beating Perun plays scrolling credits listing your seals, companions and Bestiary progress. The world stays open afterwards.
-- Companions that sit on the bench still earn half XP from battles.
+- Companions that sit on the bench still earn a third of the XP from battles.
 - Save / load (localStorage) and options (text speed, music volume, sound-effect volume, mute, Bestiary preview).
 
 **Known limitations**

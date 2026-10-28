@@ -314,10 +314,11 @@ async function openOptions() {
   while (true) {
     const sp = ['Slow', 'Normal', 'Fast', 'Instant'][Settings.textSpeed];
     const bar = v => v ? '|'.repeat(v) + '.'.repeat(4 - v) : 'Off';
-    const items = [{ label: 'Text speed', right: sp }, { label: 'Music volume', right: bar(Settings.musicVol) }, { label: 'Sound FX volume', right: bar(Settings.sfxVol) }, { label: 'Mute all', right: Settings.muted ? 'Yes' : 'No' }, { label: 'Bestiary preview', right: Settings.bestiaryPreview ? 'On' : 'Off' }, { label: 'Back' }];
+    const items = [{ label: 'Text speed', right: sp }, { label: 'Music volume', right: bar(Settings.musicVol) }, { label: 'Sound FX volume', right: bar(Settings.sfxVol) }, { label: 'Mute all', right: Settings.muted ? 'Yes' : 'No' }, { label: 'Bestiary preview', right: Settings.bestiaryPreview ? 'On' : 'Off' }, { label: 'Sound test' }, { label: 'Back' }];
     const extra = ctx => { drawWin(ctx, 0, 176, W, 64); Font.wrap(AI_ENDPOINT ? `AI endpoint: ${AI_ENDPOINT} (status: ${AI.status})` : 'AI: offline mode. Custom attacks, lore and dialogue use built-in fallbacks. See README to enable the optional server.', 296).forEach((l, k) => Font.draw(ctx, l, 12, 186 + k * 12, UI.ink)); Font.draw(ctx, 'Keys: arrows/WASD move, Z/Enter confirm, X back, ESC/C/M menu, Shift run, N mute', 12, 224, UI.dim); };
     i = await choose(items, { x: 60, y: 30, w: 200, title: 'OPTIONS', start: i, extra });
-    if (i < 0 || i === 5) { saveSettings(); return; }
+    if (i < 0 || i === 6) { saveSettings(); return; }
+    if (i === 5) { await soundTest(); continue; }
     if (i === 4) { Settings.bestiaryPreview = !Settings.bestiaryPreview; if (Settings.bestiaryPreview) await say('Bestiary preview reveals every creature, including those from cities that are not playable yet. It does not change your seen/tamed progress.'); }
     if (i === 0) Settings.textSpeed = (Settings.textSpeed + 1) % 4;
     if (i === 1) Settings.musicVol = (Settings.musicVol + 1) % 5;
@@ -389,3 +390,25 @@ class BestiaryScene {
   }
 }
 function openBestiary() { return new Promise(r => { const s = new BestiaryScene(); s.resolve = r; Scenes.push(s); }); }
+
+// ---------------- SOUND TEST (Options) ----------------
+const TRACK_LABELS = { title: 'Title', city: 'Indrapuri', route: 'Monsoon Trail', battle: 'Wild battle', boss: 'Trial hall (old)', greece: 'Olympos', norse: 'Asgard', egypt: 'Heliopolis', japan: 'Takama', celtic: 'Tir na nOg', meso: 'Babylon', slavic: 'Kitezh', trainer: 'Trainer battle', lieutenant: 'Lieutenant battle', god: 'God trial', hall: 'Trial hall', shop: 'Shop', shrine: 'Shrine', ending: 'Ending', fanfare: 'Seal fanfare', victory: 'Victory' };
+async function soundTest() {
+  const before = Sound.current;
+  Sound.init();
+  let i = 0;
+  while (true) {
+    const names = Sound.TRACK_NAMES.filter(n => n !== 'boss');
+    const items = names.map(n => ({ label: TRACK_LABELS[n] || n, right: Sound.current === n ? 'playing' : '' })).concat([{ label: 'Sound effects' }, { label: 'Back' }]);
+    const extra = ctx => { drawWin(ctx, 0, 176, W, 64); Font.wrap('Z plays a track. If you hear nothing, check the volume levels in Options and that the page is not muted (N).', 296).forEach((l, k) => Font.draw(ctx, l, 12, 186 + k * 12, UI.ink)); };
+    i = await choose(items, { x: 60, y: 4, w: 200, title: 'SOUND TEST', start: i, maxRows: 10, extra });
+    if (i < 0 || i === items.length - 1) break;
+    if (i === items.length - 2) {
+      let k = 0;
+      while (true) { k = await choose(Sound.SFX_NAMES.map(n => ({ label: n })), { x: 90, y: 4, w: 140, title: 'SOUND EFFECTS', start: k, maxRows: 10 }); if (k < 0) break; Sound.sfx(Sound.SFX_NAMES[k]); }
+      continue;
+    }
+    Sound.play(names[i]);
+  }
+  if (before) Sound.play(before); else Sound.stop();
+}

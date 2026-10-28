@@ -634,7 +634,7 @@ class BattleScene {
   }
   async awardXP(E, mul) {
     const sp = SPECIES[E.sp];
-    const base = Math.floor(sp.xp * E.lv / 3.3 * (this.tr ? 1.5 : 1) * (perk() === 'xp' ? 1.1 : 1) * mul);
+    const base = Math.floor(sp.xp * E.lv / 4 * (this.tr ? 1.5 : 1) * (perk() === 'xp' ? 1.1 : 1) * mul);
     const got = Game.party.filter(c => c.hp > 0 && this.parts4.has(c.uid));
     if (!got.length) return;
     const each = Math.max(1, Math.floor(base / got.length));
@@ -644,10 +644,10 @@ class BattleScene {
       c.xp += each;
       while (c.lv < LEVEL_CAP && c.xp >= xpForLevel(c.lv + 1)) await this.levelUp(c);
     }
-    // companions who stayed on the bench learn by watching: half XP
+    // companions who stayed on the bench learn by watching: a third of the XP
     const bench = Game.party.filter(c => c.hp > 0 && !this.parts4.has(c.uid) && c.lv < LEVEL_CAP);
     if (bench.length) {
-      const half = Math.max(1, Math.floor(each / 2));
+      const half = Math.max(1, Math.floor(each / 3));
       await this.msg(`The rest of your team gained ${half} XP by watching.`, 30);
       for (const c of bench) { c.xp += half; while (c.lv < LEVEL_CAP && c.xp >= xpForLevel(c.lv + 1)) await this.levelUp(c); }
     }

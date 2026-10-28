@@ -41,7 +41,10 @@ const Sound = (() => {
   function init() {
     if (ac) { if (ac.state === 'suspended') ac.resume(); return; }
     try { ac = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return; }
-    master = ac.createGain(); master.connect(ac.destination);
+    // master -> limiter -> speakers, so overlapping sounds never distort
+    master = ac.createGain();
+    const lim = ac.createDynamicsCompressor(); lim.threshold.value = -10; lim.knee.value = 6; lim.ratio.value = 8; lim.attack.value = .003; lim.release.value = .2;
+    master.connect(lim); lim.connect(ac.destination);
     musicBus = ac.createGain(); musicBus.connect(master);
     sfxBus = ac.createGain(); sfxBus.connect(master);
     noiseBuf = ac.createBuffer(1, ac.sampleRate, ac.sampleRate);
@@ -54,7 +57,7 @@ const Sound = (() => {
   if (Settings.sfxVol === undefined) Settings.sfxVol = Settings.sfx === false ? 0 : 3;
   function applyVolumes() {
     if (!ac) return;
-    master.gain.value = Settings.muted ? 0 : 0.55;
+    master.gain.value = Settings.muted ? 0 : 1.25;
     musicBus.gain.setTargetAtTime(LEVELS[Settings.musicVol] || 0, ac.currentTime, .05);
     sfxBus.gain.value = SFX_LEVELS[Settings.sfxVol] || 0;
   }
@@ -142,5 +145,6 @@ const Sound = (() => {
   };
   function sfx(name) { if (!ac) return; const f = S[name]; if (f) f(ac.currentTime + 0.005); }
   function toggleMute() { Settings.muted = !Settings.muted; saveSettings(); applyVolumes(); return Settings.muted; }
-  return { init, play, stop, sfx, toggleMute, applyVolumes, LEVELS, get current() { return trackName; } };
+  const TRACK_NAMES = Object.keys(T), SFX_NAMES = Object.keys(S);
+  return { init, play, stop, sfx, toggleMute, applyVolumes, LEVELS, TRACK_NAMES, SFX_NAMES, get current() { return trackName; } };
 })();

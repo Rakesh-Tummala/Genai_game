@@ -266,7 +266,10 @@ const Sound = (() => {
   function init() {
     if (ac) { if (ac.state === 'suspended') ac.resume(); return; }
     try { ac = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return; }
-    master = ac.createGain(); master.connect(ac.destination);
+    // master -> limiter -> speakers, so overlapping sounds never distort
+    master = ac.createGain();
+    const lim = ac.createDynamicsCompressor(); lim.threshold.value = -10; lim.knee.value = 6; lim.ratio.value = 8; lim.attack.value = .003; lim.release.value = .2;
+    master.connect(lim); lim.connect(ac.destination);
     musicBus = ac.createGain(); musicBus.connect(master);
     sfxBus = ac.createGain(); sfxBus.connect(master);
     noiseBuf = ac.createBuffer(1, ac.sampleRate, ac.sampleRate);
@@ -279,7 +282,7 @@ const Sound = (() => {
   if (Settings.sfxVol === undefined) Settings.sfxVol = Settings.sfx === false ? 0 : 3;
   function applyVolumes() {
     if (!ac) return;
-    master.gain.value = Settings.muted ? 0 : 0.55;
+    master.gain.value = Settings.muted ? 0 : 1.25;
     musicBus.gain.setTargetAtTime(LEVELS[Settings.musicVol] || 0, ac.currentTime, .05);
     sfxBus.gain.value = SFX_LEVELS[Settings.sfxVol] || 0;
   }
@@ -367,7 +370,8 @@ const Sound = (() => {
   };
   function sfx(name) { if (!ac) return; const f = S[name]; if (f) f(ac.currentTime + 0.005); }
   function toggleMute() { Settings.muted = !Settings.muted; saveSettings(); applyVolumes(); return Settings.muted; }
-  return { init, play, stop, sfx, toggleMute, applyVolumes, LEVELS, get current() { return trackName; } };
+  const TRACK_NAMES = Object.keys(T), SFX_NAMES = Object.keys(S);
+  return { init, play, stop, sfx, toggleMute, applyVolumes, LEVELS, TRACK_NAMES, SFX_NAMES, get current() { return trackName; } };
 })();
 
 // ---- 04_input.js ----
@@ -604,7 +608,7 @@ const TRAINERS = {
     lose: 'Your bond is true. Agni\'s Fire Hall will open its doors to you now.', flag: 'beatRohan',
   },
   agni: {
-    name: 'Agni', title: 'Lieutenant of Indra', team: [['yalicub', 12], ['garudin', 12], ['vetalix', 13], ['yalidhar', 15]], reward: 70, music: 'boss', lieutenant: true,
+    name: 'Agni', title: 'Lieutenant of Indra', team: [['yalicub', 11], ['garudin', 11], ['vetalix', 12], ['yalidhar', 14]], reward: 70, music: 'boss', lieutenant: true,
     intro: ['The sacred fire carries every offering to the heavens.', 'I am Agni, keeper of the flame. A flame tests what is true and burns what is false.', 'Step into the light, Tamer, and let us see what remains!'],
     lose: 'Your spirit did not burn away. Go to Vaijayanta Palace - the King of the Heavens is waiting.', flag: 'beatAgni',
   },
@@ -3953,7 +3957,7 @@ class BattleScene {
   }
   async awardXP(E, mul) {
     const sp = SPECIES[E.sp];
-    const base = Math.floor(sp.xp * E.lv / 3.3 * (this.tr ? 1.5 : 1) * (perk() === 'xp' ? 1.1 : 1) * mul);
+    const base = Math.floor(sp.xp * E.lv / 4 * (this.tr ? 1.5 : 1) * (perk() === 'xp' ? 1.1 : 1) * mul);
     const got = Game.party.filter(c => c.hp > 0 && this.parts4.has(c.uid));
     if (!got.length) return;
     const each = Math.max(1, Math.floor(base / got.length));
@@ -3963,10 +3967,10 @@ class BattleScene {
       c.xp += each;
       while (c.lv < LEVEL_CAP && c.xp >= xpForLevel(c.lv + 1)) await this.levelUp(c);
     }
-    // companions who stayed on the bench learn by watching: half XP
+    // companions who stayed on the bench learn by watching: a third of the XP
     const bench = Game.party.filter(c => c.hp > 0 && !this.parts4.has(c.uid) && c.lv < LEVEL_CAP);
     if (bench.length) {
-      const half = Math.max(1, Math.floor(each / 2));
+      const half = Math.max(1, Math.floor(each / 3));
       await this.msg(`The rest of your team gained ${half} XP by watching.`, 30);
       for (const c of bench) { c.xp += half; while (c.lv < LEVEL_CAP && c.xp >= xpForLevel(c.lv + 1)) await this.levelUp(c); }
     }
@@ -4456,10 +4460,11 @@ async function openOptions() {
   while (true) {
     const sp = ['Slow', 'Normal', 'Fast', 'Instant'][Settings.textSpeed];
     const bar = v => v ? '|'.repeat(v) + '.'.repeat(4 - v) : 'Off';
-    const items = [{ label: 'Text speed', right: sp }, { label: 'Music volume', right: bar(Settings.musicVol) }, { label: 'Sound FX volume', right: bar(Settings.sfxVol) }, { label: 'Mute all', right: Settings.muted ? 'Yes' : 'No' }, { label: 'Bestiary preview', right: Settings.bestiaryPreview ? 'On' : 'Off' }, { label: 'Back' }];
+    const items = [{ label: 'Text speed', right: sp }, { label: 'Music volume', right: bar(Settings.musicVol) }, { label: 'Sound FX volume', right: bar(Settings.sfxVol) }, { label: 'Mute all', right: Settings.muted ? 'Yes' : 'No' }, { label: 'Bestiary preview', right: Settings.bestiaryPreview ? 'On' : 'Off' }, { label: 'Sound test' }, { label: 'Back' }];
     const extra = ctx => { drawWin(ctx, 0, 176, W, 64); Font.wrap(AI_ENDPOINT ? `AI endpoint: ${AI_ENDPOINT} (status: ${AI.status})` : 'AI: offline mode. Custom attacks, lore and dialogue use built-in fallbacks. See README to enable the optional server.', 296).forEach((l, k) => Font.draw(ctx, l, 12, 186 + k * 12, UI.ink)); Font.draw(ctx, 'Keys: arrows/WASD move, Z/Enter confirm, X back, ESC/C/M menu, Shift run, N mute', 12, 224, UI.dim); };
     i = await choose(items, { x: 60, y: 30, w: 200, title: 'OPTIONS', start: i, extra });
-    if (i < 0 || i === 5) { saveSettings(); return; }
+    if (i < 0 || i === 6) { saveSettings(); return; }
+    if (i === 5) { await soundTest(); continue; }
     if (i === 4) { Settings.bestiaryPreview = !Settings.bestiaryPreview; if (Settings.bestiaryPreview) await say('Bestiary preview reveals every creature, including those from cities that are not playable yet. It does not change your seen/tamed progress.'); }
     if (i === 0) Settings.textSpeed = (Settings.textSpeed + 1) % 4;
     if (i === 1) Settings.musicVol = (Settings.musicVol + 1) % 5;
@@ -4531,6 +4536,28 @@ class BestiaryScene {
   }
 }
 function openBestiary() { return new Promise(r => { const s = new BestiaryScene(); s.resolve = r; Scenes.push(s); }); }
+
+// ---------------- SOUND TEST (Options) ----------------
+const TRACK_LABELS = { title: 'Title', city: 'Indrapuri', route: 'Monsoon Trail', battle: 'Wild battle', boss: 'Trial hall (old)', greece: 'Olympos', norse: 'Asgard', egypt: 'Heliopolis', japan: 'Takama', celtic: 'Tir na nOg', meso: 'Babylon', slavic: 'Kitezh', trainer: 'Trainer battle', lieutenant: 'Lieutenant battle', god: 'God trial', hall: 'Trial hall', shop: 'Shop', shrine: 'Shrine', ending: 'Ending', fanfare: 'Seal fanfare', victory: 'Victory' };
+async function soundTest() {
+  const before = Sound.current;
+  Sound.init();
+  let i = 0;
+  while (true) {
+    const names = Sound.TRACK_NAMES.filter(n => n !== 'boss');
+    const items = names.map(n => ({ label: TRACK_LABELS[n] || n, right: Sound.current === n ? 'playing' : '' })).concat([{ label: 'Sound effects' }, { label: 'Back' }]);
+    const extra = ctx => { drawWin(ctx, 0, 176, W, 64); Font.wrap('Z plays a track. If you hear nothing, check the volume levels in Options and that the page is not muted (N).', 296).forEach((l, k) => Font.draw(ctx, l, 12, 186 + k * 12, UI.ink)); };
+    i = await choose(items, { x: 60, y: 4, w: 200, title: 'SOUND TEST', start: i, maxRows: 10, extra });
+    if (i < 0 || i === items.length - 1) break;
+    if (i === items.length - 2) {
+      let k = 0;
+      while (true) { k = await choose(Sound.SFX_NAMES.map(n => ({ label: n })), { x: 90, y: 4, w: 140, title: 'SOUND EFFECTS', start: k, maxRows: 10 }); if (k < 0) break; Sound.sfx(Sound.SFX_NAMES[k]); }
+      continue;
+    }
+    Sound.play(names[i]);
+  }
+  if (before) Sound.play(before); else Sound.stop();
+}
 
 // ---- 13_main.js ----
 // =====================================================================
