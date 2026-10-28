@@ -9,6 +9,8 @@ A browser-based, 16-bit style creature-taming RPG. You are a young Tamer travell
 
 All creature designs, names and artwork are original and inspired only by traditional folklore. Gods are portrayed respectfully, as fictional divine trials.
 
+**New to the game?** Read the [Playthrough Guide](docs/playthrough/README.md): a full walkthrough with screenshots, boss teams and type tips for all eight cities.
+
 ---
 
 ## Quick start
