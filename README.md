@@ -9,7 +9,7 @@ A browser-based, 16-bit style creature-taming RPG. You are a young Tamer travell
 
 All creature designs, names and artwork are original and inspired only by traditional folklore. Gods are portrayed respectfully, as fictional divine trials.
 
-**New to the game?** Read the [Playthrough Guide (PDF)](docs/MYTHBOUND_Playthrough_Guide.pdf): a full walkthrough with screenshots, boss teams and type tips for all eight cities.
+**New to the game?** Read the [Playthrough Guide (PDF)](docs/MYTHBOUND_Playthrough_Guide.pdf): a full walkthrough with screenshots, boss teams and type tips for all eight cities. For how it is built (tech stack, system design and the generative AI), see the [Technical Overview (PDF)](docs/MYTHBOUND_Technical_Overview.pdf).
 
 ---
 
